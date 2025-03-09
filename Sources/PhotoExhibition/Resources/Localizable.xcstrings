@@ -88,9 +88,6 @@
         }
       }
     },
-    "Hello Skip!" : {
-
-    },
     "Home" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -178,6 +175,9 @@
         }
       }
     },
+    "Not signed in" : {
+
+    },
     "Powered by Skip and %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -235,6 +235,9 @@
           }
         }
       }
+    },
+    "Signed in" : {
+
     },
     "System" : {
       "extractionState" : "stale",

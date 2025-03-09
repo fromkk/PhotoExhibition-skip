@@ -27,14 +27,17 @@ let package = Package(
       dependencies: [
         .product(name: "SkipUI", package: "skip-ui"),
         .product(name: "SkipFirebaseAuth", package: "skip-firebase"),
-      ], resources: [.process("Resources")],
+      ],
+      resources: [.process("Resources")],
       plugins: [.plugin(name: "skipstone", package: "skip")]),
     .testTarget(
       name: "PhotoExhibitionTests",
       dependencies: [
         "PhotoExhibition",
         .product(name: "SkipTest", package: "skip"),
-      ], resources: [.process("Resources")],
-      plugins: [.plugin(name: "skipstone", package: "skip")]),
+      ],
+      resources: [.process("Resources")],
+      plugins: [.plugin(name: "skipstone", package: "skip")]
+    ),
   ]
 )

@@ -20,7 +20,7 @@ public struct PhotoExhibitionRootView: View {
   }
 
   public var body: some View {
-    ContentView()
+    RootView()
       .task {
         logger.info(
           "Welcome to Skip on \(androidSDK != nil ? "Android" : "Darwin")!")
