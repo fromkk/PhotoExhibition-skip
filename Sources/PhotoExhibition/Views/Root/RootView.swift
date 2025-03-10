@@ -21,19 +21,35 @@ import SwiftUI
 
   private(set) var isSignedIn: Bool = false
   // Updated flags for signIn and signUp screen display
-  var isSignInScreenShown: Bool = false
-  var isSignUpScreenShown: Bool = false
+  var isSignInScreenShown: Bool = false {
+    didSet {
+      if isSignInScreenShown {
+        authStore = AuthStore(authMode: .signIn)
+      } else {
+        authStore = nil
+      }
+    }
+  }
+  var isSignUpScreenShown: Bool = false {
+    didSet {
+      if isSignUpScreenShown {
+        authStore = AuthStore(authMode: .signUp)
+      } else {
+        authStore = nil
+      }
+    }
+  }
+
+  private(set) var authStore: AuthStore?
 
   func send(_ action: Action) {
     switch action {
     case .task:
       isSignedIn = currentUserClient.currentUser() != nil
     case .signInButtonTapped:
-      // Set signIn screen flag to true
       isSignInScreenShown = true
       return
     case .signUpButtonTapped:
-      // Set signUp screen flag to true
       isSignUpScreenShown = true
       return
     }

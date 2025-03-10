@@ -13,6 +13,10 @@ import SwiftUI
   var authMode: AuthMode
   var email: String = ""
   var password: String = ""
+  var isAuthEnabled: Bool {
+    // invalid if email does not contain "@" or password is less than 8 characters
+    email.contains("@") && password.count >= 8
+  }
 
   private let signInClient: any SignInClient
   private let signUpClient: any SignUpClient
@@ -40,7 +44,7 @@ import SwiftUI
   }
 }
 
-enum AuthMode: CaseIterable {
+enum AuthMode: CaseIterable, Hashable {
   case signIn
   case signUp
 
@@ -52,32 +56,40 @@ enum AuthMode: CaseIterable {
   }
 }
 
-struct AuthView: View {  // 名前変更: SignInView -> AuthView
+struct AuthView: View {
   @Bindable var store: AuthStore
 
   var body: some View {
     VStack {
       if store.authMode == .signIn {
-        VStack {
-          TextField("Email", text: $store.email)
-            .padding()
-          SecureField("Password", text: $store.password)
-            .padding()
-          Button("Sign In") {
-            // sign in process
+        VStack(spacing: 32) {
+          VStack(spacing: 16) {
+            TextField("Email", text: $store.email)
+            SecureField("Password", text: $store.password)
           }
-          .padding()
+
+          Button {
+            store.send(.signInButtonTapped)
+          } label: {
+            Text(store.authMode.titleLocalizedKey)
+              .primaryButtonStyle()
+          }
+          .disabled(!store.isAuthEnabled)
         }
       } else {
-        VStack {
-          TextField("Email", text: $store.email)
-            .padding()
-          SecureField("Password", text: $store.password)
-            .padding()
-          Button("Sign Up") {
-            // sign up process
+        VStack(spacing: 32) {
+          VStack(spacing: 16) {
+            TextField("Email", text: $store.email)
+            SecureField("Password", text: $store.password)
           }
-          .padding()
+
+          Button {
+            store.send(.signUpButtonTapped)
+          } label: {
+            Text(store.authMode.titleLocalizedKey)
+              .primaryButtonStyle()
+          }
+          .disabled(!store.isAuthEnabled)
         }
       }
     }
