@@ -1,7 +1,7 @@
 import Foundation
 
 // 写真情報
-struct Photo: Hashable, Sendable, Identifiable {
+struct Photo: Hashable, Sendable, Identifiable, Codable {
   let id: String
   let name: String
   let filePath: URL

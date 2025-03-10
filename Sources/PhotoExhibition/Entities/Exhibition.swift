@@ -1,7 +1,7 @@
 import Foundation
 
 // 写真展情報
-struct Exhibition: Hashable, Sendable, Identifiable {
+struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   let id: String
   let name: String
   let description: String?
