@@ -19,7 +19,17 @@ import SwiftUI
     case signUpButtonTapped
   }
 
-  private(set) var isSignedIn: Bool = false
+  private(set) var isSignedIn: Bool = false {
+    didSet {
+      if isSignedIn {
+        exhibitionsStore = ExhibitionsStore()
+        settingsStore = SettingsStore()
+      } else {
+        exhibitionsStore = nil
+        settingsStore = nil
+      }
+    }
+  }
   // Updated flags for signIn and signUp screen display
   var isSignInScreenShown: Bool = false {
     didSet {
@@ -43,6 +53,8 @@ import SwiftUI
   }
 
   private(set) var authStore: AuthStore?
+  private(set) var exhibitionsStore: ExhibitionsStore?
+  private(set) var settingsStore: SettingsStore?
 
   func send(_ action: Action) {
     switch action {
@@ -67,7 +79,21 @@ struct RootView: View {
   var body: some View {
     Group {
       if store.isSignedIn {
-        Text("Signed in")
+        TabView {
+          if let store = store.exhibitionsStore {
+            ExhibitionsView(store: store)
+              .tabItem {
+                Label("Exhibitions", systemImage: "photo")
+              }
+          }
+
+          if let store = store.settingsStore {
+            SettingsView(store: store)
+              .tabItem {
+                Label("Settings", systemImage: "gear")
+              }
+          }
+        }
       } else {
         TopView(store: store)
       }
