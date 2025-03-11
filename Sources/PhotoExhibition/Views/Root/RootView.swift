@@ -4,7 +4,7 @@ import SwiftUI
   import Observation
 #endif
 
-@Observable final class RootStore: Store, AuthStoreDelegate {
+@Observable final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate {
   private let currentUserClient: CurrentUserClient
 
   init(
@@ -24,6 +24,7 @@ import SwiftUI
       if isSignedIn {
         exhibitionsStore = ExhibitionsStore()
         settingsStore = SettingsStore()
+        settingsStore?.delegate = self
       } else {
         exhibitionsStore = nil
         settingsStore = nil
@@ -69,8 +70,16 @@ import SwiftUI
     }
   }
 
+  // MARK: - AuthStoreDelegate
+
   func didSignInSuccessfully() {
     isSignedIn = true
+  }
+
+  // MARK: - SettingsStoreDelegate
+
+  func logoutCompleted() {
+    isSignedIn = false
   }
 }
 
