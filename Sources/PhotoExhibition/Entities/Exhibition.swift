@@ -10,4 +10,6 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   let location: String  // 開催場所
   let organizer: Member
   let photos: [Photo]  // 写真のリスト
+  let createdAt: Date
+  let updatedAt: Date
 }

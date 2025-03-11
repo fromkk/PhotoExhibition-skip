@@ -8,6 +8,7 @@ import SwiftUI
   enum Action {
     case signInButtonTapped
     case signUpButtonTapped
+    case dismissError
   }
 
   var authMode: AuthMode
@@ -20,6 +21,11 @@ import SwiftUI
 
   private let signInClient: any SignInClient
   private let signUpClient: any SignUpClient
+
+  // ユーザー認証状態を管理するプロパティ
+  var isLoading: Bool = false
+  var error: (any Error)?
+  var isErrorAlertPresented: Bool = false
 
   init(
     authMode: AuthMode,
@@ -37,9 +43,45 @@ import SwiftUI
   func send(_ action: Action) {
     switch action {
     case .signInButtonTapped:
-      return
+      Task {
+        isLoading = true
+        error = nil
+        isErrorAlertPresented = false
+
+        do {
+          let member = try await signInClient.signIn(email: email, password: password)
+          print("サインイン成功: \(String(describing: member?.id))")
+          // ここでサインイン後の処理を行う（例：画面遷移など）
+        } catch {
+          self.error = error
+          self.isErrorAlertPresented = true
+          print("サインインエラー: \(error.localizedDescription)")
+        }
+
+        isLoading = false
+      }
+
     case .signUpButtonTapped:
-      return
+      Task {
+        isLoading = true
+        error = nil
+        isErrorAlertPresented = false
+
+        do {
+          let member = try await signUpClient.signUp(email: email, password: password)
+          print("サインアップ成功: \(String(describing: member?.id))")
+          // ここでサインアップ後の処理を行う（例：画面遷移など） 999)
+        } catch {
+          self.error = error
+          self.isErrorAlertPresented = true
+          print("サインアップエラー: \(error.localizedDescription)")
+        }
+
+        isLoading = false
+      }
+
+    case .dismissError:
+      isErrorAlertPresented = false
     }
   }
 }
@@ -60,41 +102,49 @@ struct AuthView: View {
   @Bindable var store: AuthStore
 
   var body: some View {
-    VStack {
-      if store.authMode == .signIn {
-        VStack(spacing: 32) {
-          VStack(spacing: 16) {
-            TextField("Email", text: $store.email)
-            SecureField("Password", text: $store.password)
-          }
+    VStack(spacing: 32) {
+      VStack(spacing: 16) {
+        TextField("Email", text: $store.email)
+          .keyboardType(.emailAddress)
+          #if !SKIP
+            .autocapitalization(.none)
+            .disableAutocorrection(true)
+          #endif
+        SecureField("Password", text: $store.password)
+      }
 
-          Button {
-            store.send(.signInButtonTapped)
-          } label: {
-            Text(store.authMode.titleLocalizedKey)
-              .primaryButtonStyle()
-          }
-          .disabled(!store.isAuthEnabled)
+      Button {
+        if store.authMode == .signIn {
+          store.send(.signInButtonTapped)
+        } else {
+          store.send(.signUpButtonTapped)
         }
-      } else {
-        VStack(spacing: 32) {
-          VStack(spacing: 16) {
-            TextField("Email", text: $store.email)
-            SecureField("Password", text: $store.password)
-          }
-
-          Button {
-            store.send(.signUpButtonTapped)
-          } label: {
-            Text(store.authMode.titleLocalizedKey)
-              .primaryButtonStyle()
-          }
-          .disabled(!store.isAuthEnabled)
+      } label: {
+        if store.isLoading {
+          ProgressView()
+        } else {
+          Text(store.authMode.titleLocalizedKey)
+            .primaryButtonStyle()
         }
       }
+      .disabled(!store.isAuthEnabled || store.isLoading)
     }
     .padding()
     .navigationTitle(Text(store.authMode.titleLocalizedKey))
+    .alert(
+      "Error",
+      isPresented: $store.isErrorAlertPresented,
+      actions: {
+        Button {
+          store.send(.dismissError)
+        } label: {
+          Text("OK")
+        }
+      },
+      message: {
+        Text(store.error?.localizedDescription ?? "An unknown error occurred")
+      }
+    )
   }
 }
 

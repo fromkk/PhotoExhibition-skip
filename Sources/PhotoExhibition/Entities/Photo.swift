@@ -8,4 +8,6 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
   let description: String?
   let takenDate: Date?
   let photographer: String
+  let createdAt: Date
+  let updatedAt: Date
 }

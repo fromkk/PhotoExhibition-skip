@@ -27,6 +27,7 @@ let package = Package(
       dependencies: [
         .product(name: "SkipUI", package: "skip-ui"),
         .product(name: "SkipFirebaseAuth", package: "skip-firebase"),
+        .product(name: "SkipFirebaseFirestore", package: "skip-firebase"),
       ],
       resources: [.process("Resources")],
       plugins: [.plugin(name: "skipstone", package: "skip")]),
