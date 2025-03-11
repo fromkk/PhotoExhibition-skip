@@ -116,7 +116,10 @@ struct AuthView: View {
             .autocapitalization(.none)
             .disableAutocorrection(true)
           #endif
+          .textFieldStyle(.roundedBorder)
+
         SecureField("Password", text: $store.password)
+          .textFieldStyle(.roundedBorder)
       }
 
       Button {
