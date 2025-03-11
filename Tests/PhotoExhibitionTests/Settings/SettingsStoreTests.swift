@@ -81,19 +81,26 @@ final class SettingsStoreTests: XCTestCase {
   }
 }
 
+final class MockUser: UserProtocol, @unchecked Sendable {
+  let uid: String
+  init(uid: String) {
+    self.uid = uid
+  }
+}
+
 // Mock classes for testing
 final class MockCurrentUserClient: CurrentUserClient {
   var currentUserCalled = false
   var logoutCalled = false
   var shouldFailLogout: Bool
-  var mockUser: User?
+  var mockUser: (any UserProtocol)?
 
-  init(shouldFailLogout: Bool = false, mockUser: User? = nil) {
+  init(shouldFailLogout: Bool = false, mockUser: (any UserProtocol)? = nil) {
     self.shouldFailLogout = shouldFailLogout
     self.mockUser = mockUser
   }
 
-  func currentUser() -> User? {
+  func currentUser() -> (any UserProtocol)? {
     currentUserCalled = true
     return mockUser
   }
