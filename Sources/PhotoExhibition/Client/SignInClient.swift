@@ -7,15 +7,16 @@
 #endif
 
 protocol SignInClient: Sendable {
-  func signIn(email: String, password: String) async throws -> Member?
+  func signIn(email: String, password: String) async throws -> Member
 }
 
 enum SignInClientError: Error, Sendable {
   case memberNotFound
+  case invalidData
 }
 
 actor DefaultSignInClient: SignInClient {
-  func signIn(email: String, password: String) async throws -> Member? {
+  func signIn(email: String, password: String) async throws -> Member {
     let user = try await Auth.auth().signIn(withEmail: email, password: password).user
     let uid = user.uid
 
@@ -25,6 +26,9 @@ actor DefaultSignInClient: SignInClient {
     guard let data = document.data() else {
       throw SignInClientError.memberNotFound
     }
-    return Member(documentID: uid, data: data)
+    guard let member = Member(documentID: uid, data: data) else {
+      throw SignInClientError.invalidData
+    }
+    return member
   }
 }

@@ -9,11 +9,15 @@ import Foundation
 #endif
 
 protocol SignUpClient: Sendable {
-  func signUp(email: String, password: String) async throws -> Member?
+  func signUp(email: String, password: String) async throws -> Member
+}
+
+enum SignUpClientError: Error, Sendable {
+  case invalidData
 }
 
 actor DefaultSignUpClient: SignUpClient {
-  func signUp(email: String, password: String) async throws -> Member? {
+  func signUp(email: String, password: String) async throws -> Member {
     let user = try await Auth.auth().createUser(withEmail: email, password: password).user
     let uid = user.uid
 
@@ -26,6 +30,9 @@ actor DefaultSignUpClient: SignUpClient {
 
     try await db.collection("members").document(uid).setData(memberData)
 
-    return Member(documentID: uid, data: memberData)
+    guard let member = Member(documentID: uid, data: memberData) else {
+      throw SignUpClientError.invalidData
+    }
+    return member
   }
 }
