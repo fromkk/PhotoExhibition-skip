@@ -4,7 +4,7 @@ import SwiftUI
   import Observation
 #endif
 
-@Observable final class RootStore: Store {
+@Observable final class RootStore: Store, AuthStoreDelegate {
   private let currentUserClient: CurrentUserClient
 
   init(
@@ -25,6 +25,7 @@ import SwiftUI
     didSet {
       if isSignInScreenShown {
         authStore = AuthStore(authMode: .signIn)
+        authStore?.delegate = self
       } else {
         authStore = nil
       }
@@ -34,6 +35,7 @@ import SwiftUI
     didSet {
       if isSignUpScreenShown {
         authStore = AuthStore(authMode: .signUp)
+        authStore?.delegate = self
       } else {
         authStore = nil
       }
@@ -53,6 +55,10 @@ import SwiftUI
       isSignUpScreenShown = true
       return
     }
+  }
+
+  func didSignInSuccessfully() {
+    isSignedIn = true
   }
 }
 

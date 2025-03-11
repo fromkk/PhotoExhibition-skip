@@ -4,6 +4,11 @@ import SwiftUI
   import Observation
 #endif
 
+@MainActor
+protocol AuthStoreDelegate: AnyObject {
+  func didSignInSuccessfully()
+}
+
 @Observable final class AuthStore: Store {
   enum Action {
     case signInButtonTapped
@@ -18,6 +23,7 @@ import SwiftUI
     // invalid if email does not contain "@" or password is less than 8 characters
     email.contains("@") && password.count >= 8
   }
+  weak var delegate: (any AuthStoreDelegate)?
 
   private let signInClient: any SignInClient
   private let signUpClient: any SignUpClient
@@ -50,8 +56,8 @@ import SwiftUI
 
         do {
           let member = try await signInClient.signIn(email: email, password: password)
-          print("サインイン成功: \(String(describing: member?.id))")
-          // ここでサインイン後の処理を行う（例：画面遷移など）
+          print("サインイン成功: \(String(describing: member.id))")
+          delegate?.didSignInSuccessfully()
         } catch {
           self.error = error
           self.isErrorAlertPresented = true
@@ -69,8 +75,8 @@ import SwiftUI
 
         do {
           let member = try await signUpClient.signUp(email: email, password: password)
-          print("サインアップ成功: \(String(describing: member?.id))")
-          // ここでサインアップ後の処理を行う（例：画面遷移など） 999)
+          print("サインアップ成功: \(String(describing: member.id))")
+          delegate?.didSignInSuccessfully()
         } catch {
           self.error = error
           self.isErrorAlertPresented = true
