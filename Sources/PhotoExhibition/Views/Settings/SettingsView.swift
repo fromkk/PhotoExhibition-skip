@@ -20,10 +20,12 @@ protocol SettingsStoreDelegate: AnyObject {
   enum Action {
     case task
     case logoutButtonTapped
+    case presentLogoutConfirmation
   }
 
   var isErrorAlertPresented: Bool = false
   var error: (any Error)?
+  var isLogoutConfirmationPresented: Bool = false
 
   func send(_ action: Action) {
     switch action {
@@ -37,7 +39,8 @@ protocol SettingsStoreDelegate: AnyObject {
         self.error = error
         self.isErrorAlertPresented = true
       }
-      break
+    case .presentLogoutConfirmation:
+      isLogoutConfirmationPresented = true
     }
   }
 }
@@ -47,7 +50,7 @@ struct SettingsView: View {
   var body: some View {
     List {
       Button(role: .destructive) {
-        store.send(.logoutButtonTapped)
+        store.send(.presentLogoutConfirmation)
       } label: {
         Text("Logout")
       }
@@ -60,6 +63,16 @@ struct SettingsView: View {
       },
       message: {
         Text(store.error?.localizedDescription ?? "Unknown error")
+      }
+    )
+    .alert(
+      "Are you sure you want to log out?",
+      isPresented: $store.isLogoutConfirmationPresented,
+      actions: {
+        Button("Cancel", role: .cancel) {}
+        Button("Yes", role: .destructive) {
+          store.send(.logoutButtonTapped)
+        }
       }
     )
   }
