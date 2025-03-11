@@ -49,11 +49,10 @@ protocol AuthStoreDelegate: AnyObject {
   func send(_ action: Action) {
     switch action {
     case .signInButtonTapped:
+      isLoading = true
+      error = nil
+      isErrorAlertPresented = false
       Task {
-        isLoading = true
-        error = nil
-        isErrorAlertPresented = false
-
         do {
           let member = try await signInClient.signIn(email: email, password: password)
           print("サインイン成功: \(String(describing: member.id))")
@@ -68,11 +67,10 @@ protocol AuthStoreDelegate: AnyObject {
       }
 
     case .signUpButtonTapped:
+      isLoading = true
+      error = nil
+      isErrorAlertPresented = false
       Task {
-        isLoading = true
-        error = nil
-        isErrorAlertPresented = false
-
         do {
           let member = try await signUpClient.signUp(email: email, password: password)
           print("サインアップ成功: \(String(describing: member.id))")
