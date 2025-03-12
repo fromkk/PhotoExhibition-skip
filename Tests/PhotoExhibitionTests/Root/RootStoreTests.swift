@@ -43,7 +43,7 @@ final class RootStoreTests: XCTestCase {
 
   func testTaskWithUser() {
     // Arrange
-    let mockUser = MockUser(uid: "test-uid")
+    let mockUser = PhotoExhibition.User(uid: "test-uid")
     let mockCurrentUserClient = MockCurrentUserClient(mockUser: mockUser)
     let store = RootStore(currentUserClient: mockCurrentUserClient)
 

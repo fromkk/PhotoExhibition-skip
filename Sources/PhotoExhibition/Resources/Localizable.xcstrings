@@ -11,12 +11,42 @@
         }
       }
     },
+    "Basic Information" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基本情報"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "キャンセル"
+          }
+        }
+      }
+    },
+    "Create a new exhibition" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しい展示会を作成"
+          }
+        }
+      }
+    },
+    "Description" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "説明"
           }
         }
       }
@@ -31,12 +61,32 @@
         }
       }
     },
+    "End Date" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終了日"
+          }
+        }
+      }
+    },
     "Error" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "エラー"
+          }
+        }
+      }
+    },
+    "Exhibition Name" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示会名"
           }
         }
       }
@@ -61,6 +111,26 @@
         }
       }
     },
+    "New Exhibition" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新規展示会"
+          }
+        }
+      }
+    },
+    "No Exhibitions" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示会がありません"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "ja" : {
@@ -77,6 +147,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "パスワード"
+          }
+        }
+      }
+    },
+    "Period" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開催期間"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
           }
         }
       }
@@ -111,12 +201,52 @@
         }
       }
     },
+    "Start Date" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始日"
+          }
+        }
+      }
+    },
     "Yes" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "はい"
+          }
+        }
+      }
+    },
+    "Failed to save: %@" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存に失敗しました: %@"
+          }
+        }
+      }
+    },
+    "Please enter exhibition name" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示会名を入力してください"
+          }
+        }
+      }
+    },
+    "Please login" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログインしてください"
           }
         }
       }

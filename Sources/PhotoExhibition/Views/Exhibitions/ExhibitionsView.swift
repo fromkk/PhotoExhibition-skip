@@ -4,52 +4,149 @@ import SwiftUI
   import Observation
 #endif
 
-@Observable final class ExhibitionsStore: Store {
-  let exhibitionsClient: ExhibitionsClient
+@Observable
+final class ExhibitionsStore: Store {
+  enum Action {
+    case task
+    case refresh
+    case createExhibition
+    case editExhibition(Exhibition)
+  }
+
+  var exhibitions: [Exhibition] = []
+  var isLoading: Bool = false
+  var error: Error? = nil
+  var showCreateExhibition: Bool = false
+  var exhibitionToEdit: Exhibition? = nil
+
+  private let exhibitionsClient: ExhibitionsClient
+
   init(exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient()) {
     self.exhibitionsClient = exhibitionsClient
   }
 
-  enum Action {
-    case task
-  }
-
-  var exhibitions: [Exhibition] = []
-  var error: (any Error)?
-  var isErrorAlertPresented = false
-
   func send(_ action: Action) {
     switch action {
-    case .task:
-      Task {
-        do {
-          self.exhibitions = try await exhibitionsClient.fetch()
-        } catch {
-          print("Error fetching exhibitions: \(error)")
-          self.error = error
-          self.isErrorAlertPresented = true
-        }
+    case .task, .refresh:
+      fetchExhibitions()
+    case .createExhibition:
+      showCreateExhibition = true
+    case .editExhibition(let exhibition):
+      exhibitionToEdit = exhibition
+    }
+  }
+
+  private func fetchExhibitions() {
+    isLoading = true
+
+    Task {
+      do {
+        exhibitions = try await exhibitionsClient.fetch()
+      } catch {
+        self.error = error
       }
+
+      isLoading = false
     }
   }
 }
 
 struct ExhibitionsView: View {
-  @Bindable var store: ExhibitionsStore
+  @Bindable private var store: ExhibitionsStore
+  init(store: ExhibitionsStore) {
+    self.store = store
+  }
+
   var body: some View {
-    Text("Exhibitions")
+    NavigationStack {
+      Group {
+        if store.isLoading && store.exhibitions.isEmpty {
+          ProgressView()
+        } else if store.exhibitions.isEmpty {
+          #if SKIP
+            HStack(spacing: 8) {
+              Image(systemName: "photo.on.rectangle")
+              Text("No Exhibitions")
+            }
+          #else
+            ContentUnavailableView(
+              "No Exhibitions",
+              systemImage: "photo.on.rectangle",
+              description: Text("Create a new exhibition")
+            )
+          #endif
+        } else {
+          List(store.exhibitions) { exhibition in
+            ExhibitionRow(exhibition: exhibition)
+              .onTapGesture {
+                store.send(.editExhibition(exhibition))
+              }
+          }
+          .refreshable {
+            store.send(.refresh)
+          }
+        }
+      }
+      .navigationTitle("Exhibitions")
+      .toolbar {
+        ToolbarItem(placement: .primaryAction) {
+          Button {
+            store.send(.createExhibition)
+          } label: {
+            Image(systemName: "plus")
+          }
+        }
+      }
       .task {
         store.send(.task)
       }
-      .alert(
-        "Error",
-        isPresented: $store.isErrorAlertPresented,
-        actions: {
-          Button("OK") {}
-        },
-        message: {
-          Text(store.error?.localizedDescription ?? "Unknown error")
-        }
-      )
+      .sheet(isPresented: $store.showCreateExhibition) {
+        ExhibitionEditView(store: ExhibitionEditStore(mode: .create))
+      }
+      .sheet(item: $store.exhibitionToEdit) { exhibition in
+        ExhibitionEditView(store: ExhibitionEditStore(mode: .edit(exhibition)))
+      }
+    }
   }
+}
+
+struct ExhibitionRow: View {
+  let exhibition: Exhibition
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text(exhibition.name)
+        .font(.headline)
+
+      if let description = exhibition.description {
+        Text(description)
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+          .lineLimit(2)
+      }
+
+      HStack {
+        Label {
+          Text(formatDateRange(from: exhibition.from, to: exhibition.to))
+        } icon: {
+          Image(systemName: "calendar")
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+      }
+    }
+    .padding(.vertical, 4)
+  }
+
+  private func formatDateRange(from: Date, to: Date) -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateStyle = .medium
+    dateFormatter.timeStyle = .none
+
+    return "\(dateFormatter.string(from: from)) - \(dateFormatter.string(from: to))"
+  }
+}
+
+#Preview {
+  ExhibitionsView(store: ExhibitionsStore())
 }

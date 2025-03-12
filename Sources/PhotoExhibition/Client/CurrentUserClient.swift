@@ -4,22 +4,19 @@
   import FirebaseAuth
 #endif
 
-protocol UserProtocol: AnyObject {
-  var uid: String { get }
+struct User: Hashable {
+  let uid: String
 }
 
-#if !SKIP
-  extension User: UserProtocol {}
-#endif
-
 protocol CurrentUserClient {
-  func currentUser() -> (any UserProtocol)?
+  func currentUser() -> User?
   func logout() throws
 }
 
 final class DefaultCurrentUserClient: CurrentUserClient {
-  func currentUser() -> (any UserProtocol)? {
-    Auth.auth().currentUser
+  func currentUser() -> User? {
+    guard let uid = Auth.auth().currentUser?.uid else { return nil }
+    return User(uid: uid)
   }
 
   func logout() throws {
