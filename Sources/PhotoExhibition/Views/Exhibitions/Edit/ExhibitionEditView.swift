@@ -11,7 +11,8 @@ import SwiftUI
   import FirebaseFirestore
 #endif
 
-private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionsStore")
+private let logger = Logger(
+  subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionsStore")
 
 // 展示会の作成・編集用のStore
 @Observable
@@ -179,10 +180,12 @@ struct ExhibitionEditView: View {
               content: { image in
                 image
                   .resizable()
+                  .aspectRatio(1, contentMode: .fit)
               },
               placeholder: {
                 Text("No Cover Image")
-              })
+              }
+            )
 
             Button {
               store.send(.changeCoverImageButtonTapped)
@@ -210,17 +213,21 @@ struct ExhibitionEditView: View {
         }
 
         Section("Period") {
-          DatePicker("Start Date", selection: $store.from, displayedComponents: [.date])
-            .onChange(of: store.from) { _, newValue in
-              store.send(.updateFrom(newValue))
-            }
-            .datePickerStyle(.compact)
+          DatePicker(
+            "Start Date", selection: $store.from, displayedComponents: [.date]
+          )
+          .onChange(of: store.from) { _, newValue in
+            store.send(.updateFrom(newValue))
+          }
+          .datePickerStyle(.compact)
 
-          DatePicker("End Date", selection: $store.to, displayedComponents: [.date])
-            .onChange(of: store.to) { _, newValue in
-              store.send(.updateTo(newValue))
-            }
-            .datePickerStyle(.compact)
+          DatePicker(
+            "End Date", selection: $store.to, displayedComponents: [.date]
+          )
+          .onChange(of: store.to) { _, newValue in
+            store.send(.updateTo(newValue))
+          }
+          .datePickerStyle(.compact)
         }
       }
       .navigationTitle(store.name.isEmpty ? "New Exhibition" : store.name)
