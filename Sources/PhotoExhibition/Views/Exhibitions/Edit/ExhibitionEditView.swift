@@ -1,4 +1,5 @@
 import OSLog
+import SkipKit
 import SwiftUI
 
 #if canImport(Observation)
@@ -23,21 +24,27 @@ final class ExhibitionEditStore: Store {
   enum Action {
     case save
     case cancel
+    case changeCoverImageButtonTapped
     case updateName(String)
     case updateDescription(String)
     case updateFrom(Date)
     case updateTo(Date)
+    case updateCoverImage(URL?)
   }
 
   var name: String = ""
   var description: String = ""
   var from: Date = Date()
   var to: Date = Date().addingTimeInterval(60 * 60 * 24 * 7)  // 1週間後
+  var coverImageURL: URL? = nil
 
   var isLoading: Bool = false
   var error: ExhibitionEditError? = nil
   var showError: Bool = false
   var shouldDismiss: Bool = false
+
+  var imagePickerPresented: Bool = false
+  var pickedImageURL: URL?
 
   private let mode: Mode
   private let currentUserClient: CurrentUserClient
@@ -100,6 +107,10 @@ final class ExhibitionEditStore: Store {
       }
     case .updateTo(let newTo):
       to = newTo
+    case .updateCoverImage(let url):
+      coverImageURL = url
+    case .changeCoverImageButtonTapped:
+      imagePickerPresented = true
     }
   }
 
@@ -112,6 +123,10 @@ final class ExhibitionEditStore: Store {
       "organizer": user.uid,
       "updatedAt": FieldValue.serverTimestamp(),
     ]
+
+    if let coverImageURL = coverImageURL {
+      data["coverImageURL"] = coverImageURL.absoluteString
+    }
 
     switch mode {
     case .create:
@@ -158,6 +173,29 @@ struct ExhibitionEditView: View {
     NavigationStack {
       Form {
         Section("Basic Information") {
+          VStack(alignment: .leading) {
+            AsyncImage(
+              url: store.pickedImageURL,
+              content: { image in
+                image
+                  .resizable()
+              },
+              placeholder: {
+                Text("No Cover Image")
+              })
+
+            Button {
+              store.send(.changeCoverImageButtonTapped)
+            } label: {
+              Text("Select Cover Image")
+            }
+          }
+          .withMediaPicker(
+            type: MediaPickerType.library,
+            isPresented: $store.imagePickerPresented,
+            selectedImageURL: $store.pickedImageURL
+          )
+
           TextField("Exhibition Name", text: $store.name)
             .onChange(of: store.name) { _, newValue in
               store.send(.updateName(newValue))
