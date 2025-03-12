@@ -13,6 +13,7 @@ final class ExhibitionDetailStore: Store {
     case deleteExhibition
     case confirmDelete
     case cancelDelete
+    case loadCoverImage
   }
 
   let exhibition: Exhibition
@@ -22,18 +23,23 @@ final class ExhibitionDetailStore: Store {
   var error: Error? = nil
   var shouldDismiss: Bool = false
   var isOrganizer: Bool = false
+  var coverImageURL: URL? = nil
+  var isLoadingCoverImage: Bool = false
 
   private let exhibitionsClient: ExhibitionsClient
   private let currentUserClient: CurrentUserClient
+  private let storageClient: StorageClient
 
   init(
     exhibition: Exhibition,
     exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
-    currentUserClient: CurrentUserClient = DefaultCurrentUserClient()
+    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
+    storageClient: StorageClient = DefaultStorageClient()
   ) {
     self.exhibition = exhibition
     self.exhibitionsClient = exhibitionsClient
     self.currentUserClient = currentUserClient
+    self.storageClient = storageClient
 
     // Check if current user is the organizer
     if let currentUser = currentUserClient.currentUser() {
@@ -57,6 +63,8 @@ final class ExhibitionDetailStore: Store {
       deleteExhibition()
     case .cancelDelete:
       showDeleteConfirmation = false
+    case .loadCoverImage:
+      loadCoverImage()
     }
   }
 
@@ -65,6 +73,23 @@ final class ExhibitionDetailStore: Store {
       isOrganizer = currentUser.uid == exhibition.organizer.id
     } else {
       isOrganizer = false
+    }
+  }
+
+  private func loadCoverImage() {
+    guard let coverImagePath = exhibition.coverImagePath else { return }
+
+    isLoadingCoverImage = true
+
+    Task {
+      do {
+        let url = try await storageClient.url(coverImagePath)
+        self.coverImageURL = url
+      } catch {
+        print("Failed to load cover image: \(error.localizedDescription)")
+      }
+
+      isLoadingCoverImage = false
     }
   }
 
@@ -98,6 +123,22 @@ struct ExhibitionDetailView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
+        // Cover Image
+        if let coverImageURL = store.coverImageURL {
+          AsyncImage(url: coverImageURL) { phase in
+            switch phase {
+            case .success(let image):
+              image
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: .infinity)
+                .clipped()
+            default:
+              ProgressView()
+            }
+          }
+        }
+
         // Exhibition details
         VStack(alignment: .leading, spacing: 8) {
           Text(store.exhibition.name)
@@ -178,6 +219,7 @@ struct ExhibitionDetailView: View {
     }
     .task {
       store.send(.checkPermissions)
+      store.send(.loadCoverImage)
     }
   }
 

@@ -37,7 +37,6 @@ final class ExhibitionEditStore: Store {
   var description: String = ""
   var from: Date = Date()
   var to: Date = Date().addingTimeInterval(60 * 60 * 24 * 7)  // 1週間後
-  var coverImageURL: URL? = nil
 
   var isLoading: Bool = false
   var error: ExhibitionEditError? = nil
@@ -46,25 +45,41 @@ final class ExhibitionEditStore: Store {
 
   var imagePickerPresented: Bool = false
   var pickedImageURL: URL?
+  var coverImageURL: URL?
 
   private let mode: Mode
   private let currentUserClient: CurrentUserClient
   private let exhibitionsClient: ExhibitionsClient
+  private let storageClient: StorageClient
 
   init(
     mode: Mode,
     currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-    exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient()
+    exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
+    storageClient: StorageClient = DefaultStorageClient()
   ) {
     self.mode = mode
     self.currentUserClient = currentUserClient
     self.exhibitionsClient = exhibitionsClient
+    self.storageClient = storageClient
 
     if case .edit(let exhibition) = mode {
       self.name = exhibition.name
       self.description = exhibition.description ?? ""
       self.from = exhibition.from
       self.to = exhibition.to
+
+      // カバー画像のパスがある場合は、StorageClientからURLを取得する
+      if let coverImagePath = exhibition.coverImagePath {
+        Task {
+          do {
+            let url = try await storageClient.url(coverImagePath)
+            self.coverImageURL = url
+          } catch {
+            logger.error("Failed to get download URL: \(error.localizedDescription)")
+          }
+        }
+      }
     }
   }
 
@@ -116,6 +131,24 @@ final class ExhibitionEditStore: Store {
   }
 
   private func saveExhibition(user: User) async throws {
+    var coverImagePath: String?
+
+    // カバー画像をStorageにアップロードする
+    if let pickedImageURL = pickedImageURL {
+      let fileName =
+        UUID().uuidString + "."
+        + (pickedImageURL.pathExtension.isEmpty ? "jpt" : pickedImageURL.pathExtension)
+      let storagePath = "members/\(user.uid)/\(fileName)"
+
+      // 画像をアップロードしてURLを取得
+      coverImageURL = try await storageClient.upload(
+        from: pickedImageURL,
+        to: storagePath
+      )
+
+      coverImagePath = storagePath
+    }
+
     var data: [String: any Sendable] = [
       "name": name,
       "description": description,
@@ -125,8 +158,8 @@ final class ExhibitionEditStore: Store {
       "updatedAt": FieldValue.serverTimestamp(),
     ]
 
-    if let coverImageURL = coverImageURL {
-      data["coverImageURL"] = coverImageURL.absoluteString
+    if let coverImagePath = coverImagePath {
+      data["coverImagePath"] = coverImagePath
     }
 
     switch mode {
@@ -176,14 +209,16 @@ struct ExhibitionEditView: View {
         Section("Basic Information") {
           VStack(alignment: .leading) {
             AsyncImage(
-              url: store.pickedImageURL,
+              url: store.coverImageURL ?? store.pickedImageURL,
               content: { image in
                 image
                   .resizable()
-                  .aspectRatio(1, contentMode: .fit)
+                  .aspectRatio(contentMode: .fit)
+                  .frame(maxWidth: .infinity)
               },
               placeholder: {
-                Text("No Cover Image")
+                ProgressView()
+                  .frame(maxWidth: .infinity)
               }
             )
 

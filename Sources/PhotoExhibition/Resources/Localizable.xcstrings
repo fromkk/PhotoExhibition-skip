@@ -172,6 +172,7 @@
       }
     },
     "No Cover Image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {

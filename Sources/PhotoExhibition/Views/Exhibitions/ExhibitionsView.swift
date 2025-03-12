@@ -120,30 +120,76 @@ struct ExhibitionsView: View {
 
 struct ExhibitionRow: View {
   let exhibition: Exhibition
+  @State private var coverImageURL: URL? = nil
+  @State private var isLoadingImage: Bool = false
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      Text(exhibition.name)
-        .font(.headline)
-
-      if let description = exhibition.description {
-        Text(description)
-          .font(.subheadline)
-          .foregroundStyle(.secondary)
-          .lineLimit(2)
-      }
-
-      HStack {
-        Label {
-          Text(formatDateRange(from: exhibition.from, to: exhibition.to))
-        } icon: {
-          Image(systemName: "calendar")
+    HStack(spacing: 12) {
+      // Cover Image
+      Group {
+        if let coverImageURL = coverImageURL {
+          AsyncImage(url: coverImageURL) { phase in
+            switch phase {
+            case .empty:
+              ProgressView()
+            case .success(let image):
+              image
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 60, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            default:
+              ProgressView()
+            }
+          }
+        } else {
+          ProgressView()
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
+      }
+      .frame(width: 60, height: 60)
+
+      // Exhibition details
+      VStack(alignment: .leading, spacing: 8) {
+        Text(exhibition.name)
+          .font(.headline)
+
+        if let description = exhibition.description {
+          Text(description)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .lineLimit(2)
+        }
+
+        HStack {
+          Label {
+            Text(formatDateRange(from: exhibition.from, to: exhibition.to))
+          } icon: {
+            Image(systemName: "calendar")
+          }
+          .font(.caption)
+          .foregroundStyle(.secondary)
+        }
       }
     }
     .padding(.vertical, 4)
+    .task {
+      await loadCoverImage()
+    }
+  }
+
+  private func loadCoverImage() async {
+    guard let coverImagePath = exhibition.coverImagePath else { return }
+
+    isLoadingImage = true
+
+    do {
+      let url = try await DefaultStorageClient.shared.url(coverImagePath)
+      self.coverImageURL = url
+    } catch {
+      print("Failed to load cover image: \(error.localizedDescription)")
+    }
+
+    isLoadingImage = false
   }
 
   private func formatDateRange(from: Date, to: Date) -> String {
