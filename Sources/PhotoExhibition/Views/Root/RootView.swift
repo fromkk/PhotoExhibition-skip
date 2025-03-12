@@ -107,7 +107,7 @@ struct RootView: View {
         TopView(store: store)
       }
     }
-    .background(Color("background"))
+    .background(Color("background", bundle: .module))
     .task {
       store.send(.task)
     }
