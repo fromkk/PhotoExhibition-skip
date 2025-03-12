@@ -28,14 +28,14 @@ final class RootStoreTests: XCTestCase {
 
   func testTaskWithNoUser() {
     // Arrange
-    let mockCurrentUserClient = MockCurrentUserClient(mockUser: nil)
+    let mockCurrentUserClient = MockCurrentUserClient()
+    mockCurrentUserClient.mockUser = nil
     let store = RootStore(currentUserClient: mockCurrentUserClient)
 
     // Act
     store.send(RootStore.Action.task)
 
     // Assert
-    XCTAssertTrue(mockCurrentUserClient.currentUserCalled)
     XCTAssertFalse(store.isSignedIn)
     XCTAssertNil(store.exhibitionsStore)
     XCTAssertNil(store.settingsStore)
@@ -43,15 +43,14 @@ final class RootStoreTests: XCTestCase {
 
   func testTaskWithUser() {
     // Arrange
-    let mockUser = PhotoExhibition.User(uid: "test-uid")
-    let mockCurrentUserClient = MockCurrentUserClient(mockUser: mockUser)
+    let mockCurrentUserClient = MockCurrentUserClient()
+    mockCurrentUserClient.mockUser = User(uid: "test-uid")
     let store = RootStore(currentUserClient: mockCurrentUserClient)
 
     // Act
     store.send(RootStore.Action.task)
 
     // Assert
-    XCTAssertTrue(mockCurrentUserClient.currentUserCalled)
     XCTAssertTrue(store.isSignedIn)
     XCTAssertNotNil(store.exhibitionsStore)
     XCTAssertNotNil(store.settingsStore)

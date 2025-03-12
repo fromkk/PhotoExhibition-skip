@@ -94,14 +94,17 @@ final class AuthStoreTests: XCTestCase {
     XCTAssertNil(store.error)
     XCTAssertFalse(store.isErrorAlertPresented)
     XCTAssertTrue(delegate.didSignInSuccessfullyCalled)
-    XCTAssertTrue(mockSignInClient.signInCalled)
-    XCTAssertEqual(mockSignInClient.email, "test@example.com")
-    XCTAssertEqual(mockSignInClient.password, "password123")
+    XCTAssertTrue(mockSignInClient.signInWasCalled)
+    XCTAssertEqual(mockSignInClient.signInEmail, "test@example.com")
+    XCTAssertEqual(mockSignInClient.signInPassword, "password123")
   }
 
   func testSignInFailure() async throws {
     // Arrange
-    let mockSignInClient = MockSignInClient(shouldFail: true)
+    let mockSignInClient = MockSignInClient()
+    mockSignInClient.shouldSucceed = false
+    mockSignInClient.errorToThrow = NSError(domain: "SignInError", code: 1, userInfo: nil)
+
     let store = AuthStore(
       authMode: AuthMode.signIn,
       signIngClient: mockSignInClient,
@@ -130,7 +133,7 @@ final class AuthStoreTests: XCTestCase {
     XCTAssertNotNil(store.error)
     XCTAssertTrue(store.isErrorAlertPresented)
     XCTAssertFalse(delegate.didSignInSuccessfullyCalled)
-    XCTAssertTrue(mockSignInClient.signInCalled)
+    XCTAssertTrue(mockSignInClient.signInWasCalled)
   }
 
   func testSignUpSuccess() async throws {
@@ -164,14 +167,17 @@ final class AuthStoreTests: XCTestCase {
     XCTAssertNil(store.error)
     XCTAssertFalse(store.isErrorAlertPresented)
     XCTAssertTrue(delegate.didSignInSuccessfullyCalled)
-    XCTAssertTrue(mockSignUpClient.signUpCalled)
-    XCTAssertEqual(mockSignUpClient.email, "test@example.com")
-    XCTAssertEqual(mockSignUpClient.password, "password123")
+    XCTAssertTrue(mockSignUpClient.signUpWasCalled)
+    XCTAssertEqual(mockSignUpClient.signUpEmail, "test@example.com")
+    XCTAssertEqual(mockSignUpClient.signUpPassword, "password123")
   }
 
   func testSignUpFailure() async throws {
     // Arrange
-    let mockSignUpClient = MockSignUpClient(shouldFail: true)
+    let mockSignUpClient = MockSignUpClient()
+    mockSignUpClient.shouldSucceed = false
+    mockSignUpClient.errorToThrow = NSError(domain: "SignUpError", code: 1, userInfo: nil)
+
     let store = AuthStore(
       authMode: AuthMode.signUp,
       signIngClient: MockSignInClient(),
@@ -200,7 +206,7 @@ final class AuthStoreTests: XCTestCase {
     XCTAssertNotNil(store.error)
     XCTAssertTrue(store.isErrorAlertPresented)
     XCTAssertFalse(delegate.didSignInSuccessfullyCalled)
-    XCTAssertTrue(mockSignUpClient.signUpCalled)
+    XCTAssertTrue(mockSignUpClient.signUpWasCalled)
   }
 
   func testDismissError() {
@@ -218,67 +224,8 @@ final class AuthStoreTests: XCTestCase {
 }
 
 // Mock classes for testing
-final class MockSignInClient: SignInClient, @unchecked Sendable {
-  var signInCalled = false
-  var email = ""
-  var password = ""
-  var shouldFail: Bool
-
-  init(shouldFail: Bool = false) {
-    self.shouldFail = shouldFail
-  }
-
-  func signIn(email: String, password: String) async throws -> Member {
-    signInCalled = true
-    self.email = email
-    self.password = password
-
-    if shouldFail {
-      throw NSError(domain: "SignInError", code: 1, userInfo: nil)
-    }
-
-    return Member(
-      documentID: "test-id",
-      data: [
-        "name": "Test User",
-        "createdAt": Timestamp(date: Date()),
-        "updatedAt": Timestamp(date: Date()),
-      ]
-    )!
-  }
-}
-
-final class MockSignUpClient: SignUpClient, @unchecked Sendable {
-  var signUpCalled = false
-  var email = ""
-  var password = ""
-  var shouldFail: Bool
-
-  init(shouldFail: Bool = false) {
-    self.shouldFail = shouldFail
-  }
-
-  func signUp(email: String, password: String) async throws -> Member {
-    signUpCalled = true
-    self.email = email
-    self.password = password
-
-    if shouldFail {
-      throw NSError(domain: "SignUpError", code: 1, userInfo: nil)
-    }
-
-    return Member(
-      documentID: "test-id",
-      data: [
-        "name": "Test User",
-        "createdAt": Timestamp(date: Date()),
-        "updatedAt": Timestamp(date: Date()),
-      ]
-    )!
-  }
-}
-
-final class MockAuthStoreDelegate: AuthStoreDelegate, @unchecked Sendable {
+@MainActor
+final class MockAuthStoreDelegate: AuthStoreDelegate {
   var didSignInSuccessfullyCalled = false
 
   func didSignInSuccessfully() {

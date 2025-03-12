@@ -34,7 +34,7 @@ final class SettingsStoreTests: XCTestCase {
     store.send(SettingsStore.Action.logoutButtonTapped)
 
     // Assert
-    XCTAssertTrue(mockCurrentUserClient.logoutCalled)
+    XCTAssertTrue(mockCurrentUserClient.logoutWasCalled)
     XCTAssertTrue(delegate.logoutCompletedCalled)
     XCTAssertFalse(store.isErrorAlertPresented)
     XCTAssertNil(store.error)
@@ -42,7 +42,10 @@ final class SettingsStoreTests: XCTestCase {
 
   func testLogoutFailure() {
     // Arrange
-    let mockCurrentUserClient = MockCurrentUserClient(shouldFailLogout: true)
+    let mockCurrentUserClient = MockCurrentUserClient()
+    mockCurrentUserClient.shouldSucceed = false
+    mockCurrentUserClient.errorToThrow = NSError(domain: "LogoutError", code: 1, userInfo: nil)
+
     let store = SettingsStore(currentUserClient: mockCurrentUserClient)
     let delegate = MockSettingsStoreDelegate()
     store.delegate = delegate
@@ -51,7 +54,7 @@ final class SettingsStoreTests: XCTestCase {
     store.send(SettingsStore.Action.logoutButtonTapped)
 
     // Assert
-    XCTAssertTrue(mockCurrentUserClient.logoutCalled)
+    XCTAssertTrue(mockCurrentUserClient.logoutWasCalled)
     XCTAssertFalse(delegate.logoutCompletedCalled)
     XCTAssertTrue(store.isErrorAlertPresented)
     XCTAssertNotNil(store.error)
@@ -82,31 +85,8 @@ final class SettingsStoreTests: XCTestCase {
 }
 
 // Mock classes for testing
-final class MockCurrentUserClient: CurrentUserClient {
-  var currentUserCalled = false
-  var logoutCalled = false
-  var shouldFailLogout: Bool
-  var mockUser: PhotoExhibition.User?
-
-  init(shouldFailLogout: Bool = false, mockUser: PhotoExhibition.User? = nil) {
-    self.shouldFailLogout = shouldFailLogout
-    self.mockUser = mockUser
-  }
-
-  func currentUser() -> PhotoExhibition.User? {
-    currentUserCalled = true
-    return mockUser
-  }
-
-  func logout() throws {
-    logoutCalled = true
-    if shouldFailLogout {
-      throw NSError(domain: "LogoutError", code: 1, userInfo: nil)
-    }
-  }
-}
-
-final class MockSettingsStoreDelegate: SettingsStoreDelegate, @unchecked Sendable {
+@MainActor
+final class MockSettingsStoreDelegate: SettingsStoreDelegate {
   var logoutCompletedCalled = false
 
   func logoutCompleted() {

@@ -11,6 +11,7 @@ final class ExhibitionsStore: Store {
     case refresh
     case createExhibition
     case editExhibition(Exhibition)
+    case showExhibitionDetail(Exhibition)
   }
 
   var exhibitions: [Exhibition] = []
@@ -18,6 +19,7 @@ final class ExhibitionsStore: Store {
   var error: Error? = nil
   var showCreateExhibition: Bool = false
   var exhibitionToEdit: Exhibition? = nil
+  var selectedExhibition: Exhibition? = nil
 
   private let exhibitionsClient: ExhibitionsClient
 
@@ -33,6 +35,8 @@ final class ExhibitionsStore: Store {
       showCreateExhibition = true
     case .editExhibition(let exhibition):
       exhibitionToEdit = exhibition
+    case .showExhibitionDetail(let exhibition):
+      selectedExhibition = exhibition
     }
   }
 
@@ -76,11 +80,12 @@ struct ExhibitionsView: View {
             )
           #endif
         } else {
-          List(store.exhibitions) { exhibition in
-            ExhibitionRow(exhibition: exhibition)
-              .onTapGesture {
-                store.send(.editExhibition(exhibition))
+          List {
+            ForEach(store.exhibitions) { exhibition in
+              NavigationLink(value: exhibition) {
+                ExhibitionRow(exhibition: exhibition)
               }
+            }
           }
           .refreshable {
             store.send(.refresh)
@@ -88,6 +93,9 @@ struct ExhibitionsView: View {
         }
       }
       .navigationTitle("Exhibitions")
+      .navigationDestination(for: Exhibition.self) { exhibition in
+        ExhibitionDetailView(exhibition: exhibition)
+      }
       .toolbar {
         ToolbarItem(placement: .primaryAction) {
           Button {

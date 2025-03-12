@@ -7,6 +7,20 @@ import Foundation
 #endif
 // 写真展情報
 struct Exhibition: Hashable, Sendable, Identifiable, Codable {
+  init(
+    id: String, name: String, description: String? = nil, from: Date, to: Date,
+    organizer: Member, createdAt: Date, updatedAt: Date
+  ) {
+    self.id = id
+    self.name = name
+    self.description = description
+    self.from = from
+    self.to = to
+    self.organizer = organizer
+    self.createdAt = createdAt
+    self.updatedAt = updatedAt
+  }
+
   let id: String
   let name: String
   let description: String?
