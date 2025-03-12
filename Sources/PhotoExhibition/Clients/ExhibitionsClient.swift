@@ -22,20 +22,32 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
       guard let organizerUID = data["organizer"] as? String else {
         continue
       }
-      let organizerReference = firestore.collection("members").document(
-        organizerUID)
-      let organizerDocument = try await organizerReference.getDocument()
 
-      guard
-        let organizerData = organizerDocument.data(),
-        let organizer = Member(
-          documentID: organizerDocument.documentID, data: organizerData),
+      // キャッシュからメンバーを取得を試みる
+      if let cachedMember = await DefaultMemberCacheClient.shared.getMember(withID: organizerUID),
         let exhibition = Exhibition(
-          documentID: document.documentID, data: data, organizer: organizer)
-      else {
-        continue
+          documentID: document.documentID, data: data, organizer: cachedMember)
+      {
+        result.append(exhibition)
+      } else {
+        // キャッシュにない場合はFirestoreから取得
+        let organizerReference = firestore.collection("members").document(organizerUID)
+        let organizerDocument = try await organizerReference.getDocument()
+
+        guard
+          let organizerData = organizerDocument.data(),
+          let organizer = Member(
+            documentID: organizerDocument.documentID, data: organizerData),
+          let exhibition = Exhibition(
+            documentID: document.documentID, data: data, organizer: organizer)
+        else {
+          continue
+        }
+
+        // 取得したメンバーをキャッシュに保存
+        await DefaultMemberCacheClient.shared.setMember(organizer)
+        result.append(exhibition)
       }
-      result.append(exhibition)
     }
 
     return result

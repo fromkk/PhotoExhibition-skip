@@ -1,12 +1,6 @@
 import OSLog
 import SwiftUI
 
-#if SKIP
-  import SkipFirebaseFirestore
-#else
-  import FirebaseFirestore
-#endif
-
 #if canImport(Observation)
   import Observation
 #endif
@@ -17,13 +11,6 @@ import SwiftUI
 #endif
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionsStore")
-
-// Extension to get organizer reference from User
-extension User {
-  func getOrganizerReference() -> DocumentReference {
-    return Firestore.firestore().collection("members").document(uid)
-  }
-}
 
 // 展示会の作成・編集用のStore
 @Observable
@@ -117,15 +104,12 @@ final class ExhibitionEditStore: Store {
   }
 
   private func saveExhibition(user: User) async throws {
-    // Get organizer reference
-    let organizerRef = user.getOrganizerReference()
-
     var data: [String: any Sendable] = [
       "name": name,
       "description": description,
       "from": Timestamp(date: from),
       "to": Timestamp(date: to),
-      "organizer": organizerRef,
+      "organizer": user.uid,
       "updatedAt": FieldValue.serverTimestamp(),
     ]
 

@@ -8,6 +8,14 @@ import Foundation
 
 // 主催者情報
 struct Member: Hashable, Sendable, Identifiable, Codable {
+  init(id: String, name: String, icon: String? = nil, createdAt: Date, updatedAt: Date) {
+    self.id = id
+    self.name = name
+    self.icon = icon
+    self.createdAt = createdAt
+    self.updatedAt = updatedAt
+  }
+
   let id: String
   let name: String
   let icon: String?
