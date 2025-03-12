@@ -9,7 +9,7 @@ import Foundation
 struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   init(
     id: String, name: String, description: String? = nil, from: Date, to: Date,
-    organizer: Member, createdAt: Date, updatedAt: Date
+    organizer: Member, createdAt: Date, updatedAt: Date, coverImagePath: String? = nil
   ) {
     self.id = id
     self.name = name
@@ -19,6 +19,7 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     self.organizer = organizer
     self.createdAt = createdAt
     self.updatedAt = updatedAt
+    self.coverImagePath = coverImagePath
   }
 
   let id: String
@@ -29,6 +30,7 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   let organizer: Member
   let createdAt: Date
   let updatedAt: Date
+  let coverImagePath: String?
 
   init?(documentID: String, data: [String: Any], organizer: Member) {
     guard let name = data["name"] as? String,
@@ -48,5 +50,6 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     self.organizer = organizer
     self.createdAt = createdAtTimestamp.dateValue()
     self.updatedAt = updatedAtTimestamp.dateValue()
+    self.coverImagePath = data["coverImagePath"] as? String
   }
 }
