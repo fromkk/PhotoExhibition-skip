@@ -228,7 +228,7 @@ struct ExhibitionDetailView: View {
   private func formatDateRange(from: Date, to: Date) -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.dateStyle = .long
-    dateFormatter.timeStyle = .none
+    dateFormatter.timeStyle = .short
 
     return "\(dateFormatter.string(from: from)) - \(dateFormatter.string(from: to))"
   }

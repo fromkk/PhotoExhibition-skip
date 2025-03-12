@@ -202,19 +202,21 @@ struct ExhibitionEditView: View {
       Form {
         Section("Basic Information") {
           VStack(alignment: .leading) {
-            AsyncImage(
-              url: store.coverImageURL ?? store.pickedImageURL,
-              content: { image in
-                image
-                  .resizable()
-                  .aspectRatio(contentMode: .fit)
-                  .frame(maxWidth: .infinity)
-              },
-              placeholder: {
-                ProgressView()
-                  .frame(maxWidth: .infinity)
-              }
-            )
+            if store.coverImageURL != nil || store.pickedImageURL != nil {
+              AsyncImage(
+                url: store.coverImageURL ?? store.pickedImageURL,
+                content: { image in
+                  image
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                },
+                placeholder: {
+                  ProgressView()
+                    .frame(maxWidth: .infinity)
+                }
+              )
+            }
 
             Button {
               store.send(.changeCoverImageButtonTapped)
@@ -237,7 +239,7 @@ struct ExhibitionEditView: View {
 
         Section("Period") {
           DatePicker(
-            "Start Date", selection: $store.from, displayedComponents: [.date]
+            "Start Date", selection: $store.from
           )
           .onChange(of: store.from) { _, newValue in
             store.send(.updateFrom(newValue))
@@ -245,7 +247,7 @@ struct ExhibitionEditView: View {
           .datePickerStyle(.compact)
 
           DatePicker(
-            "End Date", selection: $store.to, displayedComponents: [.date]
+            "End Date", selection: $store.to
           )
           .onChange(of: store.to) { _, newValue in
             store.send(.updateTo(newValue))

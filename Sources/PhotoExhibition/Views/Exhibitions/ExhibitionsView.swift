@@ -142,8 +142,6 @@ struct ExhibitionRow: View {
               ProgressView()
             }
           }
-        } else {
-          ProgressView()
         }
       }
       .frame(width: 60, height: 60)
@@ -195,7 +193,7 @@ struct ExhibitionRow: View {
   private func formatDateRange(from: Date, to: Date) -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.dateStyle = .medium
-    dateFormatter.timeStyle = .none
+    dateFormatter.timeStyle = .short
 
     return "\(dateFormatter.string(from: from)) - \(dateFormatter.string(from: to))"
   }
