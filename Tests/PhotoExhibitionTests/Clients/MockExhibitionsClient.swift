@@ -8,6 +8,7 @@ final class MockExhibitionsClient: ExhibitionsClient {
 
   // fetch()のモック結果
   var mockExhibitions: [Exhibition] = []
+  var fetchExpectation = XCTestExpectation(description: "Fetch method called")
 
   // delete()の呼び出し追跡
   var deleteWasCalled: Bool = false
@@ -33,6 +34,8 @@ final class MockExhibitionsClient: ExhibitionsClient {
   // MARK: - ExhibitionsClientプロトコルの実装
 
   func fetch() async throws -> [Exhibition] {
+    fetchExpectation.fulfill()
+
     if !shouldSucceed, let error = errorToThrow {
       throw error
     }
@@ -85,6 +88,7 @@ final class MockExhibitionsClient: ExhibitionsClient {
     updatedData = nil
 
     // 新しいExpectationを作成
+    fetchExpectation = XCTestExpectation(description: "Fetch method called")
     deleteExpectation = XCTestExpectation(description: "Delete method called")
     createExpectation = XCTestExpectation(description: "Create method called")
     updateExpectation = XCTestExpectation(description: "Update method called")

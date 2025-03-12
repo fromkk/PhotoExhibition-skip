@@ -176,7 +176,9 @@ struct ExhibitionDetailView: View {
       }
       .padding()
     }
-    .navigationBarTitleDisplayMode(.inline)
+    #if os(iOS)
+      .navigationBarTitleDisplayMode(.inline)
+    #endif
     .toolbar {
       ToolbarItem(placement: .primaryAction) {
         if store.isOrganizer {
@@ -249,6 +251,7 @@ struct ExhibitionDetailView: View {
           createdAt: Date(),
           updatedAt: Date()
         ),
+        coverImagePath: nil,
         createdAt: Date(),
         updatedAt: Date()
       )

@@ -23,11 +23,9 @@ final class ExhibitionEditStore: Store {
   }
 
   enum Action {
-    case save
-    case cancel
+    case saveButtonTapped
+    case cancelButtonTapped
     case changeCoverImageButtonTapped
-    case updateName(String)
-    case updateDescription(String)
     case updateFrom(Date)
     case updateTo(Date)
     case updateCoverImage(URL?)
@@ -86,22 +84,22 @@ final class ExhibitionEditStore: Store {
   func send(_ action: Action) {
     logger.info("action \(String(describing: action))")
     switch action {
-    case .save:
+    case .saveButtonTapped:
+      guard !name.isEmpty else {
+        error = .emptyName
+        showError = true
+        return
+      }
+
+      guard let user = currentUserClient.currentUser() else {
+        error = .userNotLoggedIn
+        showError = true
+        return
+      }
+
+      isLoading = true
       Task {
         do {
-          guard !name.isEmpty else {
-            error = .emptyName
-            showError = true
-            return
-          }
-
-          guard let user = currentUserClient.currentUser() else {
-            error = .userNotLoggedIn
-            showError = true
-            return
-          }
-
-          isLoading = true
           try await saveExhibition(user: user)
           shouldDismiss = true
         } catch {
@@ -110,12 +108,8 @@ final class ExhibitionEditStore: Store {
         }
         isLoading = false
       }
-    case .cancel:
+    case .cancelButtonTapped:
       shouldDismiss = true
-    case .updateName(let newName):
-      name = newName
-    case .updateDescription(let newDescription):
-      description = newDescription
     case .updateFrom(let newFrom):
       from = newFrom
       if to < newFrom {
@@ -172,7 +166,7 @@ final class ExhibitionEditStore: Store {
   }
 }
 
-enum ExhibitionEditError: Error, LocalizedError {
+enum ExhibitionEditError: Error, LocalizedError, Hashable {
   case emptyName
   case userNotLoggedIn
   case saveFailed(String)
@@ -235,14 +229,8 @@ struct ExhibitionEditView: View {
           )
 
           TextField("Exhibition Name", text: $store.name)
-            .onChange(of: store.name) { _, newValue in
-              store.send(.updateName(newValue))
-            }
 
           TextField("Description", text: $store.description)
-            .onChange(of: store.description) { _, newValue in
-              store.send(.updateDescription(newValue))
-            }
             .lineLimit(5)
             .multilineTextAlignment(.leading)
         }
@@ -269,14 +257,14 @@ struct ExhibitionEditView: View {
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel") {
-            store.send(.cancel)
+            store.send(.cancelButtonTapped)
           }
           .disabled(store.isLoading)
         }
 
         ToolbarItem(placement: .confirmationAction) {
           Button("Save") {
-            store.send(.save)
+            store.send(.saveButtonTapped)
           }
           .disabled(store.isLoading)
         }

@@ -109,12 +109,16 @@ struct AuthView: View {
     VStack(spacing: 32) {
       VStack(spacing: 16) {
         TextField("Email", text: $store.email)
-          .keyboardType(.emailAddress)
-          #if !SKIP
+          #if os(iOS)
+            .keyboardType(.emailAddress)
+          #endif
+          #if !SKIP && os(iOS)
             .autocapitalization(.none)
             .disableAutocorrection(true)
           #endif
-          .textFieldStyle(.roundedBorder)
+          #if os(iOS)
+            .textFieldStyle(.roundedBorder)
+          #endif
 
         SecureField("Password", text: $store.password)
           .textFieldStyle(.roundedBorder)
