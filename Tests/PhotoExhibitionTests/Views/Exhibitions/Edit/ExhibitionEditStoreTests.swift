@@ -2,6 +2,12 @@ import XCTest
 
 @testable import PhotoExhibition
 
+#if SKIP
+  import SkipFirebaseCore
+#else
+  import FirebaseCore
+#endif
+
 @MainActor
 final class ExhibitionEditStoreTests: XCTestCase {
   // テスト用のモックデータ
@@ -9,6 +15,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
   private var mockExhibitionsClient: MockExhibitionsClient!
   private var mockCurrentUserClient: MockCurrentUserClient!
   private var mockStorageClient: MockStorageClient!
+  private var mockStorageImageCache: MockStorageImageCache!
 
   override func setUp() async throws {
     // テスト用の展示会データを作成
@@ -34,6 +41,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     mockExhibitionsClient = MockExhibitionsClient()
     mockCurrentUserClient = MockCurrentUserClient()
     mockStorageClient = MockStorageClient()
+    mockStorageImageCache = MockStorageImageCache()
   }
 
   override func tearDown() async throws {
@@ -41,6 +49,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     mockExhibitionsClient = nil
     mockCurrentUserClient = nil
     mockStorageClient = nil
+    mockStorageImageCache = nil
   }
 
   // MARK: - 初期化のテスト
@@ -51,7 +60,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 初期値を確認
@@ -72,7 +82,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.edit(testExhibition),
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 初期値を確認
@@ -87,25 +98,30 @@ final class ExhibitionEditStoreTests: XCTestCase {
   }
 
   func testInitWithEditModeLoadsExistingCoverImage() async {
+    // モックの画像URLを設定
+    mockStorageImageCache.mockImageURL = URL(
+      string: "file:///mock/image/path/test_cover-image.jpg")!
+
     // 編集モードでストアを初期化
     let store = ExhibitionEditStore(
       mode: ExhibitionEditStore.Mode.edit(testExhibition),
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockStorageClient.urlExpectation], timeout: 1.0)
+    await fulfillment(of: [mockStorageImageCache.getImageURLExpectation], timeout: 1.0)
 
-    // StorageClientのurlメソッドが呼ばれたことを確認
-    XCTAssertTrue(mockStorageClient.urlWasCalled, "URL method should be called")
+    // StorageImageCacheのgetImageURLメソッドが呼ばれたことを確認
+    XCTAssertTrue(mockStorageImageCache.getImageURLWasCalled, "getImageURL method should be called")
     XCTAssertEqual(
-      mockStorageClient.urlPath, "test/cover-image.jpg",
-      "Correct path should be passed to URL method")
+      mockStorageImageCache.getImageURLPath, "test/cover-image.jpg",
+      "Correct path should be passed to getImageURL method")
 
     // coverImageURLが設定されることを確認
-    XCTAssertEqual(store.coverImageURL, mockStorageClient.mockURL)
+    XCTAssertEqual(store.coverImageURL, mockStorageImageCache.mockImageURL)
   }
 
   // MARK: - アクションのテスト
@@ -116,7 +132,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 名前を更新
@@ -132,7 +149,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 説明を更新
@@ -148,7 +166,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 開始日を設定
@@ -165,7 +184,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 初期の終了日を設定
@@ -189,7 +209,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 終了日を設定
@@ -206,7 +227,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 画像選択アクションを送信
@@ -222,7 +244,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // カバー画像更新アクションを送信
@@ -239,7 +262,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // キャンセルアクションを送信
@@ -257,7 +281,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 名前を空に設定
@@ -281,7 +306,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 名前を設定
@@ -305,7 +331,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 展示会情報を設定
@@ -339,7 +366,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.edit(testExhibition),
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 展示会情報を設定
@@ -375,7 +403,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 展示会情報を設定
@@ -423,7 +452,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 展示会情報を設定

@@ -29,17 +29,20 @@ final class ExhibitionDetailStore: Store {
   private let exhibitionsClient: ExhibitionsClient
   private let currentUserClient: CurrentUserClient
   private let storageClient: StorageClient
+  private let imageCache: StorageImageCacheProtocol
 
   init(
     exhibition: Exhibition,
     exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
     currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-    storageClient: StorageClient = DefaultStorageClient()
+    storageClient: StorageClient = DefaultStorageClient(),
+    imageCache: StorageImageCacheProtocol = StorageImageCache.shared
   ) {
     self.exhibition = exhibition
     self.exhibitionsClient = exhibitionsClient
     self.currentUserClient = currentUserClient
     self.storageClient = storageClient
+    self.imageCache = imageCache
 
     // Check if current user is the organizer
     if let currentUser = currentUserClient.currentUser() {
@@ -83,8 +86,8 @@ final class ExhibitionDetailStore: Store {
 
     Task {
       do {
-        let url = try await storageClient.url(coverImagePath)
-        self.coverImageURL = url
+        let localURL = try await imageCache.getImageURL(for: coverImagePath)
+        self.coverImageURL = localURL
       } catch {
         print("Failed to load cover image: \(error.localizedDescription)")
       }

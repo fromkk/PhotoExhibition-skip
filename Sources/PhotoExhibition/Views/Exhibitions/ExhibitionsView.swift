@@ -120,8 +120,14 @@ struct ExhibitionsView: View {
 
 struct ExhibitionRow: View {
   let exhibition: Exhibition
+  let imageCache: StorageImageCacheProtocol
   @State private var coverImageURL: URL? = nil
   @State private var isLoadingImage: Bool = false
+
+  init(exhibition: Exhibition, imageCache: StorageImageCacheProtocol = StorageImageCache.shared) {
+    self.exhibition = exhibition
+    self.imageCache = imageCache
+  }
 
   var body: some View {
     HStack(spacing: 12) {
@@ -181,8 +187,8 @@ struct ExhibitionRow: View {
     isLoadingImage = true
 
     do {
-      let url = try await DefaultStorageClient.shared.url(coverImagePath)
-      self.coverImageURL = url
+      let localURL = try await imageCache.getImageURL(for: coverImagePath)
+      self.coverImageURL = localURL
     } catch {
       print("Failed to load cover image: \(error.localizedDescription)")
     }

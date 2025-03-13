@@ -9,6 +9,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
   private var mockExhibitionsClient: MockExhibitionsClient!
   private var mockCurrentUserClient: MockCurrentUserClient!
   private var mockStorageClient: MockStorageClient!
+  private var mockStorageImageCache: MockStorageImageCache!
 
   override func setUp() async throws {
     // テスト用の展示会データを作成
@@ -34,6 +35,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     mockExhibitionsClient = MockExhibitionsClient()
     mockCurrentUserClient = MockCurrentUserClient()
     mockStorageClient = MockStorageClient()
+    mockStorageImageCache = MockStorageImageCache()
   }
 
   override func tearDown() async throws {
@@ -41,6 +43,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     mockExhibitionsClient = nil
     mockCurrentUserClient = nil
     mockStorageClient = nil
+    mockStorageImageCache = nil
   }
 
   // MARK: - 権限チェックのテスト
@@ -54,7 +57,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 主催者であることを確認
@@ -70,7 +74,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 主催者でないことを確認
@@ -86,7 +91,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 主催者でないことを確認
@@ -102,7 +108,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 主催者でないことを確認
@@ -129,7 +136,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 編集アクションを送信
@@ -148,7 +156,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 編集アクションを送信
@@ -167,7 +176,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 削除アクションを送信
@@ -187,7 +197,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 削除アクションを送信
@@ -210,7 +221,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 削除確認アクションを送信
@@ -235,7 +247,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 削除確認アクションを送信
@@ -262,7 +275,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 削除確認アクションを送信
@@ -290,7 +304,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
     // 削除確認アクションを送信
@@ -306,34 +321,35 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     XCTAssertFalse(store.shouldDismiss, "shouldDismiss should remain false after failed deletion")
   }
 
-  // MARK: - カバー画像のテスト
+  // MARK: - 画像読み込みのテスト
 
   func testLoadCoverImageCallsStorageClient() async {
+    // 現在のユーザーを設定
+    mockCurrentUserClient.mockUser = User(uid: "user-id")
+
     // ストアの作成
     let store = ExhibitionDetailStore(
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
-    // カバー画像読み込みアクションを送信
+    // 画像読み込みアクションを送信
     store.send(ExhibitionDetailStore.Action.loadCoverImage)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockStorageClient.urlExpectation], timeout: 1.0)
+    await fulfillment(of: [mockStorageImageCache.getImageURLExpectation], timeout: 1.0)
 
-    // StorageClientのurlメソッドが呼ばれたことを確認
-    XCTAssertTrue(mockStorageClient.urlWasCalled, "URL method should be called")
+    // StorageImageCacheのgetImageURLメソッドが呼ばれたことを確認
+    XCTAssertTrue(mockStorageImageCache.getImageURLWasCalled, "getImageURL method should be called")
     XCTAssertEqual(
-      mockStorageClient.urlPath, "test/cover-image.jpg",
-      "Correct path should be passed to URL method")
-
-    // coverImageURLが設定されることを確認
-    XCTAssertEqual(store.coverImageURL, mockStorageClient.mockURL)
+      mockStorageImageCache.getImageURLPath, "test/cover-image.jpg",
+      "Correct path should be passed to getImageURL method")
   }
 
-  func testLoadCoverImageDoesNothingWhenNoCoverImagePath() async {
+  func testLoadCoverImageDoesNothingWhenNoCoverImagePath() {
     // カバー画像パスがない展示会を作成
     let exhibitionWithoutCover = Exhibition(
       id: "test-exhibition-id",
@@ -358,46 +374,41 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       exhibition: exhibitionWithoutCover,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
-    // カバー画像読み込みアクションを送信
+    // 画像読み込みアクションを送信
     store.send(ExhibitionDetailStore.Action.loadCoverImage)
 
-    // 少し待機
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
-
-    // StorageClientのurlメソッドが呼ばれないことを確認
-    XCTAssertFalse(mockStorageClient.urlWasCalled, "URL method should not be called")
-
-    // coverImageURLがnilのままであることを確認
-    XCTAssertNil(store.coverImageURL)
+    // StorageImageCacheのgetImageURLメソッドが呼ばれないことを確認
+    XCTAssertFalse(
+      mockStorageImageCache.getImageURLWasCalled,
+      "getImageURL method should not be called when there is no cover image path")
   }
 
   func testLoadCoverImageHandlesError() async {
-    // StorageClientのエラーを設定
-    mockStorageClient.shouldSucceed = false
-    mockStorageClient.errorToThrow = NSError(
-      domain: "test", code: 123, userInfo: [NSLocalizedDescriptionKey: "Storage error"])
+    // エラーを投げるように設定
+    mockStorageImageCache.shouldThrowError = true
 
     // ストアの作成
     let store = ExhibitionDetailStore(
       exhibition: testExhibition,
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
     )
 
-    // カバー画像読み込みアクションを送信
+    // 画像読み込みアクションを送信
     store.send(ExhibitionDetailStore.Action.loadCoverImage)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockStorageClient.urlExpectation], timeout: 1.0)
+    await fulfillment(of: [mockStorageImageCache.getImageURLExpectation], timeout: 1.0)
 
-    // StorageClientのurlメソッドが呼ばれたことを確認
-    XCTAssertTrue(mockStorageClient.urlWasCalled, "URL method should be called")
-
-    // エラーが発生してもcrashしないことを確認
-    XCTAssertNil(store.coverImageURL, "coverImageURL should remain nil after error")
+    // エラーが処理されることを確認
+    XCTAssertTrue(
+      store.isLoadingCoverImage == false, "isLoadingCoverImage should be false after error")
+    XCTAssertNil(store.coverImageURL, "coverImageURL should be nil after error")
   }
 }

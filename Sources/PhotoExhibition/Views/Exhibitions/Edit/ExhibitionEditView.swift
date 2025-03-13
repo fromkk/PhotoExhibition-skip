@@ -49,17 +49,20 @@ final class ExhibitionEditStore: Store {
   private let currentUserClient: CurrentUserClient
   private let exhibitionsClient: ExhibitionsClient
   private let storageClient: StorageClient
+  private let imageCache: StorageImageCacheProtocol
 
   init(
     mode: Mode,
     currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
     exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
-    storageClient: StorageClient = DefaultStorageClient()
+    storageClient: StorageClient = DefaultStorageClient(),
+    imageCache: StorageImageCacheProtocol = StorageImageCache.shared
   ) {
     self.mode = mode
     self.currentUserClient = currentUserClient
     self.exhibitionsClient = exhibitionsClient
     self.storageClient = storageClient
+    self.imageCache = imageCache
 
     if case .edit(let exhibition) = mode {
       self.name = exhibition.name
@@ -67,12 +70,13 @@ final class ExhibitionEditStore: Store {
       self.from = exhibition.from
       self.to = exhibition.to
 
-      // カバー画像のパスがある場合は、StorageClientからURLを取得する
+      // カバー画像のパスがある場合は、StorageImageCacheからローカルに保存された画像URLを取得する
       if let coverImagePath = exhibition.coverImagePath {
         Task {
           do {
-            let url = try await storageClient.url(coverImagePath)
-            self.coverImageURL = url
+            // StorageImageCacheを使って画像をローカルにダウンロードして保存し、そのURLを取得
+            let localURL = try await imageCache.getImageURL(for: coverImagePath)
+            self.coverImageURL = localURL
           } catch {
             logger.error("Failed to get download URL: \(error.localizedDescription)")
           }
