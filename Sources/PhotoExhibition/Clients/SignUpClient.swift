@@ -23,7 +23,6 @@ actor DefaultSignUpClient: SignUpClient {
 
     let db = Firestore.firestore()
     let memberData: [String: Any] = [
-      "name": email,  // 仮にemailをnameとして使用
       "createdAt": Timestamp(date: Date()),
       "updatedAt": Timestamp(date: Date()),
     ]

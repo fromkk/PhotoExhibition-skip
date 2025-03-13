@@ -166,15 +166,15 @@ struct ExhibitionDetailView: View {
             .font(.subheadline)
         }
 
-        Divider()
-
         // Organizer information
-        VStack(alignment: .leading, spacing: 8) {
-          Label("Organizer", systemImage: "person")
-            .font(.headline)
-
-          Text(store.exhibition.organizer.name)
-            .font(.subheadline)
+        if let name = store.exhibition.organizer.name {
+          Divider()
+          VStack(alignment: .leading, spacing: 8) {
+            Label("Organizer", systemImage: "person")
+              .font(.headline)
+            Text(name)
+              .font(.subheadline)
+          }
         }
       }
       .padding()
