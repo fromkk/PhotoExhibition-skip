@@ -135,7 +135,7 @@ final class ExhibitionEditStore: Store {
     if let pickedImageURL = pickedImageURL {
       let fileName =
         UUID().uuidString + "."
-        + (pickedImageURL.pathExtension.isEmpty ? "jpt" : pickedImageURL.pathExtension)
+        + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
       let storagePath = "members/\(user.uid)/\(fileName)"
 
       // 画像をアップロードしてURLを取得

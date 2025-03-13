@@ -4,57 +4,6 @@ import SwiftUI
   import Observation
 #endif
 
-@Observable
-final class ExhibitionsStore: Store {
-  enum Action {
-    case task
-    case refresh
-    case createExhibition
-    case editExhibition(Exhibition)
-    case showExhibitionDetail(Exhibition)
-  }
-
-  var exhibitions: [Exhibition] = []
-  var isLoading: Bool = false
-  var error: Error? = nil
-  var showCreateExhibition: Bool = false
-  var exhibitionToEdit: Exhibition? = nil
-  var selectedExhibition: Exhibition? = nil
-
-  private let exhibitionsClient: ExhibitionsClient
-
-  init(exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient()) {
-    self.exhibitionsClient = exhibitionsClient
-  }
-
-  func send(_ action: Action) {
-    switch action {
-    case .task, .refresh:
-      fetchExhibitions()
-    case .createExhibition:
-      showCreateExhibition = true
-    case .editExhibition(let exhibition):
-      exhibitionToEdit = exhibition
-    case .showExhibitionDetail(let exhibition):
-      selectedExhibition = exhibition
-    }
-  }
-
-  private func fetchExhibitions() {
-    isLoading = true
-
-    Task {
-      do {
-        exhibitions = try await exhibitionsClient.fetch()
-      } catch {
-        self.error = error
-      }
-
-      isLoading = false
-    }
-  }
-}
-
 struct ExhibitionsView: View {
   @Bindable private var store: ExhibitionsStore
   init(store: ExhibitionsStore) {
@@ -85,6 +34,14 @@ struct ExhibitionsView: View {
               NavigationLink(value: exhibition) {
                 ExhibitionRow(exhibition: exhibition)
               }
+            }
+
+            if store.hasMore {
+              ProgressView()
+                .frame(maxWidth: .infinity)
+                .onAppear {
+                  store.send(.loadMore)
+                }
             }
           }
           .refreshable {

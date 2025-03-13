@@ -1,22 +1,43 @@
+import OSLog
+
 #if SKIP
   import SkipFirebaseFirestore
 #else
   import FirebaseFirestore
 #endif
 
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionsClient")
+
 protocol ExhibitionsClient: Sendable {
-  func fetch() async throws -> [Exhibition]
+  func fetch(cursor: String?) async throws -> (exhibitions: [Exhibition], nextCursor: String?)
   func create(data: [String: any Sendable]) async throws -> String
   func update(id: String, data: [String: any Sendable]) async throws
   func delete(id: String) async throws
 }
 
 actor DefaultExhibitionsClient: ExhibitionsClient {
-  func fetch() async throws -> [Exhibition] {
+  private let pageSize = 10
+
+  func fetch(cursor: String?) async throws -> (exhibitions: [Exhibition], nextCursor: String?) {
+    logger.info("fetch cursor: \(String(describing: cursor))")
     let firestore = Firestore.firestore()
-    let exhibitions = try await firestore.collection("exhibitions")
-      .getDocuments()
+    var query = firestore.collection("exhibitions")
+      .order(by: "createdAt", descending: true)
+      #if SKIP
+        .limit(to: Int64(pageSize))
+      #else
+        .limit(to: pageSize)
+      #endif
+
+    if let cursor = cursor {
+      let cursorDocument = try await firestore.collection("exhibitions").document(cursor)
+        .getDocument()
+      query = query.start(afterDocument: cursorDocument)
+    }
+
+    let exhibitions = try await query.getDocuments()
     var result: [Exhibition] = []
+
     for document in exhibitions.documents {
       let data = document.data()
       guard let organizerUID = data["organizer"] as? String else {
@@ -50,7 +71,9 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
       }
     }
 
-    return result
+    let nextCursor =
+      exhibitions.documents.count == pageSize ? exhibitions.documents.last?.documentID : nil
+    return (result, nextCursor)
   }
 
   func create(data: [String: any Sendable]) async throws -> String {
