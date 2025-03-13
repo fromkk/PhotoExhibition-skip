@@ -48,12 +48,15 @@ protocol SettingsStoreDelegate: AnyObject {
 struct SettingsView: View {
   @Bindable var store: SettingsStore
   var body: some View {
-    List {
-      Button(role: .destructive) {
-        store.send(.presentLogoutConfirmation)
-      } label: {
-        Text("Logout")
+    NavigationStack {
+      List {
+        Button(role: .destructive) {
+          store.send(.presentLogoutConfirmation)
+        } label: {
+          Text("Logout")
+        }
       }
+      .navigationTitle(Text("Settings"))
     }
     .alert(
       "Error",
