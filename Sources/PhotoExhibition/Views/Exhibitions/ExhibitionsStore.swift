@@ -55,7 +55,7 @@ final class ExhibitionsStore: Store {
 
     Task {
       do {
-        let result = try await exhibitionsClient.fetch(cursor: nil)
+        let result = try await exhibitionsClient.fetch(now: Date(), cursor: nil)
         exhibitions = result.exhibitions
         nextCursor = result.nextCursor
         hasMore = result.nextCursor != nil
@@ -74,7 +74,7 @@ final class ExhibitionsStore: Store {
 
     Task {
       do {
-        let result = try await exhibitionsClient.fetch(cursor: cursor)
+        let result = try await exhibitionsClient.fetch(now: Date(), cursor: cursor)
         exhibitions.append(contentsOf: result.exhibitions)
         nextCursor = result.nextCursor
         hasMore = result.nextCursor != nil
