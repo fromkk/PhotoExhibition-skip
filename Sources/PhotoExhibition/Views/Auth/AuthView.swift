@@ -6,7 +6,7 @@ import SwiftUI
 
 @MainActor
 protocol AuthStoreDelegate: AnyObject {
-  func didSignInSuccessfully()
+  func didSignInSuccessfully(with member: Member)
 }
 
 @Observable final class AuthStore: Store {
@@ -56,7 +56,7 @@ protocol AuthStoreDelegate: AnyObject {
         do {
           let member = try await signInClient.signIn(email: email, password: password)
           print("サインイン成功: \(String(describing: member.id))")
-          delegate?.didSignInSuccessfully()
+          delegate?.didSignInSuccessfully(with: member)
         } catch {
           self.error = error
           self.isErrorAlertPresented = true
@@ -74,7 +74,7 @@ protocol AuthStoreDelegate: AnyObject {
         do {
           let member = try await signUpClient.signUp(email: email, password: password)
           print("サインアップ成功: \(String(describing: member.id))")
-          delegate?.didSignInSuccessfully()
+          delegate?.didSignInSuccessfully(with: member)
         } catch {
           self.error = error
           self.isErrorAlertPresented = true

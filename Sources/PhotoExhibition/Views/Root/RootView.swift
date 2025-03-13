@@ -4,7 +4,8 @@ import SwiftUI
   import Observation
 #endif
 
-@Observable final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate {
+@Observable
+final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate, ProfileSetupStoreDelegate {
   private let currentUserClient: CurrentUserClient
 
   init(
@@ -28,6 +29,7 @@ import SwiftUI
       } else {
         exhibitionsStore = nil
         settingsStore = nil
+        profileSetupStore = nil
       }
     }
   }
@@ -53,9 +55,12 @@ import SwiftUI
     }
   }
 
+  var isProfileSetupShown: Bool = false
+
   private(set) var authStore: AuthStore?
   private(set) var exhibitionsStore: ExhibitionsStore?
   private(set) var settingsStore: SettingsStore?
+  private(set) var profileSetupStore: ProfileSetupStore?
 
   func send(_ action: Action) {
     switch action {
@@ -72,14 +77,37 @@ import SwiftUI
 
   // MARK: - AuthStoreDelegate
 
-  func didSignInSuccessfully() {
+  func didSignInSuccessfully(with member: Member) {
+    isSignInScreenShown = false
+    isSignUpScreenShown = false
     isSignedIn = true
+
+    // Show profile setup screen if member name is not set
+    if member.name == nil {
+      showProfileSetup(for: member)
+    }
   }
 
   // MARK: - SettingsStoreDelegate
 
   func logoutCompleted() {
     isSignedIn = false
+  }
+
+  // MARK: - ProfileSetupStoreDelegate
+
+  func didCompleteProfileSetup() {
+    isProfileSetupShown = false
+    profileSetupStore = nil
+  }
+
+  // MARK: - Helper Methods
+
+  private func showProfileSetup(for member: Member) {
+    let store = ProfileSetupStore(member: member)
+    store.delegate = self
+    profileSetupStore = store
+    isProfileSetupShown = true
   }
 }
 
@@ -88,19 +116,29 @@ struct RootView: View {
   var body: some View {
     Group {
       if store.isSignedIn {
-        TabView {
-          if let store = store.exhibitionsStore {
-            ExhibitionsView(store: store)
-              .tabItem {
-                Label("Exhibitions", systemImage: "photo")
-              }
+        if store.isProfileSetupShown, let profileSetupStore = store.profileSetupStore {
+          // Display profile setup screen
+          NavigationStack {
+            ProfileSetupView(store: profileSetupStore)
+              .navigationTitle("Profile Setup")
+              .navigationBarBackButtonHidden(true)
           }
+        } else {
+          // Display main screen (tab view)
+          TabView {
+            if let store = store.exhibitionsStore {
+              ExhibitionsView(store: store)
+                .tabItem {
+                  Label("Exhibitions", systemImage: "photo")
+                }
+            }
 
-          if let store = store.settingsStore {
-            SettingsView(store: store)
-              .tabItem {
-                Label("Settings", systemImage: "gear")
-              }
+            if let store = store.settingsStore {
+              SettingsView(store: store)
+                .tabItem {
+                  Label("Settings", systemImage: "gear")
+                }
+            }
           }
         }
       } else {

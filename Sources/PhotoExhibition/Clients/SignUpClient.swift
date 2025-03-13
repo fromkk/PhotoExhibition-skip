@@ -23,6 +23,7 @@ actor DefaultSignUpClient: SignUpClient {
 
     let db = Firestore.firestore()
     let memberData: [String: Any] = [
+      "id": uid,
       "createdAt": Timestamp(date: Date()),
       "updatedAt": Timestamp(date: Date()),
     ]

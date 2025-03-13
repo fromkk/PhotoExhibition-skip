@@ -34,7 +34,9 @@ final class MockExhibitionsClient: ExhibitionsClient {
 
   // MARK: - ExhibitionsClientプロトコルの実装
 
-  func fetch(now: Date, cursor: String?) async throws -> (exhibitions: [Exhibition], nextCursor: String?) {
+  func fetch(now: Date, cursor: String?) async throws -> (
+    exhibitions: [Exhibition], nextCursor: String?
+  ) {
     fetchExpectation.fulfill()
 
     if !shouldSucceed, let error = errorToThrow {

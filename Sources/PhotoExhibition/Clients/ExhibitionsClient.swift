@@ -9,7 +9,9 @@ import OSLog
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionsClient")
 
 protocol ExhibitionsClient: Sendable {
-  func fetch(now: Date, cursor: String?) async throws -> (exhibitions: [Exhibition], nextCursor: String?)
+  func fetch(now: Date, cursor: String?) async throws -> (
+    exhibitions: [Exhibition], nextCursor: String?
+  )
   func create(data: [String: any Sendable]) async throws -> String
   func update(id: String, data: [String: any Sendable]) async throws
   func delete(id: String) async throws
@@ -18,13 +20,16 @@ protocol ExhibitionsClient: Sendable {
 actor DefaultExhibitionsClient: ExhibitionsClient {
   private let pageSize = 10
 
-  func fetch(now: Date, cursor: String?) async throws -> (exhibitions: [Exhibition], nextCursor: String?) {
+  func fetch(now: Date, cursor: String?) async throws -> (
+    exhibitions: [Exhibition], nextCursor: String?
+  ) {
     logger.info("fetch cursor: \(String(describing: cursor))")
     let firestore = Firestore.firestore()
+
     var query = firestore.collection("exhibitions")
-      .whereField("from", isGreaterThanOrEqualTo: Timestamp(date: now))
-      .whereField("to", isLessThanOrEqualTo: Timestamp(date: now))
-      .order(by: "createdAt", descending: true)
+      .whereField("from", isLessThanOrEqualTo: Timestamp(date: now))
+      .whereField("to", isGreaterThanOrEqualTo: Timestamp(date: now))
+      .order(by: "to", descending: true)
       #if SKIP
         .limit(to: Int64(pageSize))
       #else

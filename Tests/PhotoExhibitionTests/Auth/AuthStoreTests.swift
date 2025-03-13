@@ -227,8 +227,10 @@ final class AuthStoreTests: XCTestCase {
 @MainActor
 final class MockAuthStoreDelegate: AuthStoreDelegate {
   var didSignInSuccessfullyCalled = false
+  var lastSignedInMember: Member?
 
-  func didSignInSuccessfully() {
+  func didSignInSuccessfully(with member: Member) {
     didSignInSuccessfullyCalled = true
+    lastSignedInMember = member
   }
 }
