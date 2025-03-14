@@ -5,11 +5,11 @@
 #endif
 
 protocol MembersClient: Sendable {
-  func fetch(_ UIDs: [any Sendable]) async throws -> [Member]
+  func fetch(_ UIDs: [String]) async throws -> [Member]
 }
 
 actor DefaultMembersClient: MembersClient {
-  func fetch(_ UIDs: [any Sendable]) async throws -> [Member] {
+  func fetch(_ UIDs: [String]) async throws -> [Member] {
     let db = Firestore.firestore()
     // Firestoreでは一度に30件までしかin句で検索できないため、バッチ処理を行う
     var allMembers: [Member] = []
@@ -27,7 +27,7 @@ actor DefaultMembersClient: MembersClient {
 
     for batch in batches {
       let snapshot = try await db.collection("members")
-        .whereField("id", in: batch)
+        .whereField("id", in: batch as [any Sendable])
         .getDocuments()
 
       let batchMembers = snapshot.documents.compactMap { document in

@@ -84,12 +84,7 @@ final class RootStoreTests: XCTestCase {
     store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
-    for _ in 0..<10 {
-      await Task.sleep(for: .milliseconds(10))
-      if mockMembersClient.fetchWasCalled {
-        break
-      }
-    }
+    await Task.yield()
 
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
@@ -123,12 +118,7 @@ final class RootStoreTests: XCTestCase {
     store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
-    for _ in 0..<10 {
-      await Task.sleep(for: .milliseconds(10))
-      if mockMembersClient.fetchWasCalled && store.isSignedIn {
-        break
-      }
-    }
+    await Task.yield()
 
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
@@ -151,12 +141,7 @@ final class RootStoreTests: XCTestCase {
     store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
-    for _ in 0..<10 {
-      await Task.sleep(for: .milliseconds(10))
-      if mockMembersClient.fetchWasCalled {
-        break
-      }
-    }
+    await Task.yield()
 
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
@@ -180,12 +165,7 @@ final class RootStoreTests: XCTestCase {
     store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
-    for _ in 0..<10 {
-      await Task.sleep(for: .milliseconds(10))
-      if mockMembersClient.fetchWasCalled {
-        break
-      }
-    }
+    await Task.yield()
 
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)

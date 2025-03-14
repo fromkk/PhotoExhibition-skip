@@ -27,7 +27,7 @@ final class MockMembersClient: MembersClient {
 
     // 指定されたUIDに一致するメンバーだけを返す
     return mockMembers.filter { member in
-      UIDs.contains(member.id)
+      UIDs.filter({ $0 == member.id }).count > 0
     }
   }
 
