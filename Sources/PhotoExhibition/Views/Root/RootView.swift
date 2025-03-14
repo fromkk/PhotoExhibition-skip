@@ -7,11 +7,14 @@ import SwiftUI
 @Observable
 final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate, ProfileSetupStoreDelegate {
   private let currentUserClient: CurrentUserClient
+  private let membersClient: MembersClient
 
   init(
-    currentUserClient: CurrentUserClient = DefaultCurrentUserClient()
+    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
+    membersClient: MembersClient = DefaultMembersClient()
   ) {
     self.currentUserClient = currentUserClient
+    self.membersClient = membersClient
   }
 
   enum Action: Sendable {
@@ -65,7 +68,30 @@ final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate, ProfileS
   func send(_ action: Action) {
     switch action {
     case .task:
-      isSignedIn = currentUserClient.currentUser() != nil
+      if let currentUser = currentUserClient.currentUser() {
+        // ユーザーがログインしているが、Memberを取得する必要がある場合
+        Task {
+          do {
+            let members = try await membersClient.fetch([currentUser.uid])
+            if let member = members.first {
+              isSignedIn = true
+
+              // メンバー名が設定されていない場合はプロフィール設定画面を表示
+              if member.name == nil {
+                showProfileSetup(for: member)
+              }
+            } else {
+              // メンバー情報が取得できなかった場合
+              isSignedIn = false
+            }
+          } catch {
+            print("Failed to fetch member: \(error.localizedDescription)")
+            isSignedIn = false
+          }
+        }
+      } else {
+        isSignedIn = false
+      }
     case .signInButtonTapped:
       isSignInScreenShown = true
       return

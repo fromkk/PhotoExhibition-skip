@@ -17,10 +17,10 @@ let package = Package(
       name: "PhotoExhibitionApp", type: .dynamic, targets: ["PhotoExhibition"])
   ],
   dependencies: [
-    .package(url: "https://source.skip.tools/skip.git", from: "1.3.2"),
-    .package(url: "https://source.skip.tools/skip-ui.git", from: "1.0.0"),
-    .package(url: "https://github.com/skiptools/skip-kit.git", from: "0.3.0"),
-    .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.7.0"),
+    .package(url: "https://source.skip.tools/skip.git", from: "1.3.3"),
+    .package(url: "https://source.skip.tools/skip-ui.git", from: "1.26.4"),
+    .package(url: "https://github.com/skiptools/skip-kit.git", from: "0.3.1"),
+    .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.7.3"),
   ],
   targets: [
     .target(

@@ -1,0 +1,49 @@
+import XCTest
+
+@testable import PhotoExhibition
+
+@MainActor
+final class MockMembersClient: MembersClient {
+  // MARK: - テスト用のプロパティ
+
+  // fetch()の呼び出し追跡
+  var fetchWasCalled: Bool = false
+  var fetchArguments: [String] = []
+
+  // モックデータ
+  var mockMembers: [Member] = []
+  var shouldSucceed: Bool = true
+  var errorToThrow: Error?
+
+  // MARK: - MembersClientプロトコルの実装
+
+  func fetch(_ UIDs: [String]) async throws -> [Member] {
+    fetchWasCalled = true
+    fetchArguments = UIDs
+
+    if !shouldSucceed, let error = errorToThrow {
+      throw error
+    }
+
+    // 指定されたUIDに一致するメンバーだけを返す
+    return mockMembers.filter { member in
+      UIDs.contains(member.id)
+    }
+  }
+
+  // MARK: - テスト用のヘルパーメソッド
+
+  func reset() {
+    // 呼び出し追跡をリセット
+    fetchWasCalled = false
+    fetchArguments = []
+
+    // デフォルト値に戻す
+    shouldSucceed = true
+    errorToThrow = nil
+  }
+
+  func addMockMember(_ member: Member) {
+    mockMembers.append(member)
+  }
+}
