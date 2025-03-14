@@ -1,3 +1,4 @@
+import SkipKit
 import SwiftUI
 
 #if canImport(Observation)
@@ -13,11 +14,20 @@ protocol ProfileSetupStoreDelegate: AnyObject {
   enum Action {
     case saveButtonTapped
     case dismissError
+    case selectIconButtonTapped
+    case iconSelected(URL?)
+    case removeIcon
   }
 
   let member: Member
   var name: String = ""
   weak var delegate: (any ProfileSetupStoreDelegate)?
+
+  // アイコン関連
+  var iconImageURL: URL?
+  var iconPickerPresented: Bool = false
+  var selectedIconURL: URL?
+  var iconPath: String?
 
   // State management
   var isLoading: Bool = false
@@ -25,17 +35,35 @@ protocol ProfileSetupStoreDelegate: AnyObject {
   var isErrorAlertPresented: Bool = false
 
   private let memberUpdateClient: any MemberUpdateClient
+  private let storageClient: StorageClient
+  private let imageCache: any StorageImageCacheProtocol
 
   init(
     member: Member,
-    memberUpdateClient: MemberUpdateClient = DefaultMemberUpdateClient()
+    memberUpdateClient: MemberUpdateClient = DefaultMemberUpdateClient(),
+    storageClient: StorageClient = DefaultStorageClient(),
+    imageCache: StorageImageCacheProtocol = StorageImageCache.shared
   ) {
     self.member = member
     self.memberUpdateClient = memberUpdateClient
+    self.storageClient = storageClient
+    self.imageCache = imageCache
 
     // Set initial value if existing name is available
     if let existingName = member.name {
       self.name = existingName
+    }
+
+    // 既存のアイコンがあれば表示用URLを取得
+    if let iconPath = member.icon {
+      self.iconPath = iconPath
+      Task {
+        do {
+          self.iconImageURL = try await imageCache.getImageURL(for: iconPath)
+        } catch {
+          print("Failed to load icon image: \(error.localizedDescription)")
+        }
+      }
     }
   }
 
@@ -48,9 +76,30 @@ protocol ProfileSetupStoreDelegate: AnyObject {
 
       Task {
         do {
-          let updatedMember = try await memberUpdateClient.updateName(
-            memberID: member.id, name: name)
+          // アイコン画像が選択されていれば、先にアップロード
+          var newIconPath = iconPath
+          if let selectedIconURL = selectedIconURL {
+            // 新しいファイルパスを生成
+            let fileName =
+              UUID().uuidString + "."
+              + (selectedIconURL.pathExtension.isEmpty ? "jpg" : selectedIconURL.pathExtension)
+            let path = "members/\(member.id)/icons/\(fileName)"
+
+            // 画像をアップロード
+            _ = try await storageClient.upload(from: selectedIconURL, to: path)
+            newIconPath = path
+          }
+
+          // プロフィール情報を更新
+          let updatedMember = try await memberUpdateClient.updateProfile(
+            memberID: member.id, name: name, iconPath: newIconPath)
           print("Profile update success: \(updatedMember.id)")
+
+          // アイコンパスが変更された場合、キャッシュをクリアする
+          if newIconPath != member.icon {
+            await imageCache.clearCache()
+          }
+
           delegate?.didCompleteProfileSetup()
         } catch {
           self.error = error
@@ -63,6 +112,18 @@ protocol ProfileSetupStoreDelegate: AnyObject {
 
     case .dismissError:
       isErrorAlertPresented = false
+
+    case .selectIconButtonTapped:
+      iconPickerPresented = true
+
+    case .iconSelected(let url):
+      selectedIconURL = url
+
+    case .removeIcon:
+      // 選択中のアイコンと既存のアイコンの両方をクリア
+      selectedIconURL = nil
+      iconPath = nil
+      iconImageURL = nil
     }
   }
 }
@@ -76,10 +137,64 @@ struct ProfileSetupView: View {
         .font(.title)
         .padding(.bottom, 8)
 
-      Text("Please set a username to continue using the app")
+      Text("Please set a username and icon to continue using the app")
         .font(.subheadline)
         .multilineTextAlignment(.center)
         .padding(.horizontal)
+
+      // アイコン表示とアイコン選択ボタン
+      VStack(spacing: 16) {
+        ZStack {
+          Circle()
+            .fill(Color.gray.opacity(0.2))
+            .frame(width: 120, height: 120)
+
+          if let iconURL = store.selectedIconURL ?? store.iconImageURL {
+            AsyncImage(url: iconURL) { image in
+              image
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 120, height: 120)
+                .clipShape(Circle())
+            } placeholder: {
+              ProgressView()
+                .frame(width: 120, height: 120)
+            }
+          } else {
+            Image(systemName: "person.crop.circle.fill")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 80, height: 80)
+              .foregroundStyle(Color.gray)
+          }
+        }
+
+        HStack(spacing: 20) {
+          Button {
+            store.send(.selectIconButtonTapped)
+          } label: {
+            Text("Select Icon")
+              .foregroundStyle(.blue)
+          }
+
+          // アイコンが設定されているか選択されている場合のみ削除ボタンを表示
+          if store.selectedIconURL != nil || store.iconImageURL != nil {
+            Button(role: .destructive) {
+              store.send(.removeIcon)
+            } label: {
+              Text("Remove Icon")
+            }
+          }
+        }
+      }
+      .withMediaPicker(
+        type: MediaPickerType.library,
+        isPresented: $store.iconPickerPresented,
+        selectedImageURL: Binding(
+          get: { store.selectedIconURL },
+          set: { store.send(.iconSelected($0)) }
+        )
+      )
 
       TextField("Username", text: $store.name)
         .textFieldStyle(.roundedBorder)

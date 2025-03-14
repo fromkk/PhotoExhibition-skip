@@ -252,12 +252,12 @@
         }
       }
     },
-    "Please set a username to continue using the app" : {
+    "Please set a username and icon to continue using the app" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アプリを使用するためにはユーザー名の設定が必要です"
+            "value" : "アプリを使用するためにはユーザー名とアイコンの設定が必要です"
           }
         }
       }
@@ -378,6 +378,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未設定"
+          }
+        }
+      }
+    },
+    "Select Icon" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンを選択"
+          }
+        }
+      }
+    },
+    "Remove Icon" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンを削除"
           }
         }
       }

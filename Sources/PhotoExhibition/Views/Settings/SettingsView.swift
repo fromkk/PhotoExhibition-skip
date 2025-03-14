@@ -97,7 +97,17 @@ struct SettingsView: View {
                 .navigationTitle("Edit Profile")
             } label: {
               HStack {
+                if let iconPath = member.icon {
+                  AsyncImageWithIconPath(iconPath: iconPath)
+                } else {
+                  Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .foregroundStyle(Color.gray)
+                }
+
                 Text("Edit Profile")
+                  .padding(.leading, 8)
                 Spacer()
                 Text(member.name ?? "Not set")
                   .foregroundStyle(.secondary)
@@ -139,5 +149,33 @@ struct SettingsView: View {
         }
       }
     )
+  }
+}
+
+/// アイコンパスからURLを非同期に取得して画像を表示するコンポーネント
+private struct AsyncImageWithIconPath: View {
+  let iconPath: String
+  @State private var iconURL: URL? = nil
+  private let imageCache: any StorageImageCacheProtocol = StorageImageCache.shared
+
+  var body: some View {
+    AsyncImage(url: iconURL) { image in
+      image
+        .resizable()
+        .aspectRatio(contentMode: .fill)
+        .frame(width: 40, height: 40)
+        .clipShape(Circle())
+    } placeholder: {
+      Circle()
+        .fill(Color.gray.opacity(0.2))
+        .frame(width: 40, height: 40)
+    }
+    .task {
+      do {
+        iconURL = try await imageCache.getImageURL(for: iconPath)
+      } catch {
+        print("Failed to load icon image: \(error.localizedDescription)")
+      }
+    }
   }
 }
