@@ -9,18 +9,29 @@ protocol SettingsStoreDelegate: AnyObject {
   func logoutCompleted()
 }
 
-@Observable final class SettingsStore: Store {
+@Observable final class SettingsStore: Store, ProfileSetupStoreDelegate {
   weak var delegate: (any SettingsStoreDelegate)?
 
   private let currentUserClient: CurrentUserClient
-  init(currentUserClient: CurrentUserClient = DefaultCurrentUserClient()) {
+  private let membersClient: MembersClient
+
+  var member: Member?
+  var isProfileEditPresented: Bool = false
+
+  init(
+    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
+    membersClient: MembersClient = DefaultMembersClient()
+  ) {
     self.currentUserClient = currentUserClient
+    self.membersClient = membersClient
   }
 
   enum Action {
     case task
     case logoutButtonTapped
     case presentLogoutConfirmation
+    case editProfileButtonTapped
+    case profileEditCompleted
   }
 
   var isErrorAlertPresented: Bool = false
@@ -30,7 +41,20 @@ protocol SettingsStoreDelegate: AnyObject {
   func send(_ action: Action) {
     switch action {
     case .task:
-      break
+      if let currentUser = currentUserClient.currentUser() {
+        Task {
+          do {
+            let members = try await membersClient.fetch([currentUser.uid])
+            if let member = members.first {
+              self.member = member
+            }
+          } catch {
+            print("Failed to fetch member: \(error.localizedDescription)")
+            self.error = error
+            self.isErrorAlertPresented = true
+          }
+        }
+      }
     case .logoutButtonTapped:
       do {
         try currentUserClient.logout()
@@ -41,7 +65,21 @@ protocol SettingsStoreDelegate: AnyObject {
       }
     case .presentLogoutConfirmation:
       isLogoutConfirmationPresented = true
+    case .editProfileButtonTapped:
+      isProfileEditPresented = true
+    case .profileEditCompleted:
+      isProfileEditPresented = false
+      // プロフィール編集後に再度ユーザー情報を取得
+      send(.task)
     }
+  }
+
+  // MARK: - ProfileSetupStoreDelegate
+
+  func didCompleteProfileSetup() {
+    isProfileEditPresented = false
+    // プロフィール更新後にユーザー情報を再取得
+    send(.task)
   }
 }
 
@@ -50,13 +88,36 @@ struct SettingsView: View {
   var body: some View {
     NavigationStack {
       List {
-        Button(role: .destructive) {
-          store.send(.presentLogoutConfirmation)
-        } label: {
-          Text("Logout")
+        Section {
+          if let member = store.member {
+            NavigationLink {
+              let profileSetupStore = ProfileSetupStore(member: member)
+              profileSetupStore.delegate = store
+              return ProfileSetupView(store: profileSetupStore)
+                .navigationTitle("Edit Profile")
+            } label: {
+              HStack {
+                Text("Edit Profile")
+                Spacer()
+                Text(member.name ?? "Not set")
+                  .foregroundStyle(.secondary)
+              }
+            }
+          }
+        }
+
+        Section {
+          Button(role: .destructive) {
+            store.send(.presentLogoutConfirmation)
+          } label: {
+            Text("Logout")
+          }
         }
       }
       .navigationTitle(Text("Settings"))
+      .task {
+        store.send(.task)
+      }
     }
     .alert(
       "Error",

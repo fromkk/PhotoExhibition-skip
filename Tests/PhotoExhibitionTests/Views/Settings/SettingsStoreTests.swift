@@ -11,22 +11,40 @@ import XCTest
 
 @MainActor
 final class SettingsStoreTests: XCTestCase {
+  var mockCurrentUserClient: MockCurrentUserClient!
+  var mockMembersClient: MockMembersClient!
+
+  override func setUp() async throws {
+    mockCurrentUserClient = MockCurrentUserClient()
+    mockMembersClient = MockMembersClient()
+  }
+
+  override func tearDown() async throws {
+    mockCurrentUserClient = nil
+    mockMembersClient = nil
+  }
 
   func testInit() {
     // Arrange & Act
-    let mockCurrentUserClient = MockCurrentUserClient()
-    let store = SettingsStore(currentUserClient: mockCurrentUserClient)
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
 
     // Assert
     XCTAssertFalse(store.isErrorAlertPresented)
     XCTAssertNil(store.error)
     XCTAssertFalse(store.isLogoutConfirmationPresented)
+    XCTAssertNil(store.member)
+    XCTAssertFalse(store.isProfileEditPresented)
   }
 
   func testLogoutSuccess() {
     // Arrange
-    let mockCurrentUserClient = MockCurrentUserClient()
-    let store = SettingsStore(currentUserClient: mockCurrentUserClient)
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
     let delegate = MockSettingsStoreDelegate()
     store.delegate = delegate
 
@@ -42,11 +60,13 @@ final class SettingsStoreTests: XCTestCase {
 
   func testLogoutFailure() {
     // Arrange
-    let mockCurrentUserClient = MockCurrentUserClient()
     mockCurrentUserClient.shouldSucceed = false
     mockCurrentUserClient.errorToThrow = NSError(domain: "LogoutError", code: 1, userInfo: nil)
 
-    let store = SettingsStore(currentUserClient: mockCurrentUserClient)
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
     let delegate = MockSettingsStoreDelegate()
     store.delegate = delegate
 
@@ -62,7 +82,10 @@ final class SettingsStoreTests: XCTestCase {
 
   func testPresentLogoutConfirmation() {
     // Arrange
-    let store = SettingsStore()
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
 
     // Act
     store.send(SettingsStore.Action.presentLogoutConfirmation)
@@ -71,16 +94,80 @@ final class SettingsStoreTests: XCTestCase {
     XCTAssertTrue(store.isLogoutConfirmationPresented)
   }
 
-  func testTask() {
+  func testTask() async {
     // Arrange
-    let store = SettingsStore()
+    let userId = "test-user-id"
+    let testMember = Member(
+      id: userId,
+      name: "Test User",
+      icon: nil,
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+
+    mockCurrentUserClient.mockUser = User(uid: userId)
+    mockMembersClient.addMockMember(testMember)
+
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
 
     // Act
     store.send(SettingsStore.Action.task)
 
+    // 非同期処理が完了するのを待つ
+    await Task.yield()
+
     // Assert
-    // taskアクションは何もしないので、特にアサーションはありません
-    // ただし、クラッシュしないことを確認します
+    XCTAssertTrue(mockMembersClient.fetchWasCalled)
+    XCTAssertEqual(mockMembersClient.fetchArguments.first, userId)
+    XCTAssertEqual(store.member?.id, testMember.id)
+    XCTAssertEqual(store.member?.name, testMember.name)
+  }
+
+  func testEditProfileButtonTapped() {
+    // Arrange
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
+
+    // Act
+    store.send(SettingsStore.Action.editProfileButtonTapped)
+
+    // Assert
+    XCTAssertTrue(store.isProfileEditPresented)
+  }
+
+  func testDidCompleteProfileSetup() async {
+    // Arrange
+    let userId = "test-user-id"
+    let testMember = Member(
+      id: userId,
+      name: "Test User",
+      icon: nil,
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+
+    mockCurrentUserClient.mockUser = User(uid: userId)
+    mockMembersClient.addMockMember(testMember)
+
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
+
+    // Act
+    store.didCompleteProfileSetup()
+
+    // 非同期処理が完了するのを待つ
+    await Task.yield()
+
+    // Assert
+    XCTAssertFalse(store.isProfileEditPresented)
+    XCTAssertTrue(mockMembersClient.fetchWasCalled)
   }
 }
 
