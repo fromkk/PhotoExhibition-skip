@@ -10,6 +10,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
   private var mockCurrentUserClient: MockCurrentUserClient!
   private var mockStorageClient: MockStorageClient!
   private var mockStorageImageCache: MockStorageImageCache!
+  private var mockPhotoClient: MockPhotoClient!
 
   override func setUp() async throws {
     // テスト用の展示会データを作成
@@ -36,6 +37,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     mockCurrentUserClient = MockCurrentUserClient()
     mockStorageClient = MockStorageClient()
     mockStorageImageCache = MockStorageImageCache()
+    mockPhotoClient = MockPhotoClient()
   }
 
   override func tearDown() async throws {
@@ -44,6 +46,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     mockCurrentUserClient = nil
     mockStorageClient = nil
     mockStorageImageCache = nil
+    mockPhotoClient = nil
   }
 
   // MARK: - 権限チェックのテスト
@@ -410,5 +413,277 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     XCTAssertTrue(
       store.isLoadingCoverImage == false, "isLoadingCoverImage should be false after error")
     XCTAssertNil(store.coverImageURL, "coverImageURL should be nil after error")
+  }
+
+  // MARK: - 写真関連のテスト
+
+  func testLoadPhotosCallsPhotoClient() async {
+    // ストアの作成
+    let store = ExhibitionDetailStore(
+      exhibition: testExhibition,
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真読み込みアクションを送信
+    store.send(ExhibitionDetailStore.Action.loadPhotos)
+
+    // 非同期処理の完了を待つ
+    await fulfillment(of: [mockPhotoClient.fetchPhotosExpectation], timeout: 1.0)
+
+    // PhotoClientのfetchPhotosメソッドが呼ばれたことを確認
+    XCTAssertTrue(mockPhotoClient.fetchPhotosWasCalled, "fetchPhotos method should be called")
+    XCTAssertEqual(
+      mockPhotoClient.fetchPhotosExhibitionId, "test-exhibition-id",
+      "Correct exhibition ID should be passed to fetchPhotos method")
+  }
+
+  func testLoadPhotosHandlesError() async {
+    // エラーを投げるように設定
+    mockPhotoClient.shouldSucceed = false
+    mockPhotoClient.errorToThrow = NSError(
+      domain: "test", code: 123, userInfo: [NSLocalizedDescriptionKey: "Mock error"])
+
+    // ストアの作成
+    let store = ExhibitionDetailStore(
+      exhibition: testExhibition,
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真読み込みアクションを送信
+    store.send(ExhibitionDetailStore.Action.loadPhotos)
+
+    // 非同期処理の完了を待つ
+    await fulfillment(of: [mockPhotoClient.fetchPhotosExpectation], timeout: 1.0)
+
+    // エラーが処理されることを確認
+    XCTAssertFalse(store.isLoadingPhotos, "isLoadingPhotos should be false after error")
+    XCTAssertNotNil(store.error, "error should be set after failed loading")
+  }
+
+  func testUploadPhotoCallsStorageClientAndPhotoClient() async {
+    // 現在のユーザーを主催者に設定
+    mockCurrentUserClient.mockUser = User(uid: "organizer-id")
+
+    // テスト用のURL
+    let testURL = URL(string: "file:///test/photo.jpg")!
+
+    // ストアの作成
+    let store = ExhibitionDetailStore(
+      exhibition: testExhibition,
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真選択アクションを送信
+    store.send(ExhibitionDetailStore.Action.photoSelected(testURL))
+
+    // 非同期処理の完了を待つ
+    await fulfillment(
+      of: [mockStorageClient.uploadExpectation, mockPhotoClient.addPhotoExpectation], timeout: 1.0)
+
+    // StorageClientのuploadメソッドが呼ばれたことを確認
+    XCTAssertTrue(mockStorageClient.uploadWasCalled, "upload method should be called")
+    XCTAssertEqual(
+      mockStorageClient.uploadFromURL, testURL, "Correct URL should be passed to upload method")
+    XCTAssertTrue(
+      mockStorageClient.uploadToPath?.starts(with: "exhibitions/test-exhibition-id/photos/")
+        ?? false,
+      "Upload path should start with the correct prefix")
+
+    // PhotoClientのaddPhotoメソッドが呼ばれたことを確認
+    XCTAssertTrue(mockPhotoClient.addPhotoWasCalled, "addPhoto method should be called")
+    XCTAssertEqual(
+      mockPhotoClient.addPhotoExhibitionId, "test-exhibition-id",
+      "Correct exhibition ID should be passed to addPhoto method")
+    XCTAssertTrue(
+      mockPhotoClient.addPhotoPath?.starts(with: "exhibitions/test-exhibition-id/photos/") ?? false,
+      "Photo path should start with the correct prefix")
+  }
+
+  func testUploadPhotoDoesNothingWhenNotOrganizer() async {
+    // 現在のユーザーを主催者以外に設定
+    mockCurrentUserClient.mockUser = User(uid: "different-user-id")
+
+    // テスト用のURL
+    let testURL = URL(string: "file:///test/photo.jpg")!
+
+    // ストアの作成
+    let store = ExhibitionDetailStore(
+      exhibition: testExhibition,
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真選択アクションを送信
+    store.send(ExhibitionDetailStore.Action.photoSelected(testURL))
+
+    // 少し待機
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // StorageClientのuploadメソッドが呼ばれないことを確認
+    XCTAssertFalse(
+      mockStorageClient.uploadWasCalled,
+      "upload method should not be called when user is not organizer")
+
+    // PhotoClientのaddPhotoメソッドが呼ばれないことを確認
+    XCTAssertFalse(
+      mockPhotoClient.addPhotoWasCalled,
+      "addPhoto method should not be called when user is not organizer")
+  }
+
+  func testUploadPhotoHandlesError() async {
+    // 現在のユーザーを主催者に設定
+    mockCurrentUserClient.mockUser = User(uid: "organizer-id")
+
+    // エラーを投げるように設定
+    mockStorageClient.shouldSucceed = false
+    mockStorageClient.errorToThrow = NSError(
+      domain: "test", code: 123, userInfo: [NSLocalizedDescriptionKey: "Mock error"])
+
+    // テスト用のURL
+    let testURL = URL(string: "file:///test/photo.jpg")!
+
+    // ストアの作成
+    let store = ExhibitionDetailStore(
+      exhibition: testExhibition,
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真選択アクションを送信
+    store.send(ExhibitionDetailStore.Action.photoSelected(testURL))
+
+    // 非同期処理の完了を待つ
+    await fulfillment(of: [mockStorageClient.uploadExpectation], timeout: 1.0)
+
+    // エラーが処理されることを確認
+    XCTAssertFalse(store.isUploadingPhoto, "isUploadingPhoto should be false after error")
+    XCTAssertNotNil(store.error, "error should be set after failed upload")
+
+    // PhotoClientのaddPhotoメソッドが呼ばれないことを確認
+    XCTAssertFalse(
+      mockPhotoClient.addPhotoWasCalled, "addPhoto method should not be called when upload fails")
+  }
+
+  func testDeletePhotoCallsPhotoClientAndStorageClient() async {
+    // 現在のユーザーを主催者に設定
+    mockCurrentUserClient.mockUser = User(uid: "organizer-id")
+
+    // テスト用の写真
+    let testPhoto = Photo(
+      id: "test-photo-id",
+      path: "exhibitions/test-exhibition-id/photos/test-photo.jpg",
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+
+    // モック写真を設定
+    mockPhotoClient.mockPhotos = [testPhoto]
+
+    // ストアの作成
+    let store = ExhibitionDetailStore(
+      exhibition: testExhibition,
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真を読み込む
+    store.send(ExhibitionDetailStore.Action.loadPhotos)
+    await fulfillment(of: [mockPhotoClient.fetchPhotosExpectation], timeout: 1.0)
+
+    // 写真削除確認アクションを送信
+    store.send(ExhibitionDetailStore.Action.confirmDeletePhoto("test-photo-id"))
+
+    // 非同期処理の完了を待つ
+    await fulfillment(
+      of: [mockPhotoClient.deletePhotoExpectation, mockStorageClient.deleteExpectation],
+      timeout: 1.0)
+
+    // PhotoClientのdeletePhotoメソッドが呼ばれたことを確認
+    XCTAssertTrue(mockPhotoClient.deletePhotoWasCalled, "deletePhoto method should be called")
+    XCTAssertEqual(
+      mockPhotoClient.deletePhotoExhibitionId, "test-exhibition-id",
+      "Correct exhibition ID should be passed to deletePhoto method")
+    XCTAssertEqual(
+      mockPhotoClient.deletePhotoId, "test-photo-id",
+      "Correct photo ID should be passed to deletePhoto method")
+
+    // StorageClientのdeleteメソッドが呼ばれたことを確認
+    XCTAssertTrue(mockStorageClient.deleteWasCalled, "delete method should be called")
+    XCTAssertEqual(
+      mockStorageClient.deletePath, "exhibitions/test-exhibition-id/photos/test-photo.jpg",
+      "Correct path should be passed to delete method")
+
+    // 写真リストから削除されたことを確認
+    XCTAssertTrue(store.photos.isEmpty, "Photo should be removed from the list")
+  }
+
+  func testDeletePhotoDoesNothingWhenNotOrganizer() async {
+    // 現在のユーザーを主催者以外に設定
+    mockCurrentUserClient.mockUser = User(uid: "different-user-id")
+
+    // テスト用の写真
+    let testPhoto = Photo(
+      id: "test-photo-id",
+      path: "exhibitions/test-exhibition-id/photos/test-photo.jpg",
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+
+    // モック写真を設定
+    mockPhotoClient.mockPhotos = [testPhoto]
+
+    // ストアの作成
+    let store = ExhibitionDetailStore(
+      exhibition: testExhibition,
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真を読み込む
+    store.send(ExhibitionDetailStore.Action.loadPhotos)
+    await fulfillment(of: [mockPhotoClient.fetchPhotosExpectation], timeout: 1.0)
+
+    // 写真削除確認アクションを送信
+    store.send(ExhibitionDetailStore.Action.confirmDeletePhoto("test-photo-id"))
+
+    // 少し待機
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // PhotoClientのdeletePhotoメソッドが呼ばれないことを確認
+    XCTAssertFalse(
+      mockPhotoClient.deletePhotoWasCalled,
+      "deletePhoto method should not be called when user is not organizer")
+
+    // StorageClientのdeleteメソッドが呼ばれないことを確認
+    XCTAssertFalse(
+      mockStorageClient.deleteWasCalled,
+      "delete method should not be called when user is not organizer")
+
+    // 写真リストが変更されないことを確認
+    XCTAssertEqual(store.photos.count, 1, "Photo list should not change when user is not organizer")
   }
 }
