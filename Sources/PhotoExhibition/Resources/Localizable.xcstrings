@@ -1,12 +1,32 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Add" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加"
+          }
+        }
+      }
+    },
     "Are you sure you want to delete this exhibition? This action cannot be undone." : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "この展示会を削除してもよろしいですか？この操作は元に戻せません。"
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete this photo? This action cannot be undone." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この写真を削除してもよろしいですか？この操作は元に戻せません。"
           }
         }
       }
@@ -71,6 +91,16 @@
         }
       }
     },
+    "Delete Photo" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真を削除"
+          }
+        }
+      }
+    },
     "Description" : {
       "localizations" : {
         "ja" : {
@@ -87,6 +117,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "編集"
+          }
+        }
+      }
+    },
+    "Edit Profile" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロフィール編集"
           }
         }
       }
@@ -192,6 +232,26 @@
         }
       }
     },
+    "No photos yet" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真がまだありません"
+          }
+        }
+      }
+    },
+    "Not set" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未設定"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "ja" : {
@@ -228,6 +288,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開催期間"
+          }
+        }
+      }
+    },
+    "Photos" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真"
           }
         }
       }
@@ -272,6 +342,16 @@
         }
       }
     },
+    "Remove Icon" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンを削除"
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "ja" : {
@@ -288,6 +368,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "カバー画像を選択"
+          }
+        }
+      }
+    },
+    "Select Icon" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンを選択"
           }
         }
       }
@@ -342,6 +432,16 @@
         }
       }
     },
+    "Uploading photo..." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真をアップロード中..."
+          }
+        }
+      }
+    },
     "Username" : {
       "localizations" : {
         "ja" : {
@@ -358,46 +458,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "はい"
-          }
-        }
-      }
-    },
-    "Edit Profile" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プロフィール編集"
-          }
-        }
-      }
-    },
-    "Not set" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未設定"
-          }
-        }
-      }
-    },
-    "Select Icon" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アイコンを選択"
-          }
-        }
-      }
-    },
-    "Remove Icon" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アイコンを削除"
           }
         }
       }
