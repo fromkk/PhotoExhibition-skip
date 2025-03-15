@@ -24,6 +24,9 @@ final class ExhibitionDetailStore: Store {
     case deletePhoto(String)
     case confirmDeletePhoto(String)
     case cancelDeletePhoto
+    case photoTapped(Photo)
+    case updateUploadedPhoto(title: String, description: String)
+    case cancelPhotoEdit
   }
 
   let exhibition: Exhibition
@@ -44,6 +47,10 @@ final class ExhibitionDetailStore: Store {
   var isUploadingPhoto: Bool = false
   var photoToDelete: String? = nil
   var showDeletePhotoConfirmation: Bool = false
+  var selectedPhoto: Photo? = nil
+  var showPhotoDetail: Bool = false
+  var uploadedPhoto: Photo? = nil
+  var showPhotoEditSheet: Bool = false
 
   private let exhibitionsClient: ExhibitionsClient
   private let currentUserClient: CurrentUserClient
@@ -108,6 +115,14 @@ final class ExhibitionDetailStore: Store {
     case .cancelDeletePhoto:
       photoToDelete = nil
       showDeletePhotoConfirmation = false
+    case .photoTapped(let photo):
+      selectedPhoto = photo
+      showPhotoDetail = true
+    case .updateUploadedPhoto(let title, let description):
+      updateUploadedPhoto(title: title, description: description)
+    case .cancelPhotoEdit:
+      uploadedPhoto = nil
+      showPhotoEditSheet = false
     }
   }
 
@@ -167,12 +182,53 @@ final class ExhibitionDetailStore: Store {
 
         // 新しい写真を追加
         photos.insert(photo, at: 0)
+
+        // アップロードした写真を選択して編集シートを表示
+        uploadedPhoto = photo
+        showPhotoEditSheet = true
       } catch {
         print("Failed to upload photo: \(error.localizedDescription)")
         self.error = error
       }
 
       isUploadingPhoto = false
+    }
+  }
+
+  private func updateUploadedPhoto(title: String, description: String) {
+    guard let photo = uploadedPhoto else { return }
+
+    Task {
+      do {
+        try await photoClient.updatePhoto(
+          exhibitionId: exhibition.id,
+          photoId: photo.id,
+          title: title.isEmpty ? nil : title,
+          description: description.isEmpty ? nil : description
+        )
+
+        // 写真リストを更新
+        if let index = photos.firstIndex(where: { $0.id == photo.id }) {
+          // 新しいPhotoインスタンスを作成（titleとdescriptionを更新）
+          let updatedPhoto = Photo(
+            id: photo.id,
+            path: photo.path,
+            title: title.isEmpty ? nil : title,
+            description: description.isEmpty ? nil : description,
+            takenDate: photo.takenDate,
+            photographer: photo.photographer,
+            createdAt: photo.createdAt,
+            updatedAt: Date()
+          )
+          photos[index] = updatedPhoto
+        }
+      } catch {
+        print("Failed to update photo: \(error.localizedDescription)")
+        self.error = error
+      }
+
+      uploadedPhoto = nil
+      showPhotoEditSheet = false
     }
   }
 
@@ -327,9 +383,17 @@ struct ExhibitionDetailView: View {
             ) {
               ForEach(store.photos) { photo in
                 if let path = photo.path {
-                  PhotoGridItem(path: path, isOrganizer: store.isOrganizer) {
-                    store.send(.deletePhoto(photo.id))
-                  }
+                  PhotoGridItem(
+                    photo: photo,
+                    path: path,
+                    isOrganizer: store.isOrganizer,
+                    onTap: {
+                      store.send(.photoTapped(photo))
+                    },
+                    onDelete: {
+                      store.send(.deletePhoto(photo.id))
+                    }
+                  )
                 }
               }
             }
@@ -375,6 +439,30 @@ struct ExhibitionDetailView: View {
     }
     .sheet(isPresented: $store.showEditSheet) {
       ExhibitionEditView(store: ExhibitionEditStore(mode: .edit(store.exhibition)))
+    }
+    .sheet(isPresented: $store.showPhotoDetail) {
+      if let photo = store.selectedPhoto {
+        PhotoDetailView(
+          exhibitionId: store.exhibition.id,
+          photo: photo,
+          isOrganizer: store.isOrganizer
+        )
+      }
+    }
+    .sheet(isPresented: $store.showPhotoEditSheet) {
+      if let photo = store.uploadedPhoto {
+        PhotoEditView(
+          title: photo.title ?? "",
+          description: photo.description ?? ""
+        ) { title, description in
+          store.send(.updateUploadedPhoto(title: title, description: description))
+        }
+        .onDisappear {
+          if store.showPhotoEditSheet {
+            store.send(.cancelPhotoEdit)
+          }
+        }
+      }
     }
     .alert("Delete Exhibition", isPresented: $store.showDeleteConfirmation) {
       Button("Cancel", role: .cancel) {
@@ -430,8 +518,10 @@ struct ExhibitionDetailView: View {
 
 // 写真グリッドアイテム
 struct PhotoGridItem: View {
+  let photo: Photo
   let path: String
   let isOrganizer: Bool
+  let onTap: () -> Void
   let onDelete: () -> Void
 
   @State private var imageURL: URL? = nil
@@ -441,36 +531,41 @@ struct PhotoGridItem: View {
 
   var body: some View {
     ZStack(alignment: .topTrailing) {
-      AsyncImage(url: imageURL) { phase in
-        switch phase {
-        case .empty:
-          ZStack {
-            Rectangle()
-              .fill(Color.gray.opacity(0.2))
+      Button {
+        onTap()
+      } label: {
+        AsyncImage(url: imageURL) { phase in
+          switch phase {
+          case .empty:
+            ZStack {
+              Rectangle()
+                .fill(Color.gray.opacity(0.2))
 
-            if isLoading {
-              ProgressView()
+              if isLoading {
+                ProgressView()
+              }
             }
-          }
-        case .success(let image):
-          image
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-        case .failure:
-          ZStack {
-            Rectangle()
-              .fill(Color.gray.opacity(0.2))
+          case .success(let image):
+            image
+              .resizable()
+              .aspectRatio(contentMode: .fill)
+          case .failure:
+            ZStack {
+              Rectangle()
+                .fill(Color.gray.opacity(0.2))
 
-            Image(systemName: "exclamationmark.triangle")
-              .foregroundStyle(.secondary)
+              Image(systemName: "exclamationmark.triangle")
+                .foregroundStyle(.secondary)
+            }
+          @unknown default:
+            EmptyView()
           }
-        @unknown default:
-          EmptyView()
         }
+        .aspectRatio(1, contentMode: .fill)
+        .frame(minWidth: 100, minHeight: 100)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
       }
-      .aspectRatio(1, contentMode: .fill)
-      .frame(minWidth: 100, minHeight: 100)
-      .clipShape(RoundedRectangle(cornerRadius: 8))
+      .buttonStyle(.plain)
 
       if isOrganizer {
         Button {
@@ -481,6 +576,17 @@ struct PhotoGridItem: View {
             .background(Circle().fill(Color.black.opacity(0.5)))
         }
         .padding(4)
+      }
+
+      // タイトルがある場合は小さなインジケータを表示
+      if photo.title != nil || photo.description != nil {
+        Image(systemName: "doc.text")
+          .font(.caption)
+          .padding(4)
+          .foregroundStyle(.white)
+          .background(Circle().fill(Color.black.opacity(0.5)))
+          .padding(4)
+          .offset(x: 0, y: 24)
       }
     }
     .task {

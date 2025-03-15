@@ -13,6 +13,8 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 protocol PhotoClient: Sendable {
   func fetchPhotos(exhibitionId: String) async throws -> [Photo]
   func addPhoto(exhibitionId: String, path: String) async throws -> Photo
+  func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?)
+    async throws
   func deletePhoto(exhibitionId: String, photoId: String) async throws
 }
 
@@ -81,6 +83,31 @@ actor DefaultPhotoClient: PhotoClient {
     }
 
     return photo
+  }
+
+  func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?)
+    async throws
+  {
+    logger.info("updatePhoto for exhibition: \(exhibitionId), photoId: \(photoId)")
+
+    let firestore = Firestore.firestore()
+    var updateData: [String: Any] = [
+      "updatedAt": Timestamp(date: Date())
+    ]
+
+    if let title = title {
+      updateData["title"] = title
+    }
+
+    if let description = description {
+      updateData["description"] = description
+    }
+
+    try await firestore.collection("exhibitions")
+      .document(exhibitionId)
+      .collection("photos")
+      .document(photoId)
+      .updateData(updateData)
   }
 
   func deletePhoto(exhibitionId: String, photoId: String) async throws {

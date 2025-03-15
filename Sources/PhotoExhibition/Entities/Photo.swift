@@ -10,6 +10,7 @@ import Foundation
 struct Photo: Hashable, Sendable, Identifiable, Codable {
   let id: String
   let path: String?
+  let title: String?
   let description: String?
   let takenDate: Date?
   let photographer: String?
@@ -19,6 +20,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
   init(
     id: String,
     path: String?,
+    title: String? = nil,
     description: String? = nil,
     takenDate: Date? = nil,
     photographer: String? = nil,
@@ -27,6 +29,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
   ) {
     self.id = id
     self.path = path
+    self.title = title
     self.description = description
     self.takenDate = takenDate
     self.photographer = photographer
@@ -43,6 +46,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
 
     self.id = documentID
     self.path = data["path"] as? String
+    self.title = data["title"] as? String
     self.description = data["description"] as? String
     self.photographer = data["photographer"] as? String
 

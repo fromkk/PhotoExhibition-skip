@@ -121,6 +121,9 @@
         }
       }
     },
+    "Edit Photo" : {
+
+    },
     "Edit Profile" : {
       "localizations" : {
         "ja" : {
@@ -431,6 +434,9 @@
           }
         }
       }
+    },
+    "Title" : {
+
     },
     "Uploading photo..." : {
       "localizations" : {
