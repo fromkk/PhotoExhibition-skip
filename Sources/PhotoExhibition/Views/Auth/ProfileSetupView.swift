@@ -160,6 +160,10 @@ struct ProfileSetupView: View {
               ProgressView()
                 .frame(width: 120, height: 120)
             }
+          } else if store.iconPath != nil {
+            // iconPathが存在するがURLがまだ取得できていない場合はローディングを表示
+            ProgressView()
+              .frame(width: 120, height: 120)
           } else {
             Image(systemName: "person.crop.circle.fill")
               .resizable()

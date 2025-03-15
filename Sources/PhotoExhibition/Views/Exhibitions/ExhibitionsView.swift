@@ -105,9 +105,14 @@ struct ExhibitionRow: View {
               ProgressView()
             }
           }
+        } else if exhibition.coverImagePath != nil {
+          // 画像パスが存在する場合はローディングを表示
+          ProgressView()
         }
       }
       .frame(width: 60, height: 60)
+      .background(Color.gray.opacity(0.1))
+      .clipShape(RoundedRectangle(cornerRadius: 8))
 
       // Exhibition details
       VStack(alignment: .leading, spacing: 8) {

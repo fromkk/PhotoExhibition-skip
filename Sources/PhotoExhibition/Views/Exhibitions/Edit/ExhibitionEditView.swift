@@ -44,6 +44,8 @@ final class ExhibitionEditStore: Store {
   var imagePickerPresented: Bool = false
   var pickedImageURL: URL?
   var coverImageURL: URL?
+  var isLoadingCoverImage: Bool = false
+  var coverImagePath: String?
 
   private let mode: Mode
   private let currentUserClient: CurrentUserClient
@@ -72,6 +74,8 @@ final class ExhibitionEditStore: Store {
 
       // カバー画像のパスがある場合は、StorageImageCacheからローカルに保存された画像URLを取得する
       if let coverImagePath = exhibition.coverImagePath {
+        self.coverImagePath = coverImagePath
+        isLoadingCoverImage = true
         Task {
           do {
             // StorageImageCacheを使って画像をローカルにダウンロードして保存し、そのURLを取得
@@ -80,6 +84,7 @@ final class ExhibitionEditStore: Store {
           } catch {
             logger.error("Failed to get download URL: \(error.localizedDescription)")
           }
+          isLoadingCoverImage = false
         }
       }
     }
@@ -217,9 +222,11 @@ struct ExhibitionEditView: View {
                 },
                 placeholder: {
                   ProgressView()
-                    .frame(maxWidth: .infinity)
                 }
               )
+            } else if store.coverImagePath != nil {
+              // カバー画像の画像パスがある場合はローディングを表示
+              ProgressView()
             }
 
             Button {

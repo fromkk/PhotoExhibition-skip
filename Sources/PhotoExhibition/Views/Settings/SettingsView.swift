@@ -156,6 +156,7 @@ struct SettingsView: View {
 private struct AsyncImageWithIconPath: View {
   let iconPath: String
   @State private var iconURL: URL? = nil
+  @State private var isLoading: Bool = true
   private let imageCache: any StorageImageCacheProtocol = StorageImageCache.shared
 
   var body: some View {
@@ -166,16 +167,25 @@ private struct AsyncImageWithIconPath: View {
         .frame(width: 40, height: 40)
         .clipShape(Circle())
     } placeholder: {
-      Circle()
-        .fill(Color.gray.opacity(0.2))
-        .frame(width: 40, height: 40)
+      ZStack {
+        Circle()
+          .fill(Color.gray.opacity(0.2))
+          .frame(width: 40, height: 40)
+
+        if isLoading {
+          ProgressView()
+            .frame(width: 40, height: 40)
+        }
+      }
     }
     .task {
+      isLoading = true
       do {
         iconURL = try await imageCache.getImageURL(for: iconPath)
       } catch {
         print("Failed to load icon image: \(error.localizedDescription)")
       }
+      isLoading = false
     }
   }
 }

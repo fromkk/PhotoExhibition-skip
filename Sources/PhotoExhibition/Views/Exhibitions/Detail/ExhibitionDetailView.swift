@@ -140,6 +140,9 @@ struct ExhibitionDetailView: View {
               ProgressView()
             }
           }
+        } else if store.exhibition.coverImagePath != nil {
+          // 画像パスがある読み込みはローディングを表示
+          ProgressView()
         }
 
         // Exhibition details
