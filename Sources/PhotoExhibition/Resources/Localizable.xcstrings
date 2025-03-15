@@ -122,7 +122,14 @@
       }
     },
     "Edit Photo" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真を編集"
+          }
+        }
+      }
     },
     "Edit Profile" : {
       "localizations" : {
@@ -436,7 +443,14 @@
       }
     },
     "Title" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトル"
+          }
+        }
+      }
     },
     "Uploading photo..." : {
       "localizations" : {
