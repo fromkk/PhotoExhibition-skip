@@ -8,6 +8,7 @@ import Foundation
 
 protocol StorageClient: Sendable {
   func url(_ path: String) async throws -> URL
+  @discardableResult
   func upload(from url: URL, to path: String) async throws -> URL
   func delete(path: String) async throws
 }
@@ -21,6 +22,7 @@ actor DefaultStorageClient: StorageClient {
     return try await reference.downloadURL()
   }
 
+  @discardableResult
   func upload(from url: URL, to path: String) async throws -> URL {
     let storage = Storage.storage()
     let reference = storage.reference().child(path)

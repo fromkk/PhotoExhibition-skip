@@ -21,9 +21,6 @@ final class ExhibitionDetailStore: Store {
     case addPhotoButtonTapped
     case photoSelected(URL?)
     case loadPhotos
-    case deletePhoto(String)
-    case confirmDeletePhoto(String)
-    case cancelDeletePhoto
     case photoTapped(Photo)
     case updateUploadedPhoto(title: String, description: String)
     case cancelPhotoEdit
@@ -46,7 +43,6 @@ final class ExhibitionDetailStore: Store {
   var selectedPhotoURL: URL? = nil
   var isUploadingPhoto: Bool = false
   var photoToDelete: String? = nil
-  var showDeletePhotoConfirmation: Bool = false
   var selectedPhoto: Photo? = nil
   var showPhotoDetail: Bool = false
   var uploadedPhoto: Photo? = nil
@@ -107,14 +103,6 @@ final class ExhibitionDetailStore: Store {
       }
     case .loadPhotos:
       loadPhotos()
-    case .deletePhoto(let photoId):
-      photoToDelete = photoId
-      showDeletePhotoConfirmation = true
-    case .confirmDeletePhoto(let photoId):
-      deletePhoto(photoId: photoId)
-    case .cancelDeletePhoto:
-      photoToDelete = nil
-      showDeletePhotoConfirmation = false
     case .photoTapped(let photo):
       selectedPhoto = photo
       showPhotoDetail = true
@@ -175,7 +163,7 @@ final class ExhibitionDetailStore: Store {
       do {
         // 写真をStorageにアップロード
         let photoPath = "exhibitions/\(exhibition.id)/photos/\(UUID().uuidString)"
-        let storageURL = try await storageClient.upload(from: url, to: photoPath)
+        try await storageClient.upload(from: url, to: photoPath)
 
         // 写真情報をFirestoreに保存
         let photo = try await photoClient.addPhoto(exhibitionId: exhibition.id, path: photoPath)
@@ -229,37 +217,6 @@ final class ExhibitionDetailStore: Store {
 
       uploadedPhoto = nil
       showPhotoEditSheet = false
-    }
-  }
-
-  private func deletePhoto(photoId: String) {
-    guard isOrganizer, let photoIndex = photos.firstIndex(where: { $0.id == photoId }) else {
-      showDeletePhotoConfirmation = false
-      photoToDelete = nil
-      return
-    }
-
-    let photo = photos[photoIndex]
-
-    Task {
-      do {
-        // Firestoreから写真情報を削除
-        try await photoClient.deletePhoto(exhibitionId: exhibition.id, photoId: photoId)
-
-        // Storageから写真を削除
-        if let path = photo.path {
-          try await storageClient.delete(path: path)
-        }
-
-        // 写真リストから削除
-        photos.remove(at: photoIndex)
-      } catch {
-        print("Failed to delete photo: \(error.localizedDescription)")
-        self.error = error
-      }
-
-      showDeletePhotoConfirmation = false
-      photoToDelete = nil
     }
   }
 
@@ -389,9 +346,6 @@ struct ExhibitionDetailView: View {
                     isOrganizer: store.isOrganizer,
                     onTap: {
                       store.send(.photoTapped(photo))
-                    },
-                    onDelete: {
-                      store.send(.deletePhoto(photo.id))
                     }
                   )
                 }
@@ -475,18 +429,6 @@ struct ExhibitionDetailView: View {
     } message: {
       Text("Are you sure you want to delete this exhibition? This action cannot be undone.")
     }
-    .alert("Delete Photo", isPresented: $store.showDeletePhotoConfirmation) {
-      Button("Cancel", role: .cancel) {
-        store.send(.cancelDeletePhoto)
-      }
-      if let photoId = store.photoToDelete {
-        Button("Delete", role: .destructive) {
-          store.send(.confirmDeletePhoto(photoId))
-        }
-      }
-    } message: {
-      Text("Are you sure you want to delete this photo? This action cannot be undone.")
-    }
     .onChange(of: store.shouldDismiss) { _, shouldDismiss in
       if shouldDismiss {
         dismiss()
@@ -522,7 +464,6 @@ struct PhotoGridItem: View {
   let path: String
   let isOrganizer: Bool
   let onTap: () -> Void
-  let onDelete: () -> Void
 
   @State private var imageURL: URL? = nil
   @State private var isLoading: Bool = true
@@ -567,17 +508,6 @@ struct PhotoGridItem: View {
       }
       .buttonStyle(.plain)
 
-      if isOrganizer {
-        Button {
-          onDelete()
-        } label: {
-          Image(systemName: "xmark.circle.fill")
-            .foregroundStyle(.white)
-            .background(Circle().fill(Color.black.opacity(0.5)))
-        }
-        .padding(4)
-      }
-
       // タイトルがある場合は小さなインジケータを表示
       if photo.title != nil || photo.description != nil {
         Image(systemName: "doc.text")
@@ -586,7 +516,6 @@ struct PhotoGridItem: View {
           .foregroundStyle(.white)
           .background(Circle().fill(Color.black.opacity(0.5)))
           .padding(4)
-          .offset(x: 0, y: 24)
       }
     }
     .task {

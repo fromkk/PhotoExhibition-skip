@@ -221,17 +221,6 @@
         }
       }
     },
-    "No Cover Image" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "カバー画像なし"
-          }
-        }
-      }
-    },
     "No Exhibitions" : {
       "localizations" : {
         "ja" : {

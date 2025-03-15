@@ -13,6 +13,8 @@ final class PhotoDetailStore: Store {
     case loadImage
     case editButtonTapped
     case updatePhoto(title: String, description: String)
+    case deleteButtonTapped
+    case confirmDeletePhoto
   }
 
   let exhibitionId: String
@@ -22,7 +24,9 @@ final class PhotoDetailStore: Store {
   var imageURL: URL? = nil
   var isLoading: Bool = false
   var showEditSheet: Bool = false
+  var showDeleteConfirmation: Bool = false
   var error: Error? = nil
+  var isDeleted: Bool = false
 
   private let imageCache: StorageImageCacheProtocol
   private let photoClient: PhotoClient
@@ -42,7 +46,7 @@ final class PhotoDetailStore: Store {
 
     // 初期化時に画像の読み込みを開始
     Task {
-      loadImage()
+      PhotoDetailStore.loadImage(self)
     }
   }
 
@@ -52,48 +56,69 @@ final class PhotoDetailStore: Store {
       // 閉じるアクションはViewで処理
       break
     case .loadImage:
-      loadImage()
+      PhotoDetailStore.loadImage(self)
     case .editButtonTapped:
       if isOrganizer {
         showEditSheet = true
       }
     case .updatePhoto(let title, let description):
-      updatePhoto(title: title, description: description)
+      PhotoDetailStore.updatePhoto(self, title: title, description: description)
+    case .deleteButtonTapped:
+      if isOrganizer {
+        showDeleteConfirmation = true
+      }
+    case .confirmDeletePhoto:
+      PhotoDetailStore.deletePhoto(self)
     }
   }
 
-  private func loadImage() {
-    guard let path = photo.path else { return }
+  private static func loadImage(_ store: PhotoDetailStore) {
+    guard let path = store.photo.path else { return }
 
-    isLoading = true
+    store.isLoading = true
 
     Task {
       do {
-        self.imageURL = try await imageCache.getImageURL(for: path)
+        store.imageURL = try await store.imageCache.getImageURL(for: path)
       } catch {
         print("Failed to load image: \(error.localizedDescription)")
-        self.error = error
+        store.error = error
       }
 
-      isLoading = false
+      store.isLoading = false
     }
   }
 
-  private func updatePhoto(title: String, description: String) {
+  private static func updatePhoto(_ store: PhotoDetailStore, title: String, description: String) {
     Task {
       do {
-        try await photoClient.updatePhoto(
-          exhibitionId: exhibitionId,
-          photoId: photo.id,
+        try await store.photoClient.updatePhoto(
+          exhibitionId: store.exhibitionId,
+          photoId: store.photo.id,
           title: title.isEmpty ? nil : title,
           description: description.isEmpty ? nil : description
         )
       } catch {
         print("Failed to update photo: \(error.localizedDescription)")
-        self.error = error
+        store.error = error
       }
 
-      showEditSheet = false
+      store.showEditSheet = false
+    }
+  }
+
+  private static func deletePhoto(_ store: PhotoDetailStore) {
+    Task {
+      do {
+        try await store.photoClient.deletePhoto(
+          exhibitionId: store.exhibitionId, photoId: store.photo.id)
+        store.isDeleted = true
+      } catch {
+        print("Failed to delete photo: \(error.localizedDescription)")
+        store.error = error
+      }
+
+      store.showDeleteConfirmation = false
     }
   }
 }
@@ -167,14 +192,26 @@ struct PhotoDetailView: View {
           Spacer()
 
           if store.isOrganizer {
-            Button {
-              store.send(.editButtonTapped)
-            } label: {
-              Image(systemName: "pencil")
-                .font(.title2)
-                .foregroundStyle(.white)
-                .padding(12)
-                .background(Circle().fill(Color.black.opacity(0.5)))
+            HStack(spacing: 16) {
+              Button {
+                store.send(.editButtonTapped)
+              } label: {
+                Image(systemName: "pencil")
+                  .font(.title2)
+                  .foregroundStyle(.white)
+                  .padding(12)
+                  .background(Circle().fill(Color.black.opacity(0.5)))
+              }
+
+              Button {
+                store.send(.deleteButtonTapped)
+              } label: {
+                Image(systemName: "trash")
+                  .font(.title2)
+                  .foregroundStyle(.white)
+                  .padding(12)
+                  .background(Circle().fill(Color.black.opacity(0.5)))
+              }
             }
           }
         }
@@ -218,6 +255,19 @@ struct PhotoDetailView: View {
         description: store.photo.description ?? ""
       ) { title, description in
         store.send(.updatePhoto(title: title, description: description))
+      }
+    }
+    .alert("Delete Photo", isPresented: $store.showDeleteConfirmation) {
+      Button("Cancel", role: .cancel) {}
+      Button("Delete", role: .destructive) {
+        store.send(.confirmDeletePhoto)
+      }
+    } message: {
+      Text("Are you sure you want to delete this photo? This action cannot be undone.")
+    }
+    .onChange(of: store.isDeleted) { _, isDeleted in
+      if isDeleted {
+        dismiss()
       }
     }
     .onAppear {
