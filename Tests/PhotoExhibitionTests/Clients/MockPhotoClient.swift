@@ -17,6 +17,13 @@ final class MockPhotoClient: PhotoClient {
   var addPhotoPath: String? = nil
   var mockAddedPhoto: Photo? = nil
 
+  // updatePhoto()の呼び出し追跡
+  var updatePhotoWasCalled: Bool = false
+  var updatePhotoExhibitionId: String? = nil
+  var updatePhotoId: String? = nil
+  var updatePhotoTitle: String? = nil
+  var updatePhotoDescription: String? = nil
+
   // deletePhoto()の呼び出し追跡
   var deletePhotoWasCalled: Bool = false
   var deletePhotoExhibitionId: String? = nil
@@ -67,6 +74,23 @@ final class MockPhotoClient: PhotoClient {
     )
   }
 
+  func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?)
+    async throws
+  {
+    updatePhotoWasCalled = true
+    updatePhotoExhibitionId = exhibitionId
+    updatePhotoId = photoId
+    updatePhotoTitle = title
+    updatePhotoDescription = description
+
+    // 非同期処理をシミュレート
+    await Task.yield()
+
+    if !shouldSucceed, let error = errorToThrow {
+      throw error
+    }
+  }
+
   func deletePhoto(exhibitionId: String, photoId: String) async throws {
     deletePhotoWasCalled = true
     deletePhotoExhibitionId = exhibitionId
@@ -89,6 +113,12 @@ final class MockPhotoClient: PhotoClient {
     addPhotoWasCalled = false
     addPhotoExhibitionId = nil
     addPhotoPath = nil
+
+    updatePhotoWasCalled = false
+    updatePhotoExhibitionId = nil
+    updatePhotoId = nil
+    updatePhotoTitle = nil
+    updatePhotoDescription = nil
 
     deletePhotoWasCalled = false
     deletePhotoExhibitionId = nil
