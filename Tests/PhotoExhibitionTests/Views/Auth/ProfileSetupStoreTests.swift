@@ -72,7 +72,7 @@ final class ProfileSetupStoreTests: XCTestCase {
     )
 
     // イメージURLが非同期で取得されるため、少し待機
-    await Task.yield()
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // Assert
     XCTAssertEqual(store.name, "Test User")
@@ -153,7 +153,7 @@ final class ProfileSetupStoreTests: XCTestCase {
     store.send(ProfileSetupStore.Action.saveButtonTapped)
 
     // 非同期処理が完了するのを待つ
-    await Task.yield()
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // Assert
     XCTAssertTrue(mockMemberUpdateClient.updateProfileWasCalled)
@@ -191,7 +191,7 @@ final class ProfileSetupStoreTests: XCTestCase {
     store.send(ProfileSetupStore.Action.saveButtonTapped)
 
     // 非同期処理が完了するのを待つ
-    await Task.yield()
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // Assert
     XCTAssertTrue(mockStorageClient.uploadWasCalled)
@@ -232,7 +232,7 @@ final class ProfileSetupStoreTests: XCTestCase {
     store.send(ProfileSetupStore.Action.saveButtonTapped)
 
     // 非同期処理が完了するのを待つ
-    await Task.yield()
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // Assert
     XCTAssertTrue(mockMemberUpdateClient.updateProfileWasCalled)
@@ -242,7 +242,7 @@ final class ProfileSetupStoreTests: XCTestCase {
     XCTAssertFalse(mockDelegate.didCompleteProfileSetupCalled)
   }
 
-  func testRemoveIcon() {
+  func testRemoveIcon() async {
     // Arrange
     let iconPath = "members/test-id/icons/test-icon.jpg"
     let testMember = Member(
@@ -263,21 +263,19 @@ final class ProfileSetupStoreTests: XCTestCase {
     )
 
     // イメージURLが非同期で取得されるため、少し待機
-    Task {
-      await Task.yield()
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
-      // iconPathとiconImageURLが設定されていることを確認
-      XCTAssertEqual(store.iconPath, iconPath)
-      XCTAssertEqual(store.iconImageURL, mockURL)
+    // iconPathとiconImageURLが設定されていることを確認
+    XCTAssertEqual(store.iconPath, iconPath)
+    XCTAssertEqual(store.iconImageURL, mockURL)
 
-      // Act
-      store.send(ProfileSetupStore.Action.removeIcon)
+    // Act
+    store.send(ProfileSetupStore.Action.removeIcon)
 
-      // Assert
-      XCTAssertNil(store.iconPath)
-      XCTAssertNil(store.iconImageURL)
-      XCTAssertNil(store.selectedIconURL)
-    }
+    // Assert
+    XCTAssertNil(store.iconPath)
+    XCTAssertNil(store.iconImageURL)
+    XCTAssertNil(store.selectedIconURL)
   }
 
   func testSaveButtonTappedAfterRemovingIcon() async {
@@ -306,7 +304,7 @@ final class ProfileSetupStoreTests: XCTestCase {
     store.send(ProfileSetupStore.Action.saveButtonTapped)
 
     // 非同期処理が完了するのを待つ
-    await Task.yield()
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // Assert
     XCTAssertTrue(mockMemberUpdateClient.updateProfileWasCalled)

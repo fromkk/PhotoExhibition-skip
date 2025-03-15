@@ -232,7 +232,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.confirmDelete)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.deleteExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 削除メソッドが呼ばれたことを確認
     XCTAssertTrue(mockExhibitionsClient.deleteWasCalled, "Delete method should be called")
@@ -286,7 +286,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.confirmDelete)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.deleteExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // shouldDismissがtrueになることを確認
     XCTAssertTrue(
@@ -315,7 +315,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.confirmDelete)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.deleteExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // エラーが設定されることを確認
     XCTAssertNotNil(store.error, "Error should be set after failed deletion")
@@ -343,7 +343,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.loadCoverImage)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockStorageImageCache.getImageURLExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // StorageImageCacheのgetImageURLメソッドが呼ばれたことを確認
     XCTAssertTrue(mockStorageImageCache.getImageURLWasCalled, "getImageURL method should be called")
@@ -407,7 +407,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.loadCoverImage)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockStorageImageCache.getImageURLExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // エラーが処理されることを確認
     XCTAssertTrue(
@@ -432,7 +432,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.loadPhotos)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockPhotoClient.fetchPhotosExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // PhotoClientのfetchPhotosメソッドが呼ばれたことを確認
     XCTAssertTrue(mockPhotoClient.fetchPhotosWasCalled, "fetchPhotos method should be called")
@@ -461,7 +461,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.loadPhotos)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockPhotoClient.fetchPhotosExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // エラーが処理されることを確認
     XCTAssertFalse(store.isLoadingPhotos, "isLoadingPhotos should be false after error")
@@ -489,8 +489,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.photoSelected(testURL))
 
     // 非同期処理の完了を待つ
-    await fulfillment(
-      of: [mockStorageClient.uploadExpectation, mockPhotoClient.addPhotoExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // StorageClientのuploadメソッドが呼ばれたことを確認
     XCTAssertTrue(mockStorageClient.uploadWasCalled, "upload method should be called")
@@ -571,7 +570,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.photoSelected(testURL))
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockStorageClient.uploadExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // エラーが処理されることを確認
     XCTAssertFalse(store.isUploadingPhoto, "isUploadingPhoto should be false after error")
@@ -609,15 +608,13 @@ final class ExhibitionDetailStoreTests: XCTestCase {
 
     // 写真を読み込む
     store.send(ExhibitionDetailStore.Action.loadPhotos)
-    await fulfillment(of: [mockPhotoClient.fetchPhotosExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 写真削除確認アクションを送信
     store.send(ExhibitionDetailStore.Action.confirmDeletePhoto("test-photo-id"))
 
     // 非同期処理の完了を待つ
-    await fulfillment(
-      of: [mockPhotoClient.deletePhotoExpectation, mockStorageClient.deleteExpectation],
-      timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // PhotoClientのdeletePhotoメソッドが呼ばれたことを確認
     XCTAssertTrue(mockPhotoClient.deletePhotoWasCalled, "deletePhoto method should be called")
@@ -665,7 +662,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
 
     // 写真を読み込む
     store.send(ExhibitionDetailStore.Action.loadPhotos)
-    await fulfillment(of: [mockPhotoClient.fetchPhotosExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 写真削除確認アクションを送信
     store.send(ExhibitionDetailStore.Action.confirmDeletePhoto("test-photo-id"))

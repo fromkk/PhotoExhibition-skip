@@ -86,7 +86,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertTrue(store.isLoading)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.fetchExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 展示会データが取得されることを確認
     XCTAssertEqual(store.exhibitions.count, 2)
@@ -103,50 +103,43 @@ final class ExhibitionsStoreTests: XCTestCase {
 
     // 初期データを取得
     store.send(ExhibitionsStore.Action.task)
-    await fulfillment(of: [mockExhibitionsClient.fetchExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 次のページのデータを設定
-    let nextExhibitions = [
+    let nextPageExhibitions = [
       Exhibition(
         id: "exhibition-3",
         name: "Exhibition 3",
         description: "Description 3",
-        from: Date(),
-        to: Date().addingTimeInterval(60 * 60 * 24 * 7),
+        from: Date().addingTimeInterval(60 * 60 * 24 * 20),
+        to: Date().addingTimeInterval(60 * 60 * 24 * 27),
         organizer: mockExhibitions[0].organizer,
         coverImagePath: "test/cover-3.jpg",
         createdAt: Date(),
         updatedAt: Date()
-      ),
-      Exhibition(
-        id: "exhibition-4",
-        name: "Exhibition 4",
-        description: "Description 4",
-        from: Date().addingTimeInterval(60 * 60 * 24 * 10),
-        to: Date().addingTimeInterval(60 * 60 * 24 * 17),
-        organizer: mockExhibitions[0].organizer,
-        coverImagePath: "test/cover-4.jpg",
-        createdAt: Date(),
-        updatedAt: Date()
-      ),
+      )
     ]
-
-    // モックの設定をリセット
-    mockExhibitionsClient.reset()
-    mockExhibitionsClient.mockExhibitions = nextExhibitions
+    mockExhibitionsClient.mockExhibitions = nextPageExhibitions
     mockExhibitionsClient.mockNextCursor = nil
 
     // loadMoreアクションを送信
     store.send(ExhibitionsStore.Action.loadMore)
 
-    // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.fetchExpectation], timeout: 1.0)
+    // isLoadingがtrueになることを確認
+    XCTAssertTrue(store.isLoading)
 
-    // 展示会データが追加されていることを確認
-    XCTAssertEqual(store.exhibitions.count, 4)  // 初期データ2件 + 追加データ2件
+    // 非同期処理の完了を待つ
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // 展示会データが追加されることを確認
+    XCTAssertEqual(store.exhibitions.count, 3)
     XCTAssertEqual(store.exhibitions[2].id, "exhibition-3")
-    XCTAssertEqual(store.exhibitions[3].id, "exhibition-4")
-    XCTAssertFalse(store.hasMore)  // 次のページがないことを確認
+
+    // isLoadingがfalseに戻ることを確認
+    XCTAssertFalse(store.isLoading)
+
+    // hasMoreがfalseになることを確認
+    XCTAssertFalse(store.hasMore)
   }
 
   func testLoadMoreActionDoesNotFetchWhenNoMoreData() async {
@@ -155,7 +148,7 @@ final class ExhibitionsStoreTests: XCTestCase {
 
     // 初期データを取得
     store.send(ExhibitionsStore.Action.task)
-    await fulfillment(of: [mockExhibitionsClient.fetchExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 次のページのデータがないことを設定
     mockExhibitionsClient.mockNextCursor = nil
@@ -185,7 +178,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertTrue(store.isLoading)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.fetchExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 展示会データが取得されることを確認
     XCTAssertEqual(store.exhibitions.count, 2)

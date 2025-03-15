@@ -5,7 +5,6 @@ import XCTest
 
 @MainActor
 final class MockStorageImageCache: StorageImageCacheProtocol {
-  var getImageURLExpectation = XCTestExpectation(description: "getImageURL called")
   var getImageURLWasCalled = false
   var getImageURLPath: String?
   var mockImageURL: URL?
@@ -14,7 +13,9 @@ final class MockStorageImageCache: StorageImageCacheProtocol {
   func getImageURL(for path: String) async throws -> URL {
     getImageURLWasCalled = true
     getImageURLPath = path
-    getImageURLExpectation.fulfill()
+
+    // 非同期処理をシミュレート
+    await Task.yield()
 
     if shouldThrowError {
       throw NSError(
@@ -38,6 +39,5 @@ extension MockStorageImageCache {
     getImageURLPath = nil
     mockImageURL = nil
     shouldThrowError = false
-    getImageURLExpectation = XCTestExpectation(description: "getImageURL called")
   }
 }

@@ -112,7 +112,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     )
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockStorageImageCache.getImageURLExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // StorageImageCacheのgetImageURLメソッドが呼ばれたことを確認
     XCTAssertTrue(mockStorageImageCache.getImageURLWasCalled, "getImageURL method should be called")
@@ -343,7 +343,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     store.send(ExhibitionEditStore.Action.saveButtonTapped)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.createExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // createメソッドが呼ばれたことを確認
     XCTAssertTrue(mockExhibitionsClient.createWasCalled)
@@ -378,7 +378,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     store.send(ExhibitionEditStore.Action.saveButtonTapped)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.updateExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // updateメソッドが呼ばれたことを確認
     XCTAssertTrue(mockExhibitionsClient.updateWasCalled)
@@ -418,10 +418,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     store.send(ExhibitionEditStore.Action.saveButtonTapped)
 
     // 非同期処理の完了を待つ
-    await fulfillment(
-      of: [mockStorageClient.uploadExpectation, mockExhibitionsClient.createExpectation],
-      timeout: 1.0
-    )
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // 画像アップロードが呼ばれたことを確認
     XCTAssertTrue(mockStorageClient.uploadWasCalled)
@@ -463,7 +460,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     store.send(ExhibitionEditStore.Action.saveButtonTapped)
 
     // 非同期処理の完了を待つ
-    await fulfillment(of: [mockExhibitionsClient.createExpectation], timeout: 1.0)
+    try? await Task.sleep(nanoseconds: 100_000_000)
 
     // エラーが設定されることを確認
     XCTAssertNotNil(store.error)

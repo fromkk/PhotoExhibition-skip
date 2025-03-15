@@ -10,20 +10,17 @@ final class MockMemberUpdateClient: MemberUpdateClient {
   var updateNameWasCalled: Bool = false
   var updatedMemberID: String? = nil
   var updatedName: String? = nil
-  var updateNameExpectation = XCTestExpectation(description: "UpdateName method called")
 
   // updateIcon()の呼び出し追跡
   var updateIconWasCalled: Bool = false
   var updatedIconMemberID: String? = nil
   var updatedIconPath: String? = nil
-  var updateIconExpectation = XCTestExpectation(description: "UpdateIcon method called")
 
   // updateProfile()の呼び出し追跡
   var updateProfileWasCalled: Bool = false
   var updatedProfileMemberID: String? = nil
   var updatedProfileName: String? = nil
   var updatedProfileIconPath: String? = nil
-  var updateProfileExpectation = XCTestExpectation(description: "UpdateProfile method called")
 
   // モック結果
   var mockMember: Member = Member(
@@ -44,7 +41,9 @@ final class MockMemberUpdateClient: MemberUpdateClient {
     updateNameWasCalled = true
     updatedMemberID = memberID
     updatedName = name
-    updateNameExpectation.fulfill()
+
+    // 非同期処理をシミュレート
+    await Task.yield()
 
     if !shouldSucceed {
       if let error = errorToThrow {
@@ -68,7 +67,9 @@ final class MockMemberUpdateClient: MemberUpdateClient {
     updateIconWasCalled = true
     updatedIconMemberID = memberID
     updatedIconPath = iconPath
-    updateIconExpectation.fulfill()
+
+    // 非同期処理をシミュレート
+    await Task.yield()
 
     if !shouldSucceed {
       if let error = errorToThrow {
@@ -93,7 +94,9 @@ final class MockMemberUpdateClient: MemberUpdateClient {
     updatedProfileMemberID = memberID
     updatedProfileName = name
     updatedProfileIconPath = iconPath
-    updateProfileExpectation.fulfill()
+
+    // 非同期処理をシミュレート
+    await Task.yield()
 
     if !shouldSucceed {
       if let error = errorToThrow {
@@ -120,20 +123,13 @@ final class MockMemberUpdateClient: MemberUpdateClient {
     updateNameWasCalled = false
     updatedMemberID = nil
     updatedName = nil
-
     updateIconWasCalled = false
     updatedIconMemberID = nil
     updatedIconPath = nil
-
     updateProfileWasCalled = false
     updatedProfileMemberID = nil
     updatedProfileName = nil
     updatedProfileIconPath = nil
-
-    // 新しいExpectationを作成
-    updateNameExpectation = XCTestExpectation(description: "UpdateName method called")
-    updateIconExpectation = XCTestExpectation(description: "UpdateIcon method called")
-    updateProfileExpectation = XCTestExpectation(description: "UpdateProfile method called")
 
     // デフォルト値に戻す
     shouldSucceed = true

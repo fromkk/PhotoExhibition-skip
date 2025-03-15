@@ -11,7 +11,6 @@ final class MockCurrentUserClient: @preconcurrency CurrentUserClient {
 
   // logout()の呼び出し追跡
   var logoutWasCalled: Bool = false
-  var logoutExpectation = XCTestExpectation(description: "Logout method called")
 
   // 成功/失敗のシミュレーション
   var shouldSucceed: Bool = true
@@ -25,7 +24,6 @@ final class MockCurrentUserClient: @preconcurrency CurrentUserClient {
 
   func logout() throws {
     logoutWasCalled = true
-    logoutExpectation.fulfill()
 
     if !shouldSucceed, let error = errorToThrow {
       throw error
@@ -37,9 +35,6 @@ final class MockCurrentUserClient: @preconcurrency CurrentUserClient {
   func reset() {
     // 呼び出し追跡をリセット
     logoutWasCalled = false
-
-    // 新しいExpectationを作成
-    logoutExpectation = XCTestExpectation(description: "Logout method called")
 
     // デフォルト値に戻す
     shouldSucceed = true

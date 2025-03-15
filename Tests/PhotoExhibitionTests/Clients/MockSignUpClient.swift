@@ -10,7 +10,6 @@ final class MockSignUpClient: SignUpClient {
   var signUpWasCalled: Bool = false
   var signUpEmail: String? = nil
   var signUpPassword: String? = nil
-  var signUpExpectation = XCTestExpectation(description: "SignUp method called")
 
   // モック結果
   var mockMember: Member = Member(
@@ -31,7 +30,9 @@ final class MockSignUpClient: SignUpClient {
     signUpWasCalled = true
     signUpEmail = email
     signUpPassword = password
-    signUpExpectation.fulfill()
+
+    // 非同期処理をシミュレート
+    await Task.yield()
 
     if !shouldSucceed {
       if let error = errorToThrow {
@@ -51,9 +52,6 @@ final class MockSignUpClient: SignUpClient {
     signUpWasCalled = false
     signUpEmail = nil
     signUpPassword = nil
-
-    // 新しいExpectationを作成
-    signUpExpectation = XCTestExpectation(description: "SignUp method called")
 
     // デフォルト値に戻す
     shouldSucceed = true

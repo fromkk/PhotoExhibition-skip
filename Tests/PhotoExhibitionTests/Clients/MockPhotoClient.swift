@@ -9,21 +9,18 @@ final class MockPhotoClient: PhotoClient {
   // fetchPhotos()の呼び出し追跡
   var fetchPhotosWasCalled: Bool = false
   var fetchPhotosExhibitionId: String? = nil
-  var fetchPhotosExpectation = XCTestExpectation(description: "fetchPhotos method called")
   var mockPhotos: [Photo] = []
 
   // addPhoto()の呼び出し追跡
   var addPhotoWasCalled: Bool = false
   var addPhotoExhibitionId: String? = nil
   var addPhotoPath: String? = nil
-  var addPhotoExpectation = XCTestExpectation(description: "addPhoto method called")
   var mockAddedPhoto: Photo? = nil
 
   // deletePhoto()の呼び出し追跡
   var deletePhotoWasCalled: Bool = false
   var deletePhotoExhibitionId: String? = nil
   var deletePhotoId: String? = nil
-  var deletePhotoExpectation = XCTestExpectation(description: "deletePhoto method called")
 
   // 成功/失敗のシミュレーション
   var shouldSucceed: Bool = true
@@ -34,7 +31,9 @@ final class MockPhotoClient: PhotoClient {
   func fetchPhotos(exhibitionId: String) async throws -> [Photo] {
     fetchPhotosWasCalled = true
     fetchPhotosExhibitionId = exhibitionId
-    fetchPhotosExpectation.fulfill()
+
+    // 非同期処理をシミュレート
+    await Task.yield()
 
     if !shouldSucceed, let error = errorToThrow {
       throw error
@@ -47,7 +46,9 @@ final class MockPhotoClient: PhotoClient {
     addPhotoWasCalled = true
     addPhotoExhibitionId = exhibitionId
     addPhotoPath = path
-    addPhotoExpectation.fulfill()
+
+    // 非同期処理をシミュレート
+    await Task.yield()
 
     if !shouldSucceed, let error = errorToThrow {
       throw error
@@ -70,7 +71,9 @@ final class MockPhotoClient: PhotoClient {
     deletePhotoWasCalled = true
     deletePhotoExhibitionId = exhibitionId
     deletePhotoId = photoId
-    deletePhotoExpectation.fulfill()
+
+    // 非同期処理をシミュレート
+    await Task.yield()
 
     if !shouldSucceed, let error = errorToThrow {
       throw error
@@ -82,17 +85,14 @@ final class MockPhotoClient: PhotoClient {
   func reset() {
     fetchPhotosWasCalled = false
     fetchPhotosExhibitionId = nil
-    fetchPhotosExpectation = XCTestExpectation(description: "fetchPhotos method called")
 
     addPhotoWasCalled = false
     addPhotoExhibitionId = nil
     addPhotoPath = nil
-    addPhotoExpectation = XCTestExpectation(description: "addPhoto method called")
 
     deletePhotoWasCalled = false
     deletePhotoExhibitionId = nil
     deletePhotoId = nil
-    deletePhotoExpectation = XCTestExpectation(description: "deletePhoto method called")
 
     shouldSucceed = true
     errorToThrow = nil
