@@ -39,6 +39,11 @@ final class PhotoDetailStore: Store {
     self.isOrganizer = isOrganizer
     self.imageCache = imageCache
     self.photoClient = photoClient
+
+    // 初期化時に画像の読み込みを開始
+    Task {
+      loadImage()
+    }
   }
 
   func send(_ action: Action) {
@@ -137,6 +142,12 @@ struct PhotoDetailView: View {
         }
       } else if store.isLoading {
         ProgressView()
+      } else {
+        // 画像がない場合のプレースホルダー
+        Image(systemName: "photo")
+          .font(.system(size: 50))
+          .foregroundStyle(.white.opacity(0.5))
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
 
       // オーバーレイコントロール
@@ -209,7 +220,8 @@ struct PhotoDetailView: View {
         store.send(.updatePhoto(title: title, description: description))
       }
     }
-    .task {
+    .onAppear {
+      // 画面表示時に画像を読み込む
       store.send(.loadImage)
     }
   }
