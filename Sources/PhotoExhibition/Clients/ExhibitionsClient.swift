@@ -15,6 +15,7 @@ protocol ExhibitionsClient: Sendable {
   func create(data: [String: any Sendable]) async throws -> String
   func update(id: String, data: [String: any Sendable]) async throws
   func delete(id: String) async throws
+  func get(id: String) async throws -> Exhibition
 }
 
 actor DefaultExhibitionsClient: ExhibitionsClient {
@@ -99,5 +100,50 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
   func delete(id: String) async throws {
     try await Firestore.firestore().collection("exhibitions").document(id)
       .delete()
+  }
+
+  func get(id: String) async throws -> Exhibition {
+    let firestore = Firestore.firestore()
+    let document = try await firestore.collection("exhibitions").document(id).getDocument()
+
+    guard let data = document.data(),
+      let organizerUID = data["organizer"] as? String
+    else {
+      throw NSError(
+        domain: "ExhibitionsClient", code: 404,
+        userInfo: [
+          NSLocalizedDescriptionKey: "Exhibition not found or invalid data"
+        ])
+    }
+
+    // キャッシュからメンバーを取得を試みる
+    if let cachedMember = await DefaultMemberCacheClient.shared.getMember(withID: organizerUID),
+      let exhibition = Exhibition(
+        documentID: document.documentID, data: data, organizer: cachedMember)
+    {
+      return exhibition
+    } else {
+      // キャッシュにない場合はFirestoreから取得
+      let organizerReference = firestore.collection("members").document(organizerUID)
+      let organizerDocument = try await organizerReference.getDocument()
+
+      guard
+        let organizerData = organizerDocument.data(),
+        let organizer = Member(
+          documentID: organizerDocument.documentID, data: organizerData),
+        let exhibition = Exhibition(
+          documentID: document.documentID, data: data, organizer: organizer)
+      else {
+        throw NSError(
+          domain: "ExhibitionsClient", code: 404,
+          userInfo: [
+            NSLocalizedDescriptionKey: "Failed to create exhibition from data"
+          ])
+      }
+
+      // 取得したメンバーをキャッシュに保存
+      await DefaultMemberCacheClient.shared.setMember(organizer)
+      return exhibition
+    }
   }
 }

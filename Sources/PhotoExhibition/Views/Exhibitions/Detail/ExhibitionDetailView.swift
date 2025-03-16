@@ -10,7 +10,7 @@ import SwiftUI
 private let maxExhibitionPhotos = 30
 
 @Observable
-final class ExhibitionDetailStore: Store {
+final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate, ExhibitionEditStoreDelegate {
   enum Action {
     case checkPermissions
     case editExhibition
@@ -24,9 +24,10 @@ final class ExhibitionDetailStore: Store {
     case photoTapped(Photo)
     case updateUploadedPhoto(title: String, description: String)
     case cancelPhotoEdit
+    case reloadExhibition
   }
 
-  let exhibition: Exhibition
+  var exhibition: Exhibition
   var showEditSheet: Bool = false
   var showDeleteConfirmation: Bool = false
   var isDeleting: Bool = false
@@ -111,6 +112,8 @@ final class ExhibitionDetailStore: Store {
     case .cancelPhotoEdit:
       uploadedPhoto = nil
       showPhotoEditSheet = false
+    case .reloadExhibition:
+      reloadExhibition()
     }
   }
 
@@ -235,6 +238,55 @@ final class ExhibitionDetailStore: Store {
 
       isDeleting = false
       showDeleteConfirmation = false
+    }
+  }
+
+  // PhotoDetailStoreDelegateの実装
+  func photoDetailStore(_ store: PhotoDetailStore, didUpdatePhoto photo: Photo) {
+    // 写真リストを更新
+    if let index = photos.firstIndex(where: { $0.id == photo.id }) {
+      photos[index] = photo
+    }
+
+    // 選択中の写真も更新
+    if selectedPhoto?.id == photo.id {
+      selectedPhoto = photo
+    }
+  }
+
+  func photoDetailStore(_ store: PhotoDetailStore, didDeletePhoto photoId: String) {
+    // 写真リストから削除
+    photos.removeAll(where: { $0.id == photoId })
+
+    // 選択中の写真をクリア
+    if selectedPhoto?.id == photoId {
+      selectedPhoto = nil
+    }
+  }
+
+  // ExhibitionEditStoreDelegateの実装
+  func didSaveExhibition() {
+    // 展示会情報を再読み込み
+    send(.reloadExhibition)
+  }
+
+  func didCancelExhibition() {
+    // 何もしない
+  }
+
+  private func reloadExhibition() {
+    Task {
+      do {
+        let updatedExhibition = try await exhibitionsClient.get(id: exhibition.id)
+        self.exhibition = updatedExhibition
+
+        // カバー画像も再読み込み
+        coverImageURL = nil
+        send(.loadCoverImage)
+      } catch {
+        print("Failed to reload exhibition: \(error.localizedDescription)")
+        self.error = error
+      }
     }
   }
 }
@@ -392,14 +444,19 @@ struct ExhibitionDetailView: View {
       }
     }
     .sheet(isPresented: $store.showEditSheet) {
-      ExhibitionEditView(store: ExhibitionEditStore(mode: .edit(store.exhibition)))
+      ExhibitionEditView(
+        store: ExhibitionEditStore(
+          mode: .edit(store.exhibition),
+          delegate: store
+        ))
     }
     .sheet(isPresented: $store.showPhotoDetail) {
       if let photo = store.selectedPhoto {
         PhotoDetailView(
           exhibitionId: store.exhibition.id,
           photo: photo,
-          isOrganizer: store.isOrganizer
+          isOrganizer: store.isOrganizer,
+          delegate: store
         )
       }
     }

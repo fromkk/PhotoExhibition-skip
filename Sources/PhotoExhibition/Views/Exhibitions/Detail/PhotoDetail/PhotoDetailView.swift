@@ -5,6 +5,13 @@ import SwiftUI
   import Observation
 #endif
 
+// PhotoDetailStoreDelegate プロトコルを追加
+@MainActor
+protocol PhotoDetailStoreDelegate: AnyObject {
+  func photoDetailStore(_ store: PhotoDetailStore, didUpdatePhoto photo: Photo)
+  func photoDetailStore(_ store: PhotoDetailStore, didDeletePhoto photoId: String)
+}
+
 @Observable
 @MainActor
 final class PhotoDetailStore: Store {
@@ -24,6 +31,9 @@ final class PhotoDetailStore: Store {
   let exhibitionId: String
   let photo: Photo
   let isOrganizer: Bool
+
+  // デリゲートを追加
+  weak var delegate: (any PhotoDetailStoreDelegate)?
 
   var imageURL: URL? = nil
   var isLoading: Bool = false
@@ -45,12 +55,14 @@ final class PhotoDetailStore: Store {
     exhibitionId: String,
     photo: Photo,
     isOrganizer: Bool,
+    delegate: (any PhotoDetailStoreDelegate)? = nil,
     imageCache: StorageImageCacheProtocol = StorageImageCache.shared,
     photoClient: PhotoClient = DefaultPhotoClient()
   ) {
     self.exhibitionId = exhibitionId
     self.photo = photo
     self.isOrganizer = isOrganizer
+    self.delegate = delegate
     self.imageCache = imageCache
     self.photoClient = photoClient
 
@@ -122,6 +134,28 @@ final class PhotoDetailStore: Store {
           title: title.isEmpty ? nil : title,
           description: description.isEmpty ? nil : description
         )
+
+        // 更新された写真情報を作成
+        let updatedPhoto = Photo(
+          id: store.photo.id,
+          path: store.photo.path,
+          title: title.isEmpty ? nil : title,
+          description: description.isEmpty ? nil : description,
+          takenDate: store.photo.takenDate,
+          photographer: store.photo.photographer,
+          createdAt: store.photo.createdAt,
+          updatedAt: Date()
+        )
+
+        // 複数写真がある場合は現在の写真も更新
+        if !store.photos.isEmpty,
+          let index = store.photos.firstIndex(where: { $0.id == store.photo.id })
+        {
+          store.photos[index] = updatedPhoto
+        }
+
+        // デリゲートに通知
+        store.delegate?.photoDetailStore(store, didUpdatePhoto: updatedPhoto)
       } catch {
         print("Failed to update photo: \(error.localizedDescription)")
         store.error = error
@@ -137,6 +171,9 @@ final class PhotoDetailStore: Store {
         try await store.photoClient.deletePhoto(
           exhibitionId: store.exhibitionId, photoId: store.photo.id)
         store.isDeleted = true
+
+        // デリゲートに通知
+        store.delegate?.photoDetailStore(store, didDeletePhoto: store.photo.id)
       } catch {
         print("Failed to delete photo: \(error.localizedDescription)")
         store.error = error
@@ -224,11 +261,15 @@ struct PhotoDetailView: View {
   // スワイプ検出用
   @State private var dragOffset: CGFloat = 0
 
-  init(exhibitionId: String, photo: Photo, isOrganizer: Bool) {
+  init(
+    exhibitionId: String, photo: Photo, isOrganizer: Bool,
+    delegate: (any PhotoDetailStoreDelegate)? = nil
+  ) {
     self.store = PhotoDetailStore(
       exhibitionId: exhibitionId,
       photo: photo,
-      isOrganizer: isOrganizer
+      isOrganizer: isOrganizer,
+      delegate: delegate
     )
   }
 

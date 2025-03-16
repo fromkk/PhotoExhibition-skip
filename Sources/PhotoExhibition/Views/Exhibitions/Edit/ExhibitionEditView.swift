@@ -48,6 +48,7 @@ final class ExhibitionEditStore: Store {
   var coverImagePath: String?
 
   private let mode: Mode
+  weak var delegate: (any ExhibitionEditStoreDelegate)?
   private let currentUserClient: CurrentUserClient
   private let exhibitionsClient: ExhibitionsClient
   private let storageClient: StorageClient
@@ -55,12 +56,14 @@ final class ExhibitionEditStore: Store {
 
   init(
     mode: Mode,
+    delegate: (any ExhibitionEditStoreDelegate)? = nil,
     currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
     exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
     storageClient: StorageClient = DefaultStorageClient(),
     imageCache: StorageImageCacheProtocol = StorageImageCache.shared
   ) {
     self.mode = mode
+    self.delegate = delegate
     self.currentUserClient = currentUserClient
     self.exhibitionsClient = exhibitionsClient
     self.storageClient = storageClient
@@ -71,21 +74,11 @@ final class ExhibitionEditStore: Store {
       self.description = exhibition.description ?? ""
       self.from = exhibition.from
       self.to = exhibition.to
+      self.coverImagePath = exhibition.coverImagePath
 
-      // カバー画像のパスがある場合は、StorageImageCacheからローカルに保存された画像URLを取得する
+      // カバー画像の読み込み
       if let coverImagePath = exhibition.coverImagePath {
-        self.coverImagePath = coverImagePath
-        isLoadingCoverImage = true
-        Task {
-          do {
-            // StorageImageCacheを使って画像をローカルにダウンロードして保存し、そのURLを取得
-            let localURL = try await imageCache.getImageURL(for: coverImagePath)
-            self.coverImageURL = localURL
-          } catch {
-            logger.error("Failed to get download URL: \(error.localizedDescription)")
-          }
-          isLoadingCoverImage = false
-        }
+        loadCoverImage(path: coverImagePath)
       }
     }
   }
@@ -118,7 +111,7 @@ final class ExhibitionEditStore: Store {
         isLoading = false
       }
     case .cancelButtonTapped:
-      shouldDismiss = true
+      cancel()
     case .updateFrom(let newFrom):
       from = newFrom
       if to < newFrom {
@@ -171,6 +164,29 @@ final class ExhibitionEditStore: Store {
       _ = try await exhibitionsClient.create(data: data)
     case .edit(let exhibition):
       try await exhibitionsClient.update(id: exhibition.id, data: data)
+    }
+
+    // 保存が完了したらデリゲートに通知
+    delegate?.didSaveExhibition()
+  }
+
+  private func cancel() {
+    // デリゲートに通知
+    delegate?.didCancelExhibition()
+    shouldDismiss = true
+  }
+
+  private func loadCoverImage(path: String) {
+    isLoadingCoverImage = true
+    Task {
+      do {
+        // StorageImageCacheを使って画像をローカルにダウンロードして保存し、そのURLを取得
+        let localURL = try await imageCache.getImageURL(for: path)
+        self.coverImageURL = localURL
+      } catch {
+        logger.error("Failed to get download URL: \(error.localizedDescription)")
+      }
+      isLoadingCoverImage = false
     }
   }
 }

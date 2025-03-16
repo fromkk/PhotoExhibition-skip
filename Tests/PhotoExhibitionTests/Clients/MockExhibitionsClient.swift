@@ -24,6 +24,11 @@ final class MockExhibitionsClient: ExhibitionsClient {
   var updatedId: String? = nil
   var updatedData: [String: any Sendable]? = nil
 
+  // get()の呼び出し追跡
+  var getWasCalled: Bool = false
+  var getExhibitionId: String? = nil
+  var mockExhibition: Exhibition? = nil
+
   // 成功/失敗のシミュレーション
   var shouldSucceed: Bool = true
   var errorToThrow: Error? = nil
@@ -81,6 +86,28 @@ final class MockExhibitionsClient: ExhibitionsClient {
     }
   }
 
+  func get(id: String) async throws -> Exhibition {
+    getWasCalled = true
+    getExhibitionId = id
+
+    // 非同期処理をシミュレート
+    await Task.yield()
+
+    if !shouldSucceed, let error = errorToThrow {
+      throw error
+    }
+
+    guard let exhibition = mockExhibition else {
+      throw NSError(
+        domain: "MockExhibitionsClient", code: 404,
+        userInfo: [
+          NSLocalizedDescriptionKey: "Mock exhibition not found"
+        ])
+    }
+
+    return exhibition
+  }
+
   // MARK: - テスト用のヘルパーメソッド
 
   func reset() {
@@ -92,6 +119,8 @@ final class MockExhibitionsClient: ExhibitionsClient {
     updateWasCalled = false
     updatedId = nil
     updatedData = nil
+    getWasCalled = false
+    getExhibitionId = nil
 
     // デフォルト値に戻す
     shouldSucceed = true
