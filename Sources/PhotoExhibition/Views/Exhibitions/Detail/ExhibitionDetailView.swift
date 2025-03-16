@@ -52,7 +52,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate, ExhibitionEd
   private let exhibitionsClient: ExhibitionsClient
   private let currentUserClient: CurrentUserClient
   private let storageClient: StorageClient
-  private let imageCache: StorageImageCacheProtocol
+  let imageCache: StorageImageCacheProtocol
   private let photoClient: PhotoClient
 
   init(
@@ -456,7 +456,8 @@ struct ExhibitionDetailView: View {
           exhibitionId: store.exhibition.id,
           photo: photo,
           isOrganizer: store.isOrganizer,
-          delegate: store
+          delegate: store,
+          imageCache: store.imageCache
         )
       }
     }

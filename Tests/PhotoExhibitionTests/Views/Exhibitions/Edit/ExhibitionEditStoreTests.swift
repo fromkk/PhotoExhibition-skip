@@ -475,4 +475,49 @@ final class ExhibitionEditStoreTests: XCTestCase {
     // エラー時はshouldDismissがfalseのままであることを確認
     XCTAssertFalse(store.shouldDismiss)
   }
+
+  func testSaveButtonTappedCallsDelegate() async throws {
+    // 準備
+    let mockDelegate = MockExhibitionEditStoreDelegate()
+    let store = ExhibitionEditStore(
+      mode: ExhibitionEditStore.Mode.create,
+      delegate: mockDelegate,
+      currentUserClient: mockCurrentUserClient,
+      exhibitionsClient: mockExhibitionsClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
+    )
+
+    // 必要な情報を設定
+    store.name = "Test Exhibition"
+    mockCurrentUserClient.mockUser = User(uid: "test-user-id")
+
+    // 実行
+    store.send(ExhibitionEditStore.Action.saveButtonTapped)
+
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    // 検証
+    XCTAssertTrue(mockDelegate.didSaveExhibitionCalled, "Delegate method should be called")
+  }
+
+  func testCancelButtonTappedCallsDelegate() async throws {
+    // 準備
+    let mockDelegate = MockExhibitionEditStoreDelegate()
+    let store = ExhibitionEditStore(
+      mode: ExhibitionEditStore.Mode.create,
+      delegate: mockDelegate,
+      currentUserClient: mockCurrentUserClient,
+      exhibitionsClient: mockExhibitionsClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache
+    )
+
+    // 実行
+    store.send(ExhibitionEditStore.Action.cancelButtonTapped)
+
+    // 検証
+    XCTAssertTrue(mockDelegate.didCancelExhibitionCalled, "Delegate method should be called")
+  }
 }

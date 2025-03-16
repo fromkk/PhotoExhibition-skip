@@ -263,13 +263,15 @@ struct PhotoDetailView: View {
 
   init(
     exhibitionId: String, photo: Photo, isOrganizer: Bool,
-    delegate: (any PhotoDetailStoreDelegate)? = nil
+    delegate: (any PhotoDetailStoreDelegate)? = nil,
+    imageCache: StorageImageCacheProtocol = StorageImageCache.shared
   ) {
     self.store = PhotoDetailStore(
       exhibitionId: exhibitionId,
       photo: photo,
       isOrganizer: isOrganizer,
-      delegate: delegate
+      delegate: delegate,
+      imageCache: imageCache
     )
   }
 

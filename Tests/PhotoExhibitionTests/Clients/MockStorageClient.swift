@@ -11,6 +11,9 @@ final class MockStorageClient: StorageClient {
   var urlPath: String? = nil
   var mockURL: URL = URL(string: "https://example.com/mock-image.jpg")!
 
+  // url()メソッドのカスタム実装用ハンドラ
+  var getURLHandler: ((String) -> URL)? = nil
+
   // upload()の呼び出し追跡
   var uploadWasCalled: Bool = false
   var uploadFromURL: URL? = nil
@@ -36,6 +39,11 @@ final class MockStorageClient: StorageClient {
 
     if !shouldSucceed, let error = errorToThrow {
       throw error
+    }
+
+    // カスタムハンドラがあれば使用
+    if let handler = getURLHandler {
+      return handler(path)
     }
 
     return mockURL
@@ -79,6 +87,7 @@ final class MockStorageClient: StorageClient {
     uploadToPath = nil
     deleteWasCalled = false
     deletePath = nil
+    getURLHandler = nil
 
     // デフォルト値に戻す
     shouldSucceed = true

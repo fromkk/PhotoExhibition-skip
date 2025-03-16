@@ -3,9 +3,35 @@ import XCTest
 @testable import PhotoExhibition
 
 @MainActor
+final class MockPhotoDetailStoreDelegate: PhotoDetailStoreDelegate {
+  var didUpdatePhotoCalled = false
+  var updatedPhoto: Photo? = nil
+  var didDeletePhotoCalled = false
+  var deletedPhotoId: String? = nil
+
+  func photoDetailStore(_ store: PhotoDetailStore, didUpdatePhoto photo: Photo) {
+    didUpdatePhotoCalled = true
+    updatedPhoto = photo
+  }
+
+  func photoDetailStore(_ store: PhotoDetailStore, didDeletePhoto photoId: String) {
+    didDeletePhotoCalled = true
+    deletedPhotoId = photoId
+  }
+
+  func reset() {
+    didUpdatePhotoCalled = false
+    updatedPhoto = nil
+    didDeletePhotoCalled = false
+    deletedPhotoId = nil
+  }
+}
+
+@MainActor
 final class PhotoDetailStoreTests: XCTestCase {
   private var mockPhotoClient: MockPhotoClient!
   private var mockImageCache: MockStorageImageCache!
+  private var mockDelegate: MockPhotoDetailStoreDelegate!
   private var store: PhotoDetailStore!
   private let exhibitionId = "test-exhibition-id"
   private let photo = Photo(
@@ -22,10 +48,12 @@ final class PhotoDetailStoreTests: XCTestCase {
   override func setUp() async throws {
     mockPhotoClient = MockPhotoClient()
     mockImageCache = MockStorageImageCache()
+    mockDelegate = MockPhotoDetailStoreDelegate()
     store = PhotoDetailStore(
       exhibitionId: exhibitionId,
       photo: photo,
       isOrganizer: true,
+      delegate: mockDelegate,
       imageCache: mockImageCache,
       photoClient: mockPhotoClient
     )
@@ -106,5 +134,33 @@ final class PhotoDetailStoreTests: XCTestCase {
     XCTAssertTrue(mockPhotoClient.deletePhotoWasCalled)
     XCTAssertNotNil(store.error)
     XCTAssertFalse(store.isDeleted)
+  }
+
+  func testUpdatePhotoCallsDelegate() async throws {
+    // 実行
+    store.send(
+      PhotoDetailStore.Action.updatePhoto(
+        title: "Updated Title", description: "Updated Description"))
+
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    // 検証
+    XCTAssertTrue(mockDelegate.didUpdatePhotoCalled, "Delegate method should be called")
+    XCTAssertEqual(mockDelegate.updatedPhoto?.id, "test-photo-id")
+    XCTAssertEqual(mockDelegate.updatedPhoto?.title, "Updated Title")
+    XCTAssertEqual(mockDelegate.updatedPhoto?.description, "Updated Description")
+  }
+
+  func testDeletePhotoCallsDelegate() async throws {
+    // 実行
+    store.send(PhotoDetailStore.Action.confirmDeletePhoto)
+
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    // 検証
+    XCTAssertTrue(mockDelegate.didDeletePhotoCalled, "Delegate method should be called")
+    XCTAssertEqual(mockDelegate.deletedPhotoId, "test-photo-id")
   }
 }
