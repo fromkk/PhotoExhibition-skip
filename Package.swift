@@ -10,7 +10,7 @@ let package = Package(
   name: "photo-exhibition",
   defaultLocalization: "en",
   platforms: [
-    .iOS(.v17), .macOS(.v14), .tvOS(.v17), .watchOS(.v10), .macCatalyst(.v17),
+    .iOS(.v17), .macOS(.v14), .visionOS(.v1),
   ],
   products: [
     .library(
