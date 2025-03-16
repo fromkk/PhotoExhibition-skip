@@ -15,6 +15,7 @@ final class PhotoDetailStore: Store {
     case updatePhoto(title: String, description: String)
     case deleteButtonTapped
     case confirmDeletePhoto
+    case resetZoom
   }
 
   let exhibitionId: String
@@ -27,6 +28,7 @@ final class PhotoDetailStore: Store {
   var showDeleteConfirmation: Bool = false
   var error: Error? = nil
   var isDeleted: Bool = false
+  var shouldResetZoom: Bool = false
 
   private let imageCache: StorageImageCacheProtocol
   private let photoClient: PhotoClient
@@ -69,6 +71,13 @@ final class PhotoDetailStore: Store {
       }
     case .confirmDeletePhoto:
       PhotoDetailStore.deletePhoto(self)
+    case .resetZoom:
+      shouldResetZoom = true
+      // 次のフレームでリセットフラグをオフにする
+      Task { @MainActor in
+        try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
+        shouldResetZoom = false
+      }
     }
   }
 
@@ -127,6 +136,12 @@ struct PhotoDetailView: View {
   @Bindable var store: PhotoDetailStore
   @Environment(\.dismiss) private var dismiss
 
+  // ズームとパン用の状態変数
+  @State private var scale: CGFloat = 1.0
+  @State private var lastScale: CGFloat = 1.0
+  @State private var offset: CGSize = .zero
+  @State private var lastOffset: CGSize = .zero
+
   init(exhibitionId: String, photo: Photo, isOrganizer: Bool) {
     self.store = PhotoDetailStore(
       exhibitionId: exhibitionId,
@@ -148,6 +163,59 @@ struct PhotoDetailView: View {
             image
               .resizable()
               .aspectRatio(contentMode: .fit)
+              .scaleEffect(scale)
+              .offset(offset)
+              #if !SKIP
+                .gesture(
+                  // ピンチジェスチャーで拡大縮小
+                  MagnificationGesture()
+                    .onChanged { value in
+                      let newScale = lastScale * value
+                      // 1.0〜5.0の範囲に制限
+                      scale = min(max(newScale, 1.0), 5.0)
+                    }
+                    .onEnded { _ in
+                      lastScale = scale
+                      // スケールが1.0未満なら1.0に戻す
+                      if scale < 1.0 {
+                        scale = 1.0
+                        lastScale = 1.0
+                      }
+                      // スケールが5.0を超えたら5.0に制限
+                      if scale > 5.0 {
+                        scale = 5.0
+                        lastScale = 5.0
+                      }
+                      // スケールが1.0になったら位置もリセット
+                      if scale <= 1.0 {
+                        withAnimation(.spring()) {
+                          offset = .zero
+                          lastOffset = .zero
+                        }
+                      }
+                    }
+                )
+                .simultaneousGesture(
+                  // ドラッグジェスチャーでスクロール（拡大時のみ有効）
+                  DragGesture()
+                    .onChanged { value in
+                      // 拡大時のみスクロールを有効にする
+                      if scale > 1.0 {
+                        offset = CGSize(
+                          width: lastOffset.width + value.translation.width,
+                          height: lastOffset.height + value.translation.height
+                        )
+                      }
+                    }
+                    .onEnded { _ in
+                      lastOffset = offset
+                    }
+                )
+                // ダブルタップでリセット
+                .onTapGesture(count: 2) {
+                  resetZoom()
+                }
+              #endif
               .frame(maxWidth: .infinity, maxHeight: .infinity)
           case .failure:
             Image(systemName: "exclamationmark.triangle")
@@ -190,6 +258,19 @@ struct PhotoDetailView: View {
           }
 
           Spacer()
+
+          // リセットボタンを追加（拡大時のみ表示）
+          if scale > 1.0 {
+            Button {
+              resetZoom()
+            } label: {
+              Image(systemName: "arrow.counterclockwise")
+                .font(.title2)
+                .foregroundStyle(.white)
+                .padding(12)
+                .background(Circle().fill(Color.black.opacity(0.5)))
+            }
+          }
 
           if store.isOrganizer {
             HStack(spacing: 16) {
@@ -270,9 +351,32 @@ struct PhotoDetailView: View {
         dismiss()
       }
     }
+    .onChange(of: store.shouldResetZoom) { _, shouldReset in
+      if shouldReset {
+        resetZoom()
+      }
+    }
+    .onChange(of: scale) { oldScale, newScale in
+      // スケールが1.0になったら位置をリセット
+      if newScale <= 1.0 && oldScale > 1.0 {
+        withAnimation(.spring()) {
+          offset = .zero
+          lastOffset = .zero
+        }
+      }
+    }
     .onAppear {
       // 画面表示時に画像を読み込む
       store.send(.loadImage)
+    }
+  }
+
+  private func resetZoom() {
+    withAnimation(.spring()) {
+      scale = 1.0
+      lastScale = 1.0
+      offset = .zero
+      lastOffset = .zero
     }
   }
 }
