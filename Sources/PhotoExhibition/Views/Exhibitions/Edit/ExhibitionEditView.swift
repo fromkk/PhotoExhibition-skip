@@ -128,13 +128,21 @@ final class ExhibitionEditStore: Store {
 
   private func saveExhibition(user: User) async throws {
     var coverImagePath: String?
+    var exhibitionId: String?
+
+    // 編集モードの場合は既存のIDを使用、作成モードの場合は新しいIDを生成
+    switch mode {
+    case .edit(let exhibition):
+      exhibitionId = exhibition.id
+    case .create:
+      exhibitionId = UUID().uuidString
+    }
 
     // カバー画像をStorageにアップロードする
-    if let pickedImageURL = pickedImageURL {
+    if let pickedImageURL = pickedImageURL, let exhibitionId = exhibitionId {
       let fileName =
-        UUID().uuidString + "."
-        + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
-      let storagePath = "members/\(user.uid)/\(fileName)"
+        "cover." + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
+      let storagePath = "exhibitions/\(exhibitionId)/\(fileName)"
 
       // 画像をアップロードしてURLを取得
       coverImageURL = try await storageClient.upload(
@@ -161,7 +169,12 @@ final class ExhibitionEditStore: Store {
     switch mode {
     case .create:
       data["createdAt"] = FieldValue.serverTimestamp()
-      _ = try await exhibitionsClient.create(data: data)
+      if let exhibitionId = exhibitionId {
+        try await exhibitionsClient.create(id: exhibitionId, data: data)
+      } else {
+        // exhibitionId が nil の場合は create メソッドを使用
+        _ = try await exhibitionsClient.create(data: data)
+      }
     case .edit(let exhibition):
       try await exhibitionsClient.update(id: exhibition.id, data: data)
     }

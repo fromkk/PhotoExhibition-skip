@@ -38,7 +38,6 @@ struct ExhibitionsView: View {
 
             if store.hasMore {
               ProgressView()
-                .frame(maxWidth: .infinity)
                 .onAppear {
                   store.send(.loadMore)
                 }

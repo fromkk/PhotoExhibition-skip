@@ -19,6 +19,11 @@ final class MockExhibitionsClient: ExhibitionsClient {
   var createdData: [String: any Sendable]? = nil
   var mockCreatedId: String = "mock-created-id"
 
+  // create(id:data:)の呼び出し追跡
+  var createWithIdWasCalled: Bool = false
+  var createdWithId: String? = nil
+  var createdWithIdData: [String: any Sendable]? = nil
+
   // update()の呼び出し追跡
   var updateWasCalled: Bool = false
   var updatedId: String? = nil
@@ -59,6 +64,19 @@ final class MockExhibitionsClient: ExhibitionsClient {
     }
 
     return mockCreatedId
+  }
+
+  func create(id: String, data: [String: any Sendable]) async throws {
+    createWithIdWasCalled = true
+    createdWithId = id
+    createdWithIdData = data
+
+    // 非同期処理をシミュレート
+    await Task.yield()
+
+    if !shouldSucceed, let error = errorToThrow {
+      throw error
+    }
   }
 
   func update(id: String, data: [String: any Sendable]) async throws {
@@ -116,6 +134,9 @@ final class MockExhibitionsClient: ExhibitionsClient {
     deletedExhibitionId = nil
     createWasCalled = false
     createdData = nil
+    createWithIdWasCalled = false
+    createdWithId = nil
+    createdWithIdData = nil
     updateWasCalled = false
     updatedId = nil
     updatedData = nil

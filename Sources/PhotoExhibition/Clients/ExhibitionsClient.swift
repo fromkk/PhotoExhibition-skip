@@ -13,6 +13,7 @@ protocol ExhibitionsClient: Sendable {
     exhibitions: [Exhibition], nextCursor: String?
   )
   func create(data: [String: any Sendable]) async throws -> String
+  func create(id: String, data: [String: any Sendable]) async throws
   func update(id: String, data: [String: any Sendable]) async throws
   func delete(id: String) async throws
   func get(id: String) async throws -> Exhibition
@@ -90,6 +91,11 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
     ).addDocument(
       data: data)
     return documentReference.documentID
+  }
+
+  func create(id: String, data: [String: any Sendable]) async throws {
+    try await Firestore.firestore().collection("exhibitions").document(id)
+      .setData(data)
   }
 
   func update(id: String, data: [String: any Sendable]) async throws {
