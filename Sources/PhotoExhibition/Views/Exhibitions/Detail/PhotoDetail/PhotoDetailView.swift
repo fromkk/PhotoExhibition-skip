@@ -16,6 +16,9 @@ final class PhotoDetailStore: Store {
     case deleteButtonTapped
     case confirmDeletePhoto
     case resetZoom
+    case loadPhotos
+    case showNextPhoto
+    case showPreviousPhoto
   }
 
   let exhibitionId: String
@@ -29,6 +32,11 @@ final class PhotoDetailStore: Store {
   var error: Error? = nil
   var isDeleted: Bool = false
   var shouldResetZoom: Bool = false
+
+  // 複数写真の管理用
+  var photos: [Photo] = []
+  var currentPhotoIndex: Int = 0
+  var isLoadingPhotos: Bool = false
 
   private let imageCache: StorageImageCacheProtocol
   private let photoClient: PhotoClient
@@ -49,6 +57,7 @@ final class PhotoDetailStore: Store {
     // 初期化時に画像の読み込みを開始
     Task {
       PhotoDetailStore.loadImage(self)
+      PhotoDetailStore.loadPhotos(self)
     }
   }
 
@@ -78,6 +87,12 @@ final class PhotoDetailStore: Store {
         try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
         shouldResetZoom = false
       }
+    case .loadPhotos:
+      PhotoDetailStore.loadPhotos(self)
+    case .showNextPhoto:
+      PhotoDetailStore.showNextPhoto(self)
+    case .showPreviousPhoto:
+      PhotoDetailStore.showPreviousPhoto(self)
     }
   }
 
@@ -130,6 +145,70 @@ final class PhotoDetailStore: Store {
       store.showDeleteConfirmation = false
     }
   }
+
+  private static func loadPhotos(_ store: PhotoDetailStore) {
+    store.isLoadingPhotos = true
+
+    Task {
+      do {
+        // 展示会の全写真を取得
+        let photos = try await store.photoClient.fetchPhotos(exhibitionId: store.exhibitionId)
+        store.photos = photos
+
+        // 現在の写真のインデックスを設定
+        if let index = photos.firstIndex(where: { $0.id == store.photo.id }) {
+          store.currentPhotoIndex = index
+        }
+      } catch {
+        print("Failed to load photos: \(error.localizedDescription)")
+        store.error = error
+      }
+
+      store.isLoadingPhotos = false
+    }
+  }
+
+  private static func showNextPhoto(_ store: PhotoDetailStore) {
+    guard !store.photos.isEmpty else { return }
+
+    let nextIndex = (store.currentPhotoIndex + 1) % store.photos.count
+    store.currentPhotoIndex = nextIndex
+
+    // 次の写真の画像を読み込む
+    Task {
+      if let path = store.photos[nextIndex].path {
+        store.isLoading = true
+        do {
+          store.imageURL = try await store.imageCache.getImageURL(for: path)
+        } catch {
+          print("Failed to load next image: \(error.localizedDescription)")
+          store.error = error
+        }
+        store.isLoading = false
+      }
+    }
+  }
+
+  private static func showPreviousPhoto(_ store: PhotoDetailStore) {
+    guard !store.photos.isEmpty else { return }
+
+    let previousIndex = (store.currentPhotoIndex - 1 + store.photos.count) % store.photos.count
+    store.currentPhotoIndex = previousIndex
+
+    // 前の写真の画像を読み込む
+    Task {
+      if let path = store.photos[previousIndex].path {
+        store.isLoading = true
+        do {
+          store.imageURL = try await store.imageCache.getImageURL(for: path)
+        } catch {
+          print("Failed to load previous image: \(error.localizedDescription)")
+          store.error = error
+        }
+        store.isLoading = false
+      }
+    }
+  }
 }
 
 struct PhotoDetailView: View {
@@ -141,6 +220,9 @@ struct PhotoDetailView: View {
   @State private var lastScale: CGFloat = 1.0
   @State private var offset: CGSize = .zero
   @State private var lastOffset: CGSize = .zero
+
+  // スワイプ検出用
+  @State private var dragOffset: CGFloat = 0
 
   init(exhibitionId: String, photo: Photo, isOrganizer: Bool) {
     self.store = PhotoDetailStore(
@@ -170,24 +252,27 @@ struct PhotoDetailView: View {
                   // ピンチジェスチャーで拡大縮小
                   MagnificationGesture()
                     .onChanged { value in
-                      let newScale = lastScale * value
+                      // valueをDoubleに明示的に変換してからCGFloatに変換
+                      let magnitudeDouble = Double(value.magnitude)
+                      let magnitudeValue = CGFloat(magnitudeDouble)
+                      let newScale = lastScale * magnitudeValue
                       // 1.0〜5.0の範囲に制限
-                      scale = min(max(newScale, 1.0), 5.0)
+                      scale = min(max(newScale, CGFloat(1.0)), CGFloat(5.0))
                     }
                     .onEnded { _ in
                       lastScale = scale
                       // スケールが1.0未満なら1.0に戻す
-                      if scale < 1.0 {
-                        scale = 1.0
-                        lastScale = 1.0
+                      if scale < CGFloat(1.0) {
+                        scale = CGFloat(1.0)
+                        lastScale = CGFloat(1.0)
                       }
                       // スケールが5.0を超えたら5.0に制限
-                      if scale > 5.0 {
-                        scale = 5.0
-                        lastScale = 5.0
+                      if scale > CGFloat(5.0) {
+                        scale = CGFloat(5.0)
+                        lastScale = CGFloat(5.0)
                       }
                       // スケールが1.0になったら位置もリセット
-                      if scale <= 1.0 {
+                      if scale <= CGFloat(1.0) {
                         withAnimation(.spring()) {
                           offset = .zero
                           lastOffset = .zero
@@ -200,7 +285,7 @@ struct PhotoDetailView: View {
                   DragGesture()
                     .onChanged { value in
                       // 拡大時のみスクロールを有効にする
-                      if scale > 1.0 {
+                      if scale > CGFloat(1.0) {
                         offset = CGSize(
                           width: lastOffset.width + value.translation.width,
                           height: lastOffset.height + value.translation.height
@@ -209,6 +294,30 @@ struct PhotoDetailView: View {
                     }
                     .onEnded { _ in
                       lastOffset = offset
+                    }
+                )
+                // 水平方向のスワイプジェスチャー（拡大していない時のみ有効）
+                .simultaneousGesture(
+                  DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                    .onChanged { value in
+                      // 拡大していない時のみスワイプを有効にする
+                      if scale <= CGFloat(1.0) {
+                        dragOffset = value.translation.width
+                      }
+                    }
+                    .onEnded { value in
+                      // スワイプの方向と距離に基づいて写真を切り替え
+                      if scale <= CGFloat(1.0) {
+                        let threshold: CGFloat = 50
+                        if dragOffset > threshold {
+                          // 右にスワイプ -> 前の写真
+                          store.send(.showPreviousPhoto)
+                        } else if dragOffset < -threshold {
+                          // 左にスワイプ -> 次の写真
+                          store.send(.showNextPhoto)
+                        }
+                        dragOffset = 0
+                      }
                     }
                 )
                 // ダブルタップでリセット
@@ -259,8 +368,19 @@ struct PhotoDetailView: View {
 
           Spacer()
 
+          // 写真インジケーター（複数写真がある場合のみ表示）
+          if store.photos.count > 1 {
+            Text("\(store.currentPhotoIndex + 1) / \(store.photos.count)")
+              .font(.subheadline)
+              .foregroundStyle(.white)
+              .padding(8)
+              .background(Capsule().fill(Color.black.opacity(0.5)))
+          }
+
+          Spacer()
+
           // リセットボタンを追加（拡大時のみ表示）
-          if scale > 1.0 {
+          if scale > CGFloat(1.0) {
             Button {
               resetZoom()
             } label: {
@@ -300,17 +420,56 @@ struct PhotoDetailView: View {
 
         Spacer()
 
+        // 左右のナビゲーションボタン（拡大していない時のみ表示）
+        if scale <= CGFloat(1.0) && store.photos.count > 1 {
+          HStack {
+            // 前の写真ボタン
+            Button {
+              store.send(.showPreviousPhoto)
+            } label: {
+              Image(systemName: "chevron.left")
+                .font(.title)
+                .foregroundStyle(.white)
+                .padding(16)
+                .background(Circle().fill(Color.black.opacity(0.5)))
+            }
+            .padding(.leading)
+
+            Spacer()
+
+            // 次の写真ボタン
+            Button {
+              store.send(.showNextPhoto)
+            } label: {
+              Image(systemName: "chevron.right")
+                .font(.title)
+                .foregroundStyle(.white)
+                .padding(16)
+                .background(Circle().fill(Color.black.opacity(0.5)))
+            }
+            .padding(.trailing)
+          }
+        }
+
         // 下部のタイトルと説明
-        if store.photo.title != nil || store.photo.description != nil {
+        if store.photos.isEmpty
+          ? (store.photo.title != nil || store.photo.description != nil)
+          : (store.photos[store.currentPhotoIndex].title != nil
+            || store.photos[store.currentPhotoIndex].description != nil)
+        {
           VStack(alignment: .leading, spacing: 8) {
-            if let title = store.photo.title {
+            if let title = store.photos.isEmpty
+              ? store.photo.title : store.photos[store.currentPhotoIndex].title
+            {
               Text(title)
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundStyle(.white)
             }
 
-            if let description = store.photo.description {
+            if let description = store.photos.isEmpty
+              ? store.photo.description : store.photos[store.currentPhotoIndex].description
+            {
               Text(description)
                 .font(.body)
                 .foregroundStyle(.white)
@@ -326,14 +485,15 @@ struct PhotoDetailView: View {
         }
       }
     }
-    #if !SKIP
+    #if !SKIP && os(iOS)
       .navigationBarHidden(true)
       .statusBar(hidden: true)
     #endif
     .sheet(isPresented: $store.showEditSheet) {
+      let currentPhoto = store.photos.isEmpty ? store.photo : store.photos[store.currentPhotoIndex]
       PhotoEditView(
-        title: store.photo.title ?? "",
-        description: store.photo.description ?? ""
+        title: currentPhoto.title ?? "",
+        description: currentPhoto.description ?? ""
       ) { title, description in
         store.send(.updatePhoto(title: title, description: description))
       }
@@ -358,23 +518,28 @@ struct PhotoDetailView: View {
     }
     .onChange(of: scale) { oldScale, newScale in
       // スケールが1.0になったら位置をリセット
-      if newScale <= 1.0 && oldScale > 1.0 {
+      if newScale <= CGFloat(1.0) && oldScale > CGFloat(1.0) {
         withAnimation(.spring()) {
           offset = .zero
           lastOffset = .zero
         }
       }
     }
+    .onChange(of: store.currentPhotoIndex) { _, _ in
+      // 写真が切り替わったらズームをリセット
+      resetZoom()
+    }
     .onAppear {
       // 画面表示時に画像を読み込む
       store.send(.loadImage)
+      store.send(.loadPhotos)
     }
   }
 
   private func resetZoom() {
     withAnimation(.spring()) {
-      scale = 1.0
-      lastScale = 1.0
+      scale = CGFloat(1.0)
+      lastScale = CGFloat(1.0)
       offset = .zero
       lastOffset = .zero
     }
@@ -408,7 +573,9 @@ struct PhotoEditView: View {
         }
       }
       .navigationTitle("Edit Photo")
-      .navigationBarTitleDisplayMode(.inline)
+      #if !SKIP && os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+      #endif
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel") {
