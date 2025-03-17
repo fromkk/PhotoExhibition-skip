@@ -17,6 +17,7 @@ protocol SettingsStoreDelegate: AnyObject {
 
   var member: Member?
   var isProfileEditPresented: Bool = false
+  var showMyExhibitions: Bool = false
 
   init(
     currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
@@ -32,6 +33,7 @@ protocol SettingsStoreDelegate: AnyObject {
     case presentLogoutConfirmation
     case editProfileButtonTapped
     case profileEditCompleted
+    case myExhibitionsButtonTapped
   }
 
   var isErrorAlertPresented: Bool = false
@@ -71,6 +73,8 @@ protocol SettingsStoreDelegate: AnyObject {
       isProfileEditPresented = false
       // プロフィール編集後に再度ユーザー情報を取得
       send(.task)
+    case .myExhibitionsButtonTapped:
+      showMyExhibitions = true
     }
   }
 
@@ -86,48 +90,60 @@ protocol SettingsStoreDelegate: AnyObject {
 struct SettingsView: View {
   @Bindable var store: SettingsStore
   var body: some View {
-    NavigationStack {
-      List {
-        Section {
-          if let member = store.member {
-            NavigationLink {
-              let profileSetupStore = ProfileSetupStore(member: member)
-              profileSetupStore.delegate = store
-              return ProfileSetupView(store: profileSetupStore)
-                .navigationTitle("Edit Profile")
-            } label: {
-              HStack {
-                if let iconPath = member.icon {
-                  AsyncImageWithIconPath(iconPath: iconPath)
-                } else {
-                  Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .frame(width: 40, height: 40)
-                    .foregroundStyle(Color.gray)
-                }
-
-                Text("Edit Profile")
-                  .padding(.leading, 8)
-                Spacer()
-                Text(member.name ?? "Not set")
-                  .foregroundStyle(.secondary)
+    List {
+      Section {
+        if let member = store.member {
+          NavigationLink {
+            let profileSetupStore = ProfileSetupStore(member: member)
+            profileSetupStore.delegate = store
+            return ProfileSetupView(store: profileSetupStore)
+              .navigationTitle("Edit Profile")
+          } label: {
+            HStack {
+              if let iconPath = member.icon {
+                AsyncImageWithIconPath(iconPath: iconPath)
+              } else {
+                Image(systemName: "person.crop.circle.fill")
+                  .resizable()
+                  .frame(width: 40, height: 40)
+                  .foregroundStyle(Color.gray)
               }
+
+              Text("Edit Profile")
+                .padding(.leading, 8)
+              Spacer()
+              Text(member.name ?? "Not set")
+                .foregroundStyle(.secondary)
             }
           }
         }
+      }
 
-        Section {
-          Button(role: .destructive) {
-            store.send(.presentLogoutConfirmation)
-          } label: {
-            Text("Logout")
+      Section {
+        NavigationLink {
+          MyExhibitionsView(store: MyExhibitionsStore())
+            .navigationTitle("My Exhibitions")
+        } label: {
+          HStack {
+            Image(systemName: "photo.on.rectangle")
+              .frame(width: 24, height: 24)
+            Text("My Exhibitions")
+              .padding(.leading, 8)
           }
         }
       }
-      .navigationTitle(Text("Settings"))
-      .task {
-        store.send(.task)
+
+      Section {
+        Button(role: .destructive) {
+          store.send(.presentLogoutConfirmation)
+        } label: {
+          Text("Logout")
+        }
       }
+    }
+    .navigationTitle(Text("Settings"))
+    .task {
+      store.send(.task)
     }
     .alert(
       "Error",

@@ -306,8 +306,8 @@ struct ExhibitionDetailView: View {
   @Bindable var store: ExhibitionDetailStore
   @Environment(\.dismiss) private var dismiss
 
-  init(exhibition: Exhibition) {
-    self.store = ExhibitionDetailStore(exhibition: exhibition)
+  init(store: ExhibitionDetailStore) {
+    self.store = store
   }
 
   var body: some View {
@@ -602,23 +602,25 @@ struct PhotoGridItem: View {
 #Preview {
   NavigationStack {
     ExhibitionDetailView(
-      exhibition: Exhibition(
-        id: "preview",
-        name: "Sample Exhibition",
-        description:
-          "This is a sample exhibition description that shows how the detail view will look with a longer text. It includes information about the exhibition theme and content.",
-        from: Date(),
-        to: Date().addingTimeInterval(60 * 60 * 24 * 7),
-        organizer: Member(
-          id: "organizer1",
-          name: "John Doe",
-          icon: nil,
+      store: ExhibitionDetailStore(
+        exhibition: Exhibition(
+          id: "preview",
+          name: "Sample Exhibition",
+          description:
+            "This is a sample exhibition description that shows how the detail view will look with a longer text. It includes information about the exhibition theme and content.",
+          from: Date(),
+          to: Date().addingTimeInterval(60 * 60 * 24 * 7),
+          organizer: Member(
+            id: "organizer1",
+            name: "John Doe",
+            icon: nil,
+            createdAt: Date(),
+            updatedAt: Date()
+          ),
+          coverImagePath: nil,
           createdAt: Date(),
           updatedAt: Date()
-        ),
-        coverImagePath: nil,
-        createdAt: Date(),
-        updatedAt: Date()
+        )
       )
     )
   }

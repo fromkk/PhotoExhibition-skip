@@ -31,9 +31,12 @@ struct ExhibitionsView: View {
         } else {
           List {
             ForEach(store.exhibitions) { exhibition in
-              NavigationLink(value: exhibition) {
+              Button {
+                store.send(.showExhibitionDetail(exhibition))
+              } label: {
                 ExhibitionRow(exhibition: exhibition)
               }
+              .buttonStyle(.plain)
             }
 
             if store.hasMore {
@@ -49,8 +52,10 @@ struct ExhibitionsView: View {
         }
       }
       .navigationTitle("Exhibitions")
-      .navigationDestination(for: Exhibition.self) { exhibition in
-        ExhibitionDetailView(exhibition: exhibition)
+      .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
+        if let detailStore = store.exhibitionDetailStore {
+          ExhibitionDetailView(store: detailStore)
+        }
       }
       .toolbar {
         ToolbarItem(placement: .primaryAction) {

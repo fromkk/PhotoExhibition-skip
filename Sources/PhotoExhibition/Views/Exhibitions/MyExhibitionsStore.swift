@@ -5,50 +5,46 @@ import SwiftUI
 #endif
 
 @Observable
-final class ExhibitionsStore: Store {
+final class MyExhibitionsStore: Store {
   enum Action {
     case task
     case refresh
-    case createExhibition
-    case editExhibition(Exhibition)
-    case showExhibitionDetail(Exhibition)
     case loadMore
+    case exhibitionSelected(Exhibition)
   }
 
   var exhibitions: [Exhibition] = []
   var isLoading: Bool = false
   var error: Error? = nil
-  var showCreateExhibition: Bool = false
-  var exhibitionToEdit: Exhibition? = nil
   private var nextCursor: String? = nil
   var hasMore: Bool = true
 
+  private let exhibitionsClient: ExhibitionsClient
+  private let currentUserClient: CurrentUserClient
+
+  var isExhibitionShown: Bool = false
   // 選択された展示会の詳細画面用のストアを保持
   private(set) var exhibitionDetailStore: ExhibitionDetailStore?
-  // 詳細画面への遷移状態
-  var isExhibitionDetailShown: Bool = false
 
-  private let exhibitionsClient: ExhibitionsClient
-
-  init(exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient()) {
+  init(
+    exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
+    currentUserClient: CurrentUserClient = DefaultCurrentUserClient()
+  ) {
     self.exhibitionsClient = exhibitionsClient
+    self.currentUserClient = currentUserClient
   }
 
   func send(_ action: Action) {
     switch action {
     case .task, .refresh:
-      fetchExhibitions()
-    case .createExhibition:
-      showCreateExhibition = true
-    case .editExhibition(let exhibition):
-      exhibitionToEdit = exhibition
-    case .showExhibitionDetail(let exhibition):
-      exhibitionDetailStore = createExhibitionDetailStore(for: exhibition)
-      isExhibitionDetailShown = true
+      fetchMyExhibitions()
     case .loadMore:
       if !isLoading && hasMore {
         fetchMoreExhibitions()
       }
+    case let .exhibitionSelected(exhibition):
+      exhibitionDetailStore = createExhibitionDetailStore(for: exhibition)
+      isExhibitionShown = true
     }
   }
 
@@ -57,7 +53,11 @@ final class ExhibitionsStore: Store {
     return ExhibitionDetailStore(exhibition: exhibition)
   }
 
-  private func fetchExhibitions() {
+  private func fetchMyExhibitions() {
+    guard let currentUser = currentUserClient.currentUser() else {
+      return
+    }
+
     isLoading = true
     exhibitions = []
     nextCursor = nil
@@ -65,7 +65,8 @@ final class ExhibitionsStore: Store {
 
     Task {
       do {
-        let result = try await exhibitionsClient.fetch(now: Date(), cursor: nil)
+        let result = try await exhibitionsClient.fetchMyExhibitions(
+          organizerID: currentUser.uid, cursor: nil)
         exhibitions = result.exhibitions
         nextCursor = result.nextCursor
         hasMore = result.nextCursor != nil
@@ -78,13 +79,14 @@ final class ExhibitionsStore: Store {
   }
 
   private func fetchMoreExhibitions() {
-    guard let cursor = nextCursor else { return }
+    guard let cursor = nextCursor, let currentUser = currentUserClient.currentUser() else { return }
 
     isLoading = true
 
     Task {
       do {
-        let result = try await exhibitionsClient.fetch(now: Date(), cursor: cursor)
+        let result = try await exhibitionsClient.fetchMyExhibitions(
+          organizerID: currentUser.uid, cursor: cursor)
         exhibitions.append(contentsOf: result.exhibitions)
         nextCursor = result.nextCursor
         hasMore = result.nextCursor != nil
