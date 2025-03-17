@@ -11,6 +11,7 @@ struct User: Hashable {
 protocol CurrentUserClient {
   func currentUser() -> User?
   func logout() throws
+  @MainActor func deleteAccount() async throws
 }
 
 final class DefaultCurrentUserClient: CurrentUserClient {
@@ -21,5 +22,10 @@ final class DefaultCurrentUserClient: CurrentUserClient {
 
   func logout() throws {
     try Auth.auth().signOut()
+  }
+
+  @MainActor
+  func deleteAccount() async throws {
+    try await Auth.auth().currentUser?.delete()
   }
 }

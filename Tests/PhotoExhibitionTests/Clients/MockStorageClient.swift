@@ -27,6 +27,7 @@ final class MockStorageClient: StorageClient {
   // 成功/失敗のシミュレーション
   var shouldSucceed: Bool = true
   var errorToThrow: Error? = nil
+  var shouldThrowError: Bool = false
 
   // MARK: - StorageClientプロトコルの実装
 
@@ -37,7 +38,7 @@ final class MockStorageClient: StorageClient {
     // 非同期処理をシミュレート
     await Task.yield()
 
-    if !shouldSucceed, let error = errorToThrow {
+    if !shouldSucceed || shouldThrowError, let error = errorToThrow {
       throw error
     }
 
@@ -57,7 +58,7 @@ final class MockStorageClient: StorageClient {
     // 非同期処理をシミュレート
     await Task.yield()
 
-    if !shouldSucceed, let error = errorToThrow {
+    if !shouldSucceed || shouldThrowError, let error = errorToThrow {
       throw error
     }
 
@@ -71,7 +72,7 @@ final class MockStorageClient: StorageClient {
     // 非同期処理をシミュレート
     await Task.yield()
 
-    if !shouldSucceed, let error = errorToThrow {
+    if !shouldSucceed || shouldThrowError, let error = errorToThrow {
       throw error
     }
   }
@@ -92,5 +93,6 @@ final class MockStorageClient: StorageClient {
     // デフォルト値に戻す
     shouldSucceed = true
     errorToThrow = nil
+    shouldThrowError = false
   }
 }

@@ -10,12 +10,16 @@ final class MockPhotoClient: PhotoClient {
   var fetchPhotosWasCalled: Bool = false
   var fetchPhotosExhibitionId: String? = nil
   var mockPhotos: [Photo] = []
+  var fetchPhotosResult: [Photo] = []
+  var fetchPhotosCallCount: Int = 0
+  var fetchPhotosError: Error? = nil
 
   // addPhoto()の呼び出し追跡
   var addPhotoWasCalled: Bool = false
   var addPhotoExhibitionId: String? = nil
   var addPhotoPath: String? = nil
   var mockAddedPhoto: Photo? = nil
+  var addPhotoResult: Photo? = nil
 
   // updatePhoto()の呼び出し追跡
   var updatePhotoWasCalled: Bool = false
@@ -32,18 +36,24 @@ final class MockPhotoClient: PhotoClient {
   // 成功/失敗のシミュレーション
   var shouldSucceed: Bool = true
   var errorToThrow: Error? = nil
+  var shouldThrowError: Bool = false
 
   // MARK: - PhotoClientプロトコルの実装
 
   func fetchPhotos(exhibitionId: String) async throws -> [Photo] {
     fetchPhotosWasCalled = true
     fetchPhotosExhibitionId = exhibitionId
+    fetchPhotosCallCount += 1
 
     // 非同期処理をシミュレート
     await Task.yield()
 
-    if !shouldSucceed, let error = errorToThrow {
+    if !shouldSucceed || shouldThrowError, let error = errorToThrow ?? fetchPhotosError {
       throw error
+    }
+
+    if !fetchPhotosResult.isEmpty {
+      return fetchPhotosResult
     }
 
     return mockPhotos
@@ -57,8 +67,12 @@ final class MockPhotoClient: PhotoClient {
     // 非同期処理をシミュレート
     await Task.yield()
 
-    if !shouldSucceed, let error = errorToThrow {
+    if !shouldSucceed || shouldThrowError, let error = errorToThrow {
       throw error
+    }
+
+    if let result = addPhotoResult {
+      return result
     }
 
     if let mockPhoto = mockAddedPhoto {
@@ -109,10 +123,14 @@ final class MockPhotoClient: PhotoClient {
   func reset() {
     fetchPhotosWasCalled = false
     fetchPhotosExhibitionId = nil
+    fetchPhotosResult = []
+    fetchPhotosCallCount = 0
+    fetchPhotosError = nil
 
     addPhotoWasCalled = false
     addPhotoExhibitionId = nil
     addPhotoPath = nil
+    addPhotoResult = nil
 
     updatePhotoWasCalled = false
     updatePhotoExhibitionId = nil
@@ -126,5 +144,6 @@ final class MockPhotoClient: PhotoClient {
 
     shouldSucceed = true
     errorToThrow = nil
+    shouldThrowError = false
   }
 }

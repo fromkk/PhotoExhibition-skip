@@ -169,14 +169,81 @@ final class SettingsStoreTests: XCTestCase {
     XCTAssertFalse(store.isProfileEditPresented)
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
   }
+
+  func testPresentDeleteAccountConfirmation() {
+    // Arrange
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
+
+    // Act
+    store.send(SettingsStore.Action.presentDeleteAccountConfirmation)
+
+    // Assert
+    XCTAssertTrue(store.isDeleteAccountConfirmationPresented)
+  }
+
+  func testDeleteAccountSuccess() async {
+    // Arrange
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
+    let delegate = MockSettingsStoreDelegate()
+    store.delegate = delegate
+
+    // Act
+    store.send(SettingsStore.Action.deleteAccountButtonTapped)
+
+    // 非同期処理が完了するのを待つ
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // Assert
+    XCTAssertTrue(mockCurrentUserClient.deleteAccountWasCalled)
+    XCTAssertTrue(delegate.deleteAccountCompletedCalled)
+    XCTAssertFalse(store.isErrorAlertPresented)
+    XCTAssertNil(store.error)
+  }
+
+  func testDeleteAccountFailure() async {
+    // Arrange
+    mockCurrentUserClient.shouldSucceed = false
+    mockCurrentUserClient.errorToThrow = NSError(
+      domain: "DeleteAccountError", code: 1, userInfo: nil)
+
+    let store = SettingsStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
+    let delegate = MockSettingsStoreDelegate()
+    store.delegate = delegate
+
+    // Act
+    store.send(SettingsStore.Action.deleteAccountButtonTapped)
+
+    // 非同期処理が完了するのを待つ
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // Assert
+    XCTAssertTrue(mockCurrentUserClient.deleteAccountWasCalled)
+    XCTAssertFalse(delegate.deleteAccountCompletedCalled)
+    XCTAssertTrue(store.isErrorAlertPresented)
+    XCTAssertNotNil(store.error)
+  }
 }
 
 // Mock classes for testing
 @MainActor
 final class MockSettingsStoreDelegate: SettingsStoreDelegate {
   var logoutCompletedCalled = false
+  var deleteAccountCompletedCalled = false
 
   func logoutCompleted() {
     logoutCompletedCalled = true
+  }
+
+  func deleteAccountCompleted() {
+    deleteAccountCompletedCalled = true
   }
 }

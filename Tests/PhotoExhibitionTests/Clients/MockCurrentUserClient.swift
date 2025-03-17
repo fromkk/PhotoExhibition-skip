@@ -12,6 +12,9 @@ final class MockCurrentUserClient: @preconcurrency CurrentUserClient {
   // logout()の呼び出し追跡
   var logoutWasCalled: Bool = false
 
+  // deleteAccount()の呼び出し追跡
+  var deleteAccountWasCalled: Bool = false
+
   // 成功/失敗のシミュレーション
   var shouldSucceed: Bool = true
   var errorToThrow: Error? = nil
@@ -30,11 +33,21 @@ final class MockCurrentUserClient: @preconcurrency CurrentUserClient {
     }
   }
 
+  @MainActor
+  func deleteAccount() async throws {
+    deleteAccountWasCalled = true
+
+    if !shouldSucceed, let error = errorToThrow {
+      throw error
+    }
+  }
+
   // MARK: - テスト用のヘルパーメソッド
 
   func reset() {
     // 呼び出し追跡をリセット
     logoutWasCalled = false
+    deleteAccountWasCalled = false
 
     // デフォルト値に戻す
     shouldSucceed = true

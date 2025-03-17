@@ -7,6 +7,7 @@ import SwiftUI
 @MainActor
 protocol SettingsStoreDelegate: AnyObject {
   func logoutCompleted()
+  func deleteAccountCompleted()
 }
 
 @Observable final class SettingsStore: Store, ProfileSetupStoreDelegate {
@@ -39,11 +40,14 @@ protocol SettingsStoreDelegate: AnyObject {
     case editProfileButtonTapped
     case profileEditCompleted
     case myExhibitionsButtonTapped
+    case deleteAccountButtonTapped
+    case presentDeleteAccountConfirmation
   }
 
   var isErrorAlertPresented: Bool = false
   var error: (any Error)?
   var isLogoutConfirmationPresented: Bool = false
+  var isDeleteAccountConfirmationPresented: Bool = false
 
   func send(_ action: Action) {
     switch action {
@@ -73,6 +77,18 @@ protocol SettingsStoreDelegate: AnyObject {
     case .myExhibitionsButtonTapped:
       myExhibitionsStore = MyExhibitionsStore()
       showMyExhibitions = true
+    case .deleteAccountButtonTapped:
+      Task { @MainActor in
+        do {
+          try await currentUserClient.deleteAccount()
+          delegate?.deleteAccountCompleted()
+        } catch {
+          self.error = error
+          isErrorAlertPresented = true
+        }
+      }
+    case .presentDeleteAccountConfirmation:
+      isDeleteAccountConfirmationPresented = true
     }
   }
 
@@ -152,6 +168,12 @@ struct SettingsView: View {
         } label: {
           Text("Logout")
         }
+
+        Button(role: .destructive) {
+          store.send(.presentDeleteAccountConfirmation)
+        } label: {
+          Text("Delete Account")
+        }
       }
     }
     .navigationTitle(Text("Settings"))
@@ -188,6 +210,19 @@ struct SettingsView: View {
         Button("Yes", role: .destructive) {
           store.send(.logoutButtonTapped)
         }
+      }
+    )
+    .alert(
+      "Are you sure you want to delete your account?",
+      isPresented: $store.isDeleteAccountConfirmationPresented,
+      actions: {
+        Button("Cancel", role: .cancel) {}
+        Button("Delete", role: .destructive) {
+          store.send(.deleteAccountButtonTapped)
+        }
+      },
+      message: {
+        Text("This action cannot be undone. All your data will be permanently deleted.")
       }
     )
   }

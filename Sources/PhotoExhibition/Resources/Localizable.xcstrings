@@ -41,6 +41,16 @@
         }
       }
     },
+    "Are you sure you want to delete your account?" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本当にアカウントを削除しますか？"
+          }
+        }
+      }
+    },
     "Are you sure you want to log out?" : {
       "localizations" : {
         "ja" : {
@@ -87,6 +97,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "削除"
+          }
+        }
+      }
+    },
+    "Delete Account" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アカウント削除"
           }
         }
       }
@@ -447,6 +467,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始日"
+          }
+        }
+      }
+    },
+    "This action cannot be undone. All your data will be permanently deleted." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この操作は元に戻せません。すべてのデータが完全に削除されます。"
           }
         }
       }

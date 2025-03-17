@@ -120,6 +120,10 @@ final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate, ProfileS
     isSignedIn = false
   }
 
+  func deleteAccountCompleted() {
+    isSignedIn = false
+  }
+
   // MARK: - ProfileSetupStoreDelegate
 
   func didCompleteProfileSetup() {

@@ -33,6 +33,7 @@ final class MockExhibitionsClient: ExhibitionsClient {
   var getWasCalled: Bool = false
   var getExhibitionId: String? = nil
   var mockExhibition: Exhibition? = nil
+  var getExhibitionResult: Exhibition? = nil
 
   // fetchMyExhibitions()の呼び出し追跡
   var fetchMyExhibitionsWasCalled: Bool = false
@@ -126,6 +127,10 @@ final class MockExhibitionsClient: ExhibitionsClient {
       throw error
     }
 
+    if let result = getExhibitionResult {
+      return result
+    }
+
     guard let exhibition = mockExhibition else {
       throw NSError(
         domain: "MockExhibitionsClient", code: 404,
@@ -170,6 +175,7 @@ final class MockExhibitionsClient: ExhibitionsClient {
     updatedData = nil
     getWasCalled = false
     getExhibitionId = nil
+    getExhibitionResult = nil
     fetchMyExhibitionsWasCalled = false
     fetchMyExhibitionsOrganizerID = nil
     fetchMyExhibitionsCursor = nil
