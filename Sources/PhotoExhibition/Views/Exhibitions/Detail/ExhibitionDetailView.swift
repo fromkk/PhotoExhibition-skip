@@ -164,21 +164,32 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate, ExhibitionEd
 
     Task {
       do {
+        // 一意のIDを生成
+        let photoId = UUID().uuidString
+        let photoPath = "exhibitions/\(exhibition.id)/photos/\(photoId)"
+
+        // 先に写真情報をFirestoreに保存（パスのみ）
+        let initialPhoto = try await photoClient.addPhoto(
+          exhibitionId: exhibition.id, path: photoPath)
+
         // 写真をStorageにアップロード
-        let photoPath = "exhibitions/\(exhibition.id)/photos/\(UUID().uuidString)"
-        try await storageClient.upload(from: url, to: photoPath)
+        do {
+          try await storageClient.upload(from: url, to: photoPath)
 
-        // 写真情報をFirestoreに保存
-        let photo = try await photoClient.addPhoto(exhibitionId: exhibition.id, path: photoPath)
+          // 新しい写真を追加
+          photos.insert(initialPhoto, at: 0)
 
-        // 新しい写真を追加
-        photos.insert(photo, at: 0)
-
-        // アップロードした写真を選択して編集シートを表示
-        uploadedPhoto = photo
-        showPhotoEditSheet = true
+          // アップロードした写真を選択して編集シートを表示
+          uploadedPhoto = initialPhoto
+          showPhotoEditSheet = true
+        } catch {
+          // 画像アップロードに失敗した場合、Firestoreから写真データを削除
+          print("Failed to upload photo: \(error.localizedDescription)")
+          try? await photoClient.deletePhoto(exhibitionId: exhibition.id, photoId: initialPhoto.id)
+          self.error = error
+        }
       } catch {
-        print("Failed to upload photo: \(error.localizedDescription)")
+        print("Failed to create photo data: \(error.localizedDescription)")
         self.error = error
       }
 

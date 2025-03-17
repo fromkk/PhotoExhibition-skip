@@ -513,6 +513,19 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     // テスト用のURL
     let testURL = URL(string: "file:///test/photo.jpg")!
 
+    // モックの写真を設定
+    let mockPhoto = Photo(
+      id: "mock-photo-id",
+      path: "exhibitions/test-exhibition-id/photos/mock-uuid",
+      title: nil,
+      description: nil,
+      takenDate: nil,
+      photographer: nil,
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+    mockPhotoClient.mockAddedPhoto = mockPhoto
+
     // ストアの作成
     let store = ExhibitionDetailStore(
       exhibition: testExhibition,
@@ -529,6 +542,15 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     // 非同期処理の完了を待つ
     try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
+    // PhotoClientのaddPhotoメソッドが先に呼ばれたことを確認
+    XCTAssertTrue(mockPhotoClient.addPhotoWasCalled, "addPhoto method should be called first")
+    XCTAssertEqual(
+      mockPhotoClient.addPhotoExhibitionId, "test-exhibition-id",
+      "Correct exhibition ID should be passed to addPhoto method")
+    XCTAssertTrue(
+      mockPhotoClient.addPhotoPath?.starts(with: "exhibitions/test-exhibition-id/photos/") ?? false,
+      "Photo path should start with the correct prefix")
+
     // StorageClientのuploadメソッドが呼ばれたことを確認
     XCTAssertTrue(mockStorageClient.uploadWasCalled, "upload method should be called")
     XCTAssertEqual(
@@ -538,14 +560,13 @@ final class ExhibitionDetailStoreTests: XCTestCase {
         ?? false,
       "Upload path should start with the correct prefix")
 
-    // PhotoClientのaddPhotoメソッドが呼ばれたことを確認
-    XCTAssertTrue(mockPhotoClient.addPhotoWasCalled, "addPhoto method should be called")
-    XCTAssertEqual(
-      mockPhotoClient.addPhotoExhibitionId, "test-exhibition-id",
-      "Correct exhibition ID should be passed to addPhoto method")
-    XCTAssertTrue(
-      mockPhotoClient.addPhotoPath?.starts(with: "exhibitions/test-exhibition-id/photos/") ?? false,
-      "Photo path should start with the correct prefix")
+    // 写真が写真リストに追加されたことを確認
+    XCTAssertEqual(store.photos.count, 1, "Photo should be added to the photos array")
+    XCTAssertEqual(store.photos[0].id, mockPhoto.id, "Correct photo should be added")
+
+    // 編集シートが表示されることを確認
+    XCTAssertTrue(store.showPhotoEditSheet, "Photo edit sheet should be shown")
+    XCTAssertNotNil(store.uploadedPhoto, "Uploaded photo should be set")
   }
 
   func testUploadPhotoDoesNothingWhenNotOrganizer() async {
@@ -586,7 +607,20 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     // 現在のユーザーを主催者に設定
     mockCurrentUserClient.mockUser = User(uid: "organizer-id")
 
-    // エラーを投げるように設定
+    // モックの写真を設定
+    let mockPhoto = Photo(
+      id: "mock-photo-id",
+      path: "exhibitions/test-exhibition-id/photos/mock-uuid",
+      title: nil,
+      description: nil,
+      takenDate: nil,
+      photographer: nil,
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+    mockPhotoClient.mockAddedPhoto = mockPhoto
+
+    // Storageのアップロードでエラーを投げるように設定
     mockStorageClient.shouldSucceed = false
     mockStorageClient.errorToThrow = NSError(
       domain: "test", code: 123, userInfo: [NSLocalizedDescriptionKey: "Mock error"])
@@ -614,9 +648,10 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     XCTAssertFalse(store.isUploadingPhoto, "isUploadingPhoto should be false after error")
     XCTAssertNotNil(store.error, "error should be set after failed upload")
 
-    // PhotoClientのaddPhotoメソッドが呼ばれないことを確認
-    XCTAssertFalse(
-      mockPhotoClient.addPhotoWasCalled, "addPhoto method should not be called when upload fails")
+    // PhotoClientのdeletePhotoメソッドが呼ばれることを確認（クリーンアップ）
+    XCTAssertTrue(mockPhotoClient.deletePhotoWasCalled, "deletePhoto should be called to clean up")
+    XCTAssertEqual(mockPhotoClient.deletePhotoExhibitionId, "test-exhibition-id")
+    XCTAssertEqual(mockPhotoClient.deletePhotoId, mockPhoto.id)
   }
 
   func testDeletePhotoCallsPhotoClientAndStorageClient() throws {

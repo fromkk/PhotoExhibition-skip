@@ -127,7 +127,6 @@ final class ExhibitionEditStore: Store {
   }
 
   private func saveExhibition(user: User) async throws {
-    var coverImagePath: String?
     var exhibitionId: String?
 
     // 編集モードの場合は既存のIDを使用、作成モードの場合は新しいIDを生成
@@ -138,22 +137,8 @@ final class ExhibitionEditStore: Store {
       exhibitionId = UUID().uuidString
     }
 
-    // カバー画像をStorageにアップロードする
-    if let pickedImageURL = pickedImageURL, let exhibitionId = exhibitionId {
-      let fileName =
-        "cover." + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
-      let storagePath = "exhibitions/\(exhibitionId)/\(fileName)"
-
-      // 画像をアップロードしてURLを取得
-      coverImageURL = try await storageClient.upload(
-        from: pickedImageURL,
-        to: storagePath
-      )
-
-      coverImagePath = storagePath
-    }
-
-    var data: [String: any Sendable] = [
+    // 先にFirestoreにデータを作成/更新する（カバー画像パスなし）
+    var initialData: [String: any Sendable] = [
       "name": name,
       "description": description,
       "from": Timestamp(date: from),
@@ -162,21 +147,51 @@ final class ExhibitionEditStore: Store {
       "updatedAt": FieldValue.serverTimestamp(),
     ]
 
-    if let coverImagePath = coverImagePath {
-      data["coverImagePath"] = coverImagePath
+    // 作成モードの場合はcreatedAtを設定
+    if case .create = mode {
+      initialData["createdAt"] = FieldValue.serverTimestamp()
     }
 
+    // 既存のカバー画像パスがある場合は保持する
+    if case .edit(let exhibition) = mode, let existingPath = exhibition.coverImagePath,
+      pickedImageURL == nil
+    {
+      initialData["coverImagePath"] = existingPath
+    }
+
+    // Firestoreにデータを作成/更新
     switch mode {
     case .create:
-      data["createdAt"] = FieldValue.serverTimestamp()
       if let exhibitionId = exhibitionId {
-        try await exhibitionsClient.create(id: exhibitionId, data: data)
+        try await exhibitionsClient.create(id: exhibitionId, data: initialData)
       } else {
-        // exhibitionId が nil の場合は create メソッドを使用
-        _ = try await exhibitionsClient.create(data: data)
+        exhibitionId = try await exhibitionsClient.create(data: initialData)
       }
     case .edit(let exhibition):
-      try await exhibitionsClient.update(id: exhibition.id, data: data)
+      try await exhibitionsClient.update(id: exhibition.id, data: initialData)
+    }
+
+    // カバー画像をアップロードする（新しい画像が選択されている場合のみ）
+    if let pickedImageURL = pickedImageURL, let exhibitionId = exhibitionId {
+      do {
+        let fileName =
+          "cover." + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
+        let storagePath = "exhibitions/\(exhibitionId)/\(fileName)"
+
+        // 画像をアップロード
+        try await storageClient.upload(from: pickedImageURL, to: storagePath)
+
+        // カバー画像パスでFirestoreを更新
+        let updateData: [String: any Sendable] = [
+          "coverImagePath": storagePath,
+          "updatedAt": FieldValue.serverTimestamp(),
+        ]
+
+        try await exhibitionsClient.update(id: exhibitionId, data: updateData)
+      } catch {
+        logger.error("Failed to upload cover image: \(error.localizedDescription)")
+        // 画像アップロードに失敗しても、展示会自体は作成/更新されているので、エラーはスローしない
+      }
     }
 
     // 保存が完了したらデリゲートに通知

@@ -38,6 +38,9 @@ final class MockExhibitionsClient: ExhibitionsClient {
   var shouldSucceed: Bool = true
   var errorToThrow: Error? = nil
 
+  // カスタムコールバック
+  var updateCallback: ((String, [String: any Sendable]) -> Void)? = nil
+
   // MARK: - ExhibitionsClientプロトコルの実装
 
   func fetch(now: Date, cursor: String?) async throws -> (
@@ -83,6 +86,9 @@ final class MockExhibitionsClient: ExhibitionsClient {
     updateWasCalled = true
     updatedId = id
     updatedData = data
+
+    // カスタムコールバックを実行
+    updateCallback?(id, data)
 
     // 非同期処理をシミュレート
     await Task.yield()

@@ -336,10 +336,10 @@ final class ExhibitionEditStoreTests: XCTestCase {
     )
 
     // 展示会情報を設定
-    store.name = "New Exhibition"
-    store.description = "New Description"
+    store.name = "Test Exhibition"
+    store.description = "Test Description"
 
-    // 画像を選択（これによりcreateWithIdが呼ばれるようになる）
+    // 画像を選択
     let pickedImageURL = URL(string: "file:///tmp/test-image.jpg")!
     store.pickedImageURL = pickedImageURL
 
@@ -348,6 +348,15 @@ final class ExhibitionEditStoreTests: XCTestCase {
 
     // 非同期処理の完了を待つ
     try? await Task.sleep(nanoseconds: 100_000_000)
+
+    // createWithIdメソッドが呼ばれたことを確認（基本情報の作成）
+    XCTAssertTrue(mockExhibitionsClient.createWithIdWasCalled)
+
+    // 基本情報が正しく作成されていることを確認
+    XCTAssertEqual(mockExhibitionsClient.createdWithIdData?["name"] as? String, "Test Exhibition")
+    XCTAssertEqual(
+      mockExhibitionsClient.createdWithIdData?["description"] as? String, "Test Description")
+    XCTAssertEqual(mockExhibitionsClient.createdWithIdData?["organizer"] as? String, "test-user-id")
 
     // 画像アップロードが呼ばれたことを確認
     XCTAssertTrue(mockStorageClient.uploadWasCalled)
@@ -360,16 +369,6 @@ final class ExhibitionEditStoreTests: XCTestCase {
       XCTAssertTrue(path.contains("/cover."), "Path should contain '/cover.'")
     }
 
-    // createWithIdメソッドが呼ばれたことを確認
-    XCTAssertTrue(mockExhibitionsClient.createWithIdWasCalled)
-
-    // 正しいデータが渡されたことを確認
-    XCTAssertEqual(mockExhibitionsClient.createdWithIdData?["name"] as? String, "New Exhibition")
-    XCTAssertEqual(
-      mockExhibitionsClient.createdWithIdData?["description"] as? String, "New Description")
-    XCTAssertEqual(mockExhibitionsClient.createdWithIdData?["organizer"] as? String, "test-user-id")
-    XCTAssertNotNil(mockExhibitionsClient.createdWithIdData?["coverImagePath"])
-
     // 成功したらshouldDismissがtrueになることを確認
     XCTAssertTrue(store.shouldDismiss)
   }
@@ -377,6 +376,9 @@ final class ExhibitionEditStoreTests: XCTestCase {
   func testSaveActionInEditModeCallsUpdateOnExhibitionsClient() async {
     // 現在のユーザーを設定
     mockCurrentUserClient.mockUser = User(uid: "test-user-id")
+
+    // モックの動作を設定
+    mockExhibitionsClient.shouldSucceed = true
 
     // ストアの作成
     let store = ExhibitionEditStore(
@@ -395,11 +397,39 @@ final class ExhibitionEditStoreTests: XCTestCase {
     let pickedImageURL = URL(string: "file:///tmp/test-image.jpg")!
     store.pickedImageURL = pickedImageURL
 
+    // 保存アクションを送信前にモックの状態をキャプチャするための変数を準備
+    var capturedData: [String: Any]? = nil
+
+    // モックの動作をカスタマイズ - updateが呼ばれたときにデータをキャプチャ
+    mockExhibitionsClient.updateCallback = { id, data in
+      if capturedData == nil {
+        capturedData = data
+      }
+    }
+
     // 保存アクションを送信
     store.send(ExhibitionEditStore.Action.saveButtonTapped)
 
     // 非同期処理の完了を待つ
     try? await Task.sleep(nanoseconds: 100_000_000)
+
+    // updateメソッドが呼ばれたことを確認
+    XCTAssertTrue(mockExhibitionsClient.updateWasCalled)
+    XCTAssertEqual(mockExhibitionsClient.updatedId, "test-exhibition-id")
+
+    // キャプチャしたデータを検証
+    XCTAssertNotNil(capturedData, "updateに渡されたデータがキャプチャされていません")
+
+    if let data = capturedData {
+      XCTAssertEqual(data["name"] as? String, "Updated Exhibition")
+      XCTAssertEqual(data["description"] as? String, "Updated Description")
+      XCTAssertEqual(data["organizer"] as? String, "test-user-id")
+
+      // Timestampが含まれていることを確認
+      XCTAssertNotNil(data["from"])
+      XCTAssertNotNil(data["to"])
+      XCTAssertNotNil(data["updatedAt"])
+    }
 
     // 画像アップロードが呼ばれたことを確認
     XCTAssertTrue(mockStorageClient.uploadWasCalled)
@@ -413,17 +443,6 @@ final class ExhibitionEditStoreTests: XCTestCase {
         "Path should start with 'exhibitions/{id}/'")
       XCTAssertTrue(path.contains("/cover."), "Path should contain '/cover.'")
     }
-
-    // updateメソッドが呼ばれたことを確認
-    XCTAssertTrue(mockExhibitionsClient.updateWasCalled)
-    XCTAssertEqual(mockExhibitionsClient.updatedId, "test-exhibition-id")
-
-    // 正しいデータが渡されたことを確認
-    XCTAssertEqual(mockExhibitionsClient.updatedData?["name"] as? String, "Updated Exhibition")
-    XCTAssertEqual(
-      mockExhibitionsClient.updatedData?["description"] as? String, "Updated Description")
-    XCTAssertEqual(mockExhibitionsClient.updatedData?["organizer"] as? String, "test-user-id")
-    XCTAssertNotNil(mockExhibitionsClient.updatedData?["coverImagePath"])
 
     // 成功したらshouldDismissがtrueになることを確認
     XCTAssertTrue(store.shouldDismiss)
@@ -455,6 +474,9 @@ final class ExhibitionEditStoreTests: XCTestCase {
     // 非同期処理の完了を待つ
     try? await Task.sleep(nanoseconds: 100_000_000)
 
+    // createWithIdメソッドが呼ばれたことを確認（基本情報の作成）
+    XCTAssertTrue(mockExhibitionsClient.createWithIdWasCalled)
+
     // 画像アップロードが呼ばれたことを確認
     XCTAssertTrue(mockStorageClient.uploadWasCalled)
     XCTAssertEqual(mockStorageClient.uploadFromURL, pickedImageURL)
@@ -465,12 +487,6 @@ final class ExhibitionEditStoreTests: XCTestCase {
       XCTAssertTrue(path.starts(with: "exhibitions/"), "Path should start with 'exhibitions/'")
       XCTAssertTrue(path.contains("/cover."), "Path should contain '/cover.'")
     }
-
-    // createWithIdメソッドが呼ばれたことを確認
-    XCTAssertTrue(mockExhibitionsClient.createWithIdWasCalled)
-
-    // coverImagePathが設定されていることを確認
-    XCTAssertNotNil(mockExhibitionsClient.createdWithIdData?["coverImagePath"])
 
     // 成功したらshouldDismissがtrueになることを確認
     XCTAssertTrue(store.shouldDismiss)
