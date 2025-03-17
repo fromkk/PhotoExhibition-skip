@@ -152,18 +152,22 @@ struct RootView: View {
         } else {
           // Display main screen (tab view)
           TabView {
-            if let store = store.exhibitionsStore {
-              ExhibitionsView(store: store)
-                .tabItem {
-                  Label("Exhibitions", systemImage: "photo")
-                }
+            if let exhibitionsStore = store.exhibitionsStore {
+              NavigationStack {
+                ExhibitionsView(store: exhibitionsStore)
+              }
+              .tabItem {
+                Label("Exhibitions", systemImage: "photo")
+              }
             }
 
-            if let store = store.settingsStore {
-              SettingsView(store: store)
-                .tabItem {
-                  Label("Settings", systemImage: "gear")
-                }
+            if let settingsStore = store.settingsStore {
+              NavigationStack {
+                SettingsView(store: settingsStore)
+              }
+              .tabItem {
+                Label("Settings", systemImage: "gear")
+              }
             }
           }
         }

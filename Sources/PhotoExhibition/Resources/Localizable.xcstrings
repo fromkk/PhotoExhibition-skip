@@ -221,6 +221,16 @@
         }
       }
     },
+    "My Exhibitions" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自分の展示会"
+          }
+        }
+      }
+    },
     "New Exhibition" : {
       "localizations" : {
         "ja" : {
@@ -477,6 +487,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "はい"
+          }
+        }
+      }
+    },
+    "You haven't created any exhibitions yet" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ展示会を作成していません"
           }
         }
       }

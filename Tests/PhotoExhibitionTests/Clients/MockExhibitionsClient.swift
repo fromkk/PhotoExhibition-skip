@@ -34,6 +34,11 @@ final class MockExhibitionsClient: ExhibitionsClient {
   var getExhibitionId: String? = nil
   var mockExhibition: Exhibition? = nil
 
+  // fetchMyExhibitions()の呼び出し追跡
+  var fetchMyExhibitionsWasCalled: Bool = false
+  var fetchMyExhibitionsOrganizerID: String? = nil
+  var fetchMyExhibitionsCursor: String? = nil
+
   // 成功/失敗のシミュレーション
   var shouldSucceed: Bool = true
   var errorToThrow: Error? = nil
@@ -132,6 +137,23 @@ final class MockExhibitionsClient: ExhibitionsClient {
     return exhibition
   }
 
+  func fetchMyExhibitions(organizerID: String, cursor: String?) async throws -> (
+    exhibitions: [Exhibition], nextCursor: String?
+  ) {
+    fetchMyExhibitionsWasCalled = true
+    fetchMyExhibitionsOrganizerID = organizerID
+    fetchMyExhibitionsCursor = cursor
+
+    // 非同期処理をシミュレート
+    await Task.yield()
+
+    if !shouldSucceed, let error = errorToThrow {
+      throw error
+    }
+
+    return (mockExhibitions, mockNextCursor)
+  }
+
   // MARK: - テスト用のヘルパーメソッド
 
   func reset() {
@@ -148,6 +170,9 @@ final class MockExhibitionsClient: ExhibitionsClient {
     updatedData = nil
     getWasCalled = false
     getExhibitionId = nil
+    fetchMyExhibitionsWasCalled = false
+    fetchMyExhibitionsOrganizerID = nil
+    fetchMyExhibitionsCursor = nil
 
     // デフォルト値に戻す
     shouldSucceed = true
