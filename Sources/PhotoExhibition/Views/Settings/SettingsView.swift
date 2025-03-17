@@ -4,6 +4,8 @@ import SwiftUI
   import Observation
 #endif
 
+import SkipWeb
+
 @MainActor
 protocol SettingsStoreDelegate: AnyObject {
   func logoutCompleted()
@@ -19,6 +21,8 @@ protocol SettingsStoreDelegate: AnyObject {
   var member: Member?
   var isProfileEditPresented: Bool = false
   var showMyExhibitions: Bool = false
+  var showTermsOfService: Bool = false
+  var showPrivacyPolicy: Bool = false
 
   // プロフィール編集画面用のストア
   private(set) var profileSetupStore: ProfileSetupStore?
@@ -42,6 +46,8 @@ protocol SettingsStoreDelegate: AnyObject {
     case myExhibitionsButtonTapped
     case deleteAccountButtonTapped
     case presentDeleteAccountConfirmation
+    case termsOfServiceButtonTapped
+    case privacyPolicyButtonTapped
   }
 
   var isErrorAlertPresented: Bool = false
@@ -89,6 +95,10 @@ protocol SettingsStoreDelegate: AnyObject {
       }
     case .presentDeleteAccountConfirmation:
       isDeleteAccountConfirmationPresented = true
+    case .termsOfServiceButtonTapped:
+      showTermsOfService = true
+    case .privacyPolicyButtonTapped:
+      showPrivacyPolicy = true
     }
   }
 
@@ -163,6 +173,32 @@ struct SettingsView: View {
       }
 
       Section {
+        Button {
+          store.send(.termsOfServiceButtonTapped)
+        } label: {
+          HStack {
+            Image(systemName: "doc.text")
+              .frame(width: 24, height: 24)
+            Text("Terms of Service")
+              .padding(.leading, 8)
+          }
+        }
+        .buttonStyle(.plain)
+
+        Button {
+          store.send(.privacyPolicyButtonTapped)
+        } label: {
+          HStack {
+            Image(systemName: "lock.doc")
+              .frame(width: 24, height: 24)
+            Text("Privacy Policy")
+              .padding(.leading, 8)
+          }
+        }
+        .buttonStyle(.plain)
+      }
+
+      Section {
         Button(role: .destructive) {
           store.send(.presentLogoutConfirmation)
         } label: {
@@ -188,6 +224,12 @@ struct SettingsView: View {
         MyExhibitionsView(store: myExhibitionsStore)
           .navigationTitle("My Exhibitions")
       }
+    }
+    .navigationDestination(isPresented: $store.showTermsOfService) {
+      WebView(url: Constants.termsOfServiceURL)
+    }
+    .navigationDestination(isPresented: $store.showPrivacyPolicy) {
+      WebView(url: Constants.privacyPolicyURL)
     }
     .task {
       store.send(.task)

@@ -8,6 +8,12 @@
             "state" : "new",
             "value" : "%1$lld / %2$lld"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld"
+          }
         }
       }
     },
@@ -371,6 +377,16 @@
         }
       }
     },
+    "Privacy Policy" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プライバシーポリシー"
+          }
+        }
+      }
+    },
     "Profile Setup" : {
       "localizations" : {
         "ja" : {
@@ -467,6 +483,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始日"
+          }
+        }
+      }
+    },
+    "Terms of Service" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用規約"
           }
         }
       }
