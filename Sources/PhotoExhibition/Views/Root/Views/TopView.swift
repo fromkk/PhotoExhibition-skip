@@ -3,6 +3,8 @@ import SwiftUI
 
 struct TopView: View {
   @Bindable var store: RootStore
+  @Environment(\.openURL) private var openURL
+
   var body: some View {
     NavigationStack {
       VStack(spacing: 32) {
@@ -26,7 +28,11 @@ struct TopView: View {
 
           HStack(spacing: 16) {
             Button {
-              store.send(.termsOfServiceButtonTapped)
+              #if SKIP
+                openURL(Constants.termsOfServiceURL)
+              #else
+                store.send(.termsOfServiceButtonTapped)
+              #endif
             } label: {
               Text("Terms of Service")
                 .font(.footnote)
@@ -34,7 +40,11 @@ struct TopView: View {
             }
 
             Button {
-              store.send(.privacyPolicyButtonTapped)
+              #if SKIP
+                openURL(Constants.privacyPolicyURL)
+              #else
+                store.send(.privacyPolicyButtonTapped)
+              #endif
             } label: {
               Text("Privacy Policy")
                 .font(.footnote)
@@ -55,12 +65,14 @@ struct TopView: View {
           AuthView(store: store)
         }
       }
-      .navigationDestination(isPresented: $store.showTermsOfService) {
-        WebView(url: Constants.termsOfServiceURL)
-      }
-      .navigationDestination(isPresented: $store.showPrivacyPolicy) {
-        WebView(url: Constants.privacyPolicyURL)
-      }
+      #if !SKIP
+        .navigationDestination(isPresented: $store.showTermsOfService) {
+          WebView(url: Constants.termsOfServiceURL)
+        }
+        .navigationDestination(isPresented: $store.showPrivacyPolicy) {
+          WebView(url: Constants.privacyPolicyURL)
+        }
+      #endif
     }
   }
 }

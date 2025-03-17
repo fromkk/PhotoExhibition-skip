@@ -129,6 +129,8 @@ protocol SettingsStoreDelegate: AnyObject {
 
 struct SettingsView: View {
   @Bindable var store: SettingsStore
+  @Environment(\.openURL) private var openURL
+
   var body: some View {
     List {
       Section {
@@ -173,7 +175,11 @@ struct SettingsView: View {
 
       Section {
         Button {
-          store.send(.termsOfServiceButtonTapped)
+          #if SKIP
+            openURL(Constants.termsOfServiceURL)
+          #else
+            store.send(.termsOfServiceButtonTapped)
+          #endif
         } label: {
           HStack {
             Image(systemName: "doc.text")
@@ -185,7 +191,11 @@ struct SettingsView: View {
         .buttonStyle(.plain)
 
         Button {
-          store.send(.privacyPolicyButtonTapped)
+          #if SKIP
+            openURL(Constants.privacyPolicyURL)
+          #else
+            store.send(.privacyPolicyButtonTapped)
+          #endif
         } label: {
           HStack {
             Image(systemName: "lock.doc")
@@ -224,12 +234,14 @@ struct SettingsView: View {
           .navigationTitle("My Exhibitions")
       }
     }
-    .navigationDestination(isPresented: $store.showTermsOfService) {
-      WebView(url: Constants.termsOfServiceURL)
-    }
-    .navigationDestination(isPresented: $store.showPrivacyPolicy) {
-      WebView(url: Constants.privacyPolicyURL)
-    }
+    #if !SKIP
+      .navigationDestination(isPresented: $store.showTermsOfService) {
+        WebView(url: Constants.termsOfServiceURL)
+      }
+      .navigationDestination(isPresented: $store.showPrivacyPolicy) {
+        WebView(url: Constants.privacyPolicyURL)
+      }
+    #endif
     .task {
       store.send(.task)
     }
