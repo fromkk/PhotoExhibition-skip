@@ -19,6 +19,11 @@ protocol SettingsStoreDelegate: AnyObject {
   var isProfileEditPresented: Bool = false
   var showMyExhibitions: Bool = false
 
+  // プロフィール編集画面用のストア
+  private(set) var profileSetupStore: ProfileSetupStore?
+  // マイ展示会画面用のストア
+  private(set) var myExhibitionsStore: MyExhibitionsStore?
+
   init(
     currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
     membersClient: MembersClient = DefaultMembersClient()
@@ -43,19 +48,8 @@ protocol SettingsStoreDelegate: AnyObject {
   func send(_ action: Action) {
     switch action {
     case .task:
-      if let currentUser = currentUserClient.currentUser() {
-        Task {
-          do {
-            let members = try await membersClient.fetch([currentUser.uid])
-            if let member = members.first {
-              self.member = member
-            }
-          } catch {
-            print("Failed to fetch member: \(error.localizedDescription)")
-            self.error = error
-            self.isErrorAlertPresented = true
-          }
-        }
+      Task {
+        await fetchMember()
       }
     case .logoutButtonTapped:
       do {
@@ -63,17 +57,21 @@ protocol SettingsStoreDelegate: AnyObject {
         delegate?.logoutCompleted()
       } catch {
         self.error = error
-        self.isErrorAlertPresented = true
+        isErrorAlertPresented = true
       }
     case .presentLogoutConfirmation:
       isLogoutConfirmationPresented = true
     case .editProfileButtonTapped:
+      if let member = member {
+        profileSetupStore = ProfileSetupStore(member: member)
+        profileSetupStore?.delegate = self
+      }
       isProfileEditPresented = true
     case .profileEditCompleted:
       isProfileEditPresented = false
-      // プロフィール編集後に再度ユーザー情報を取得
-      send(.task)
+      profileSetupStore = nil
     case .myExhibitionsButtonTapped:
+      myExhibitionsStore = MyExhibitionsStore()
       showMyExhibitions = true
     }
   }
@@ -81,9 +79,26 @@ protocol SettingsStoreDelegate: AnyObject {
   // MARK: - ProfileSetupStoreDelegate
 
   func didCompleteProfileSetup() {
-    isProfileEditPresented = false
-    // プロフィール更新後にユーザー情報を再取得
-    send(.task)
+    send(.profileEditCompleted)
+    Task {
+      await fetchMember()
+    }
+  }
+
+  private func fetchMember() async {
+    guard let user = currentUserClient.currentUser() else {
+      return
+    }
+
+    do {
+      let members = try await membersClient.fetch([user.uid])
+      if let fetchedMember = members.first {
+        member = fetchedMember
+      }
+    } catch {
+      self.error = error
+      isErrorAlertPresented = true
+    }
   }
 }
 
@@ -93,11 +108,8 @@ struct SettingsView: View {
     List {
       Section {
         if let member = store.member {
-          NavigationLink {
-            let profileSetupStore = ProfileSetupStore(member: member)
-            profileSetupStore.delegate = store
-            return ProfileSetupView(store: profileSetupStore)
-              .navigationTitle("Edit Profile")
+          Button {
+            store.send(.editProfileButtonTapped)
           } label: {
             HStack {
               if let iconPath = member.icon {
@@ -116,13 +128,13 @@ struct SettingsView: View {
                 .foregroundStyle(.secondary)
             }
           }
+          .buttonStyle(.plain)
         }
       }
 
       Section {
-        NavigationLink {
-          MyExhibitionsView(store: MyExhibitionsStore())
-            .navigationTitle("My Exhibitions")
+        Button {
+          store.send(.myExhibitionsButtonTapped)
         } label: {
           HStack {
             Image(systemName: "photo.on.rectangle")
@@ -131,6 +143,7 @@ struct SettingsView: View {
               .padding(.leading, 8)
           }
         }
+        .buttonStyle(.plain)
       }
 
       Section {
@@ -142,6 +155,18 @@ struct SettingsView: View {
       }
     }
     .navigationTitle(Text("Settings"))
+    .navigationDestination(isPresented: $store.isProfileEditPresented) {
+      if let profileSetupStore = store.profileSetupStore {
+        ProfileSetupView(store: profileSetupStore)
+          .navigationTitle("Edit Profile")
+      }
+    }
+    .navigationDestination(isPresented: $store.showMyExhibitions) {
+      if let myExhibitionsStore = store.myExhibitionsStore {
+        MyExhibitionsView(store: myExhibitionsStore)
+          .navigationTitle("My Exhibitions")
+      }
+    }
     .task {
       store.send(.task)
     }

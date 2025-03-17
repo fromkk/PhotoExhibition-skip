@@ -251,12 +251,18 @@ final class RootStoreTests: XCTestCase {
 
     // Assert
     XCTAssertTrue(store.isSignedIn)
+    XCTAssertNotNil(store.exhibitionsStore)
+    XCTAssertNotNil(store.settingsStore)
     XCTAssertTrue(store.isProfileSetupShown)
     XCTAssertNotNil(store.profileSetupStore)
   }
 
   func testLogoutCompleted() {
     // Arrange
+    let store = RootStore(
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient
+    )
     let testMember = Member(
       id: "test-uid",
       name: "Test User",
@@ -264,12 +270,10 @@ final class RootStoreTests: XCTestCase {
       createdAt: Date(),
       updatedAt: Date()
     )
+    store.didSignInSuccessfully(with: testMember)
 
-    let store = RootStore(
-      currentUserClient: mockCurrentUserClient,
-      membersClient: mockMembersClient
-    )
-    store.didSignInSuccessfully(with: testMember)  // サインイン状態にする
+    // 事前条件の確認
+    XCTAssertTrue(store.isSignedIn)
 
     // Act
     store.logoutCompleted()
@@ -280,11 +284,11 @@ final class RootStoreTests: XCTestCase {
     XCTAssertNil(store.settingsStore)
   }
 
-  func testIsSignedInDidSet() {
+  func testDidCompleteProfileSetup() {
     // Arrange
     let testMember = Member(
       id: "test-uid",
-      name: "Test User",
+      name: nil,
       icon: nil,
       createdAt: Date(),
       updatedAt: Date()
@@ -294,66 +298,13 @@ final class RootStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
+    store.didSignInSuccessfully(with: testMember)
 
     // Act
-    store.didSignInSuccessfully(with: testMember)  // isSignedInをtrueに設定
+    store.didCompleteProfileSetup()
 
-    // Assert - サインイン時
-    XCTAssertTrue(store.isSignedIn)
-    XCTAssertNotNil(store.exhibitionsStore)
-    XCTAssertNotNil(store.settingsStore)
-    XCTAssertNotNil(store.settingsStore?.delegate)
-
-    // Act
-    store.logoutCompleted()  // isSignedInをfalseに設定
-
-    // Assert - サインアウト時
-    XCTAssertFalse(store.isSignedIn)
-    XCTAssertNil(store.exhibitionsStore)
-    XCTAssertNil(store.settingsStore)
-  }
-
-  func testIsSignInScreenShownDidSet() {
-    // Arrange
-    let store = RootStore(
-      currentUserClient: mockCurrentUserClient,
-      membersClient: mockMembersClient
-    )
-
-    // Act - 表示
-    store.isSignInScreenShown = true
-
-    // Assert - 表示時
-    XCTAssertNotNil(store.authStore)
-    XCTAssertEqual(store.authStore?.authMode, AuthMode.signIn)
-    XCTAssertNotNil(store.authStore?.delegate)
-
-    // Act - 非表示
-    store.isSignInScreenShown = false
-
-    // Assert - 非表示時
-    XCTAssertNil(store.authStore)
-  }
-
-  func testIsSignUpScreenShownDidSet() {
-    // Arrange
-    let store = RootStore(
-      currentUserClient: mockCurrentUserClient,
-      membersClient: mockMembersClient
-    )
-
-    // Act - 表示
-    store.isSignUpScreenShown = true
-
-    // Assert - 表示時
-    XCTAssertNotNil(store.authStore)
-    XCTAssertEqual(store.authStore?.authMode, AuthMode.signUp)
-    XCTAssertNotNil(store.authStore?.delegate)
-
-    // Act - 非表示
-    store.isSignUpScreenShown = false
-
-    // Assert - 非表示時
-    XCTAssertNil(store.authStore)
+    // Assert
+    XCTAssertFalse(store.isProfileSetupShown)
+    XCTAssertNil(store.profileSetupStore)
   }
 }

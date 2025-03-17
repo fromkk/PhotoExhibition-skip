@@ -7,6 +7,10 @@ final class ExhibitionsStoreTests: XCTestCase {
   // テスト用のモックデータ
   private var mockExhibitions: [Exhibition]!
   private var mockExhibitionsClient: MockExhibitionsClient!
+  private var mockCurrentUserClient: MockCurrentUserClient!
+  private var mockStorageClient: MockStorageClient!
+  private var mockStorageImageCache: MockStorageImageCache!
+  private var mockPhotoClient: MockPhotoClient!
 
   override func setUp() async throws {
     // テスト用の展示会データを作成
@@ -47,18 +51,33 @@ final class ExhibitionsStoreTests: XCTestCase {
     mockExhibitionsClient = MockExhibitionsClient()
     mockExhibitionsClient.mockExhibitions = mockExhibitions
     mockExhibitionsClient.mockNextCursor = "next-cursor"
+
+    mockCurrentUserClient = MockCurrentUserClient()
+    mockStorageClient = MockStorageClient()
+    mockStorageImageCache = MockStorageImageCache()
+    mockPhotoClient = MockPhotoClient()
   }
 
   override func tearDown() async throws {
     mockExhibitions = nil
     mockExhibitionsClient = nil
+    mockCurrentUserClient = nil
+    mockStorageClient = nil
+    mockStorageImageCache = nil
+    mockPhotoClient = nil
   }
 
   // MARK: - 初期化のテスト
 
   func testInit() {
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // 初期値を確認
     XCTAssertTrue(store.exhibitions.isEmpty)
@@ -66,14 +85,21 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertNil(store.error)
     XCTAssertFalse(store.showCreateExhibition)
     XCTAssertNil(store.exhibitionToEdit)
-    XCTAssertNil(store.selectedExhibition)
+    XCTAssertNil(store.exhibitionDetailStore)
+    XCTAssertFalse(store.isExhibitionDetailShown)
   }
 
   // MARK: - アクションのテスト
 
   func testTaskActionFetchesExhibitions() async {
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // 初期状態を確認
     XCTAssertTrue(store.exhibitions.isEmpty)
@@ -212,9 +238,15 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertEqual(store.exhibitionToEdit, exhibitionToEdit)
   }
 
-  func testShowExhibitionDetailActionSetsSelectedExhibition() {
+  func testShowExhibitionDetailActionSetsExhibitionDetailStore() {
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // 詳細表示する展示会
     let exhibitionToShow = mockExhibitions[1]
@@ -222,8 +254,12 @@ final class ExhibitionsStoreTests: XCTestCase {
     // showExhibitionDetailアクションを送信
     store.send(ExhibitionsStore.Action.showExhibitionDetail(exhibitionToShow))
 
-    // 選択された展示会が設定されることを確認
-    XCTAssertEqual(store.selectedExhibition, exhibitionToShow)
+    // 展示会詳細ストアが設定されることを確認
+    XCTAssertNotNil(store.exhibitionDetailStore)
+    XCTAssertEqual(store.exhibitionDetailStore?.exhibition.id, exhibitionToShow.id)
+
+    // 詳細画面への遷移状態がtrueになることを確認
+    XCTAssertTrue(store.isExhibitionDetailShown)
   }
 
   // MARK: - エラー処理のテスト

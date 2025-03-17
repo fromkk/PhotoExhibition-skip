@@ -29,9 +29,23 @@ final class ExhibitionsStore: Store {
   var isExhibitionDetailShown: Bool = false
 
   private let exhibitionsClient: ExhibitionsClient
+  private let currentUserClient: CurrentUserClient
+  private let storageClient: StorageClient
+  private let imageCache: StorageImageCacheProtocol
+  private let photoClient: PhotoClient
 
-  init(exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient()) {
+  init(
+    exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
+    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
+    storageClient: StorageClient = DefaultStorageClient(),
+    imageCache: StorageImageCacheProtocol = StorageImageCache.shared,
+    photoClient: PhotoClient = DefaultPhotoClient()
+  ) {
     self.exhibitionsClient = exhibitionsClient
+    self.currentUserClient = currentUserClient
+    self.storageClient = storageClient
+    self.imageCache = imageCache
+    self.photoClient = photoClient
   }
 
   func send(_ action: Action) {
@@ -54,7 +68,14 @@ final class ExhibitionsStore: Store {
 
   // 展示会詳細画面用のストアを作成するメソッド
   private func createExhibitionDetailStore(for exhibition: Exhibition) -> ExhibitionDetailStore {
-    return ExhibitionDetailStore(exhibition: exhibition)
+    return ExhibitionDetailStore(
+      exhibition: exhibition,
+      exhibitionsClient: exhibitionsClient,
+      currentUserClient: currentUserClient,
+      storageClient: storageClient,
+      imageCache: imageCache,
+      photoClient: photoClient
+    )
   }
 
   private func fetchExhibitions() {
