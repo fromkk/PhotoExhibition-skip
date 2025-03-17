@@ -1,10 +1,9 @@
+import SkipWeb
 import SwiftUI
 
 #if canImport(Observation)
   import Observation
 #endif
-
-import SkipWeb
 
 @MainActor
 protocol SettingsStoreDelegate: AnyObject {

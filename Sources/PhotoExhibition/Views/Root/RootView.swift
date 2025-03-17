@@ -21,6 +21,8 @@ final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate, ProfileS
     case task
     case signInButtonTapped
     case signUpButtonTapped
+    case termsOfServiceButtonTapped
+    case privacyPolicyButtonTapped
   }
 
   private(set) var isSignedIn: Bool = false {
@@ -59,6 +61,8 @@ final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate, ProfileS
   }
 
   var isProfileSetupShown: Bool = false
+  var showTermsOfService: Bool = false
+  var showPrivacyPolicy: Bool = false
 
   private(set) var authStore: AuthStore?
   private(set) var exhibitionsStore: ExhibitionsStore?
@@ -97,6 +101,12 @@ final class RootStore: Store, AuthStoreDelegate, SettingsStoreDelegate, ProfileS
       return
     case .signUpButtonTapped:
       isSignUpScreenShown = true
+      return
+    case .termsOfServiceButtonTapped:
+      showTermsOfService = true
+      return
+    case .privacyPolicyButtonTapped:
+      showPrivacyPolicy = true
       return
     }
   }
