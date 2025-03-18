@@ -171,7 +171,12 @@ struct RootView: View {
                 ExhibitionsView(store: exhibitionsStore)
               }
               .tabItem {
-                Label("Exhibitions", systemImage: SystemImageMapping.getIconName(from: "photo"))
+                #if SKIP
+                Image("photo", bundle: .module)
+                Text("Exhibitions")
+                #else
+                Label("Exhibitions", systemImage: "photo")
+                #endif
               }
             }
 
