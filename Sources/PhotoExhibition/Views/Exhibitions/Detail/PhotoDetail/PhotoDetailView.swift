@@ -399,7 +399,8 @@ struct PhotoDetailView: View {
               .font(.title2)
               .foregroundStyle(.white)
               .padding(12)
-              .background(Circle().fill(Color.black.opacity(0.5)))
+              .background(Color.black.opacity(0.5))
+              .clipShape(Circle())
           }
 
           Spacer()
@@ -410,7 +411,8 @@ struct PhotoDetailView: View {
               .font(.subheadline)
               .foregroundStyle(.white)
               .padding(8)
-              .background(Capsule().fill(Color.black.opacity(0.5)))
+              .background(Color.black.opacity(0.5))
+              .clipShape(Capsule())
           }
 
           Spacer()
@@ -424,7 +426,8 @@ struct PhotoDetailView: View {
                 .font(.title2)
                 .foregroundStyle(.white)
                 .padding(12)
-                .background(Circle().fill(Color.black.opacity(0.5)))
+                .background(Color.black.opacity(0.5))
+                .clipShape(Circle())
             }
           }
 
@@ -437,7 +440,8 @@ struct PhotoDetailView: View {
                   .font(.title2)
                   .foregroundStyle(.white)
                   .padding(12)
-                  .background(Circle().fill(Color.black.opacity(0.5)))
+                  .background(Color.black.opacity(0.5))
+                  .clipShape(Circle())
               }
 
               Button {
@@ -447,7 +451,8 @@ struct PhotoDetailView: View {
                   .font(.title2)
                   .foregroundStyle(.white)
                   .padding(12)
-                  .background(Circle().fill(Color.black.opacity(0.5)))
+                  .background(Color.black.opacity(0.5))
+                  .clipShape(Circle())
               }
             }
           }
@@ -467,7 +472,8 @@ struct PhotoDetailView: View {
                 .font(.title)
                 .foregroundStyle(.white)
                 .padding(16)
-                .background(Circle().fill(Color.black.opacity(0.5)))
+                .background(Color.black.opacity(0.5))
+                .clipShape(Circle())
             }
             .padding(.leading)
 
@@ -481,7 +487,8 @@ struct PhotoDetailView: View {
                 .font(.title)
                 .foregroundStyle(.white)
                 .padding(16)
-                .background(Circle().fill(Color.black.opacity(0.5)))
+                .background(Color.black.opacity(0.5))
+                .clipShape(Circle())
             }
             .padding(.trailing)
           }
