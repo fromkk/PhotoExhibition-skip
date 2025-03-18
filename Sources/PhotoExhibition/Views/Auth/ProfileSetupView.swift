@@ -165,7 +165,7 @@ struct ProfileSetupView: View {
             ProgressView()
               .frame(width: 120, height: 120)
           } else {
-            Image(systemName: "person.crop.circle.fill")
+            Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
               .resizable()
               .aspectRatio(contentMode: .fit)
               .frame(width: 80, height: 80)

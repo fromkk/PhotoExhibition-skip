@@ -171,7 +171,7 @@ struct RootView: View {
                 ExhibitionsView(store: exhibitionsStore)
               }
               .tabItem {
-                Label("Exhibitions", systemImage: "photo")
+                Label("Exhibitions", systemImage: SystemImageMapping.getIconName(from: "photo"))
               }
             }
 
@@ -180,7 +180,7 @@ struct RootView: View {
                 SettingsView(store: settingsStore)
               }
               .tabItem {
-                Label("Settings", systemImage: "gear")
+                Label("Settings", systemImage: SystemImageMapping.getIconName(from: "gear"))
               }
             }
           }

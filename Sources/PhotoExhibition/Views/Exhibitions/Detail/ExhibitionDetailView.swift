@@ -349,7 +349,7 @@ struct ExhibitionDetailView: View {
 
         // Date information
         VStack(alignment: .leading, spacing: 8) {
-          Label("Period", systemImage: "calendar")
+          Label("Period", systemImage: SystemImageMapping.getIconName(from: "calendar"))
             .font(.headline)
 
           Text(formatDateRange(from: store.exhibition.from, to: store.exhibition.to))
@@ -360,7 +360,7 @@ struct ExhibitionDetailView: View {
         if let name = store.exhibition.organizer.name {
           Divider()
           VStack(alignment: .leading, spacing: 8) {
-            Label("Organizer", systemImage: "person")
+            Label("Organizer", systemImage: SystemImageMapping.getIconName(from: "person"))
               .font(.headline)
             Text(name)
               .font(.subheadline)
@@ -371,7 +371,7 @@ struct ExhibitionDetailView: View {
         Divider()
         VStack(alignment: .leading, spacing: 12) {
           HStack {
-            Label("Photos", systemImage: "photo.on.rectangle")
+            Label("Photos", systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle"))
               .font(.headline)
 
             Spacer()
@@ -380,7 +380,7 @@ struct ExhibitionDetailView: View {
               Button {
                 store.send(.addPhotoButtonTapped)
               } label: {
-                Label("Add", systemImage: "plus")
+                Label("Add", systemImage: SystemImageMapping.getIconName(from: "plus"))
                   .font(.subheadline)
               }
               .disabled(store.photos.count >= maxExhibitionPhotos || store.isUploadingPhoto)
@@ -440,16 +440,16 @@ struct ExhibitionDetailView: View {
             Button {
               store.send(.editExhibition)
             } label: {
-              Label("Edit", systemImage: "pencil")
+              Label("Edit", systemImage: SystemImageMapping.getIconName(from: "pencil"))
             }
 
             Button(role: .destructive) {
               store.send(.deleteExhibition)
             } label: {
-              Label("Delete", systemImage: "trash")
+              Label("Delete", systemImage: SystemImageMapping.getIconName(from: "trash"))
             }
           } label: {
-            Image(systemName: "ellipsis.circle")
+            Image(systemName: SystemImageMapping.getIconName(from: "ellipsis.circle"))
           }
         }
       }
@@ -566,7 +566,7 @@ struct PhotoGridItem: View {
               Rectangle()
                 .fill(Color.gray.opacity(0.2))
 
-              Image(systemName: "exclamationmark.triangle")
+              Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
                 .foregroundStyle(.secondary)
             }
           @unknown default:
@@ -581,7 +581,7 @@ struct PhotoGridItem: View {
 
       // タイトルがある場合は小さなインジケータを表示
       if photo.title != nil || photo.description != nil {
-        Image(systemName: "doc.text")
+        Image(systemName: SystemImageMapping.getIconName(from: "doc.text"))
           .font(.caption)
           .padding(4)
           .foregroundStyle(.white)

@@ -18,13 +18,13 @@ struct ExhibitionsView: View {
         } else if store.exhibitions.isEmpty {
           #if SKIP
             HStack(spacing: 8) {
-              Image(systemName: "photo.on.rectangle")
+              Image(systemName: SystemImageMapping.getIconName(from: "photo.on.rectangle"))
               Text("No Exhibitions")
             }
           #else
             ContentUnavailableView(
               "No Exhibitions",
-              systemImage: "photo.on.rectangle",
+              systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle"),
               description: Text("Create a new exhibition")
             )
           #endif
@@ -62,7 +62,7 @@ struct ExhibitionsView: View {
           Button {
             store.send(.createExhibition)
           } label: {
-            Image(systemName: "plus")
+            Image(systemName: SystemImageMapping.getIconName(from: "plus"))
           }
         }
       }
@@ -134,7 +134,7 @@ struct ExhibitionRow: View {
           Label {
             Text(formatDateRange(from: exhibition.from, to: exhibition.to))
           } icon: {
-            Image(systemName: "calendar")
+            Image(systemName: SystemImageMapping.getIconName(from: "calendar"))
           }
           .font(.caption)
           .foregroundStyle(.secondary)

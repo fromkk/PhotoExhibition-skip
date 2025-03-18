@@ -142,7 +142,7 @@ struct SettingsView: View {
               if let iconPath = member.icon {
                 AsyncImageWithIconPath(iconPath: iconPath)
               } else {
-                Image(systemName: "person.crop.circle.fill")
+                Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
                   .resizable()
                   .frame(width: 40, height: 40)
                   .foregroundStyle(Color.gray)
@@ -164,7 +164,7 @@ struct SettingsView: View {
           store.send(.myExhibitionsButtonTapped)
         } label: {
           HStack {
-            Image(systemName: "photo.on.rectangle")
+            Image(systemName: SystemImageMapping.getIconName(from: "photo.on.rectangle"))
               .frame(width: 24, height: 24)
             Text("My Exhibitions")
               .padding(.leading, 8)
@@ -182,7 +182,7 @@ struct SettingsView: View {
           #endif
         } label: {
           HStack {
-            Image(systemName: "doc.text")
+            Image(systemName: SystemImageMapping.getIconName(from: "doc.text"))
               .frame(width: 24, height: 24)
             Text("Terms of Service")
               .padding(.leading, 8)
@@ -198,7 +198,7 @@ struct SettingsView: View {
           #endif
         } label: {
           HStack {
-            Image(systemName: "lock.doc")
+            Image(systemName: SystemImageMapping.getIconName(from: "lock.doc"))
               .frame(width: 24, height: 24)
             Text("Privacy Policy")
               .padding(.leading, 8)

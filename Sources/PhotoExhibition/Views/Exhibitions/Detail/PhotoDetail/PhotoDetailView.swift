@@ -70,7 +70,7 @@ final class PhotoDetailStore: Store {
 
     // 初期化時に画像の読み込みを開始
     Task {
-       try await loadImage()
+      try await loadImage()
     }
   }
 
@@ -363,7 +363,7 @@ struct PhotoDetailView: View {
               #endif
               .frame(maxWidth: .infinity, maxHeight: .infinity)
           case .failure:
-            Image(systemName: "exclamationmark.triangle")
+            Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
               .font(.largeTitle)
               .foregroundStyle(.white)
               .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -382,7 +382,7 @@ struct PhotoDetailView: View {
         ProgressView()
       } else {
         // 画像がない場合のプレースホルダー
-        Image(systemName: "photo")
+        Image(systemName: SystemImageMapping.getIconName(from: "photo"))
           .font(.system(size: 50))
           .foregroundStyle(.white.opacity(0.5))
           .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -395,7 +395,7 @@ struct PhotoDetailView: View {
           Button {
             dismiss()
           } label: {
-            Image(systemName: "xmark")
+            Image(systemName: SystemImageMapping.getIconName(from: "xmark"))
               .font(.title2)
               .foregroundStyle(.white)
               .padding(12)
@@ -420,7 +420,7 @@ struct PhotoDetailView: View {
             Button {
               resetZoom()
             } label: {
-              Image(systemName: "arrow.counterclockwise")
+              Image(systemName: SystemImageMapping.getIconName(from: "arrow.counterclockwise"))
                 .font(.title2)
                 .foregroundStyle(.white)
                 .padding(12)
@@ -433,7 +433,7 @@ struct PhotoDetailView: View {
               Button {
                 store.send(.editButtonTapped)
               } label: {
-                Image(systemName: "pencil")
+                Image(systemName: SystemImageMapping.getIconName(from: "pencil"))
                   .font(.title2)
                   .foregroundStyle(.white)
                   .padding(12)
@@ -443,7 +443,7 @@ struct PhotoDetailView: View {
               Button {
                 store.send(.deleteButtonTapped)
               } label: {
-                Image(systemName: "trash")
+                Image(systemName: SystemImageMapping.getIconName(from: "trash"))
                   .font(.title2)
                   .foregroundStyle(.white)
                   .padding(12)
@@ -463,7 +463,7 @@ struct PhotoDetailView: View {
             Button {
               store.send(.showPreviousPhoto)
             } label: {
-              Image(systemName: "chevron.left")
+              Image(systemName: SystemImageMapping.getIconName(from: "chevron.left"))
                 .font(.title)
                 .foregroundStyle(.white)
                 .padding(16)
@@ -477,7 +477,7 @@ struct PhotoDetailView: View {
             Button {
               store.send(.showNextPhoto)
             } label: {
-              Image(systemName: "chevron.right")
+              Image(systemName: SystemImageMapping.getIconName(from: "chevron.right"))
                 .font(.title)
                 .foregroundStyle(.white)
                 .padding(16)
