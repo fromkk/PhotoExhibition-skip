@@ -319,90 +319,11 @@ struct ExhibitionDetailView: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 16) {
-        // Cover Image
-        if let coverImageURL = store.coverImageURL {
-          AsyncImage(url: coverImageURL) { phase in
-            switch phase {
-            case .success(let image):
-              image
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .clipped()
-            default:
-              ProgressView()
-            }
-          }
-        } else if store.exhibition.coverImagePath != nil {
-          // 画像パスがある読み込みはローディングを表示
-          ProgressView()
-        }
-
-        // Exhibition details
-        VStack(alignment: .leading, spacing: 8) {
-          Text(store.exhibition.name)
-            .font(.largeTitle)
-            .fontWeight(.bold)
-
-          if let description = store.exhibition.description {
-            Text(description)
-              .font(.body)
-              .padding(.top, 4)
-          }
-        }
-
-        Divider()
-
-        // Date information
-        VStack(alignment: .leading, spacing: 8) {
-          Label("Period", systemImage: SystemImageMapping.getIconName(from: "calendar"))
-            .font(.headline)
-
-          Text(formatDateRange(from: store.exhibition.from, to: store.exhibition.to))
-            .font(.subheadline)
-        }
-
-        // Organizer information
-        if let name = store.exhibition.organizer.name {
-          Divider()
-          VStack(alignment: .leading, spacing: 8) {
-            Label("Organizer", systemImage: SystemImageMapping.getIconName(from: "person"))
-              .font(.headline)
-            Text(name)
-              .font(.subheadline)
-          }
-        }
-
-        // Photos section
-        Divider()
-        VStack(alignment: .leading, spacing: 12) {
-          HStack {
-            #if SKIP
-              HStack(spacing: 8) {
-                Image("photo.on.rectangle", bundle: .module)
-                Text("Photos")
-              }
-            #else
-              Label(
-                "Photos", systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle")
-              )
-              .font(.headline)
-            #endif
-
-            Spacer()
-
-            if store.isOrganizer {
-              Button {
-                store.send(.addPhotoButtonTapped)
-              } label: {
-                Label("Add", systemImage: SystemImageMapping.getIconName(from: "plus"))
-                  .font(.subheadline)
-              }
-              .disabled(store.photos.count >= maxExhibitionPhotos || store.isUploadingPhoto)
-            }
-          }
-
+      // 写真グリッド表示
+      LazyVGrid(
+        columns: [GridItem(.adaptive(minimum: 100, maximum: 150), spacing: 8)], spacing: 8
+      ) {
+        Section {
           if store.isLoadingPhotos {
             ProgressView()
               .frame(maxWidth: .infinity)
@@ -413,27 +334,109 @@ struct ExhibitionDetailView: View {
               .frame(maxWidth: .infinity, alignment: .center)
               .padding(.vertical)
           } else {
-            // 写真グリッド表示
-            LazyVGrid(
-              columns: [GridItem(.adaptive(minimum: 100, maximum: 150), spacing: 8)], spacing: 8
-            ) {
-              ForEach(store.photos) { photo in
-                if let path = photo.path {
-                  PhotoGridItem(
-                    photo: photo,
-                    path: path,
-                    isOrganizer: store.isOrganizer,
-                    onTap: {
-                      store.send(.photoTapped(photo))
-                    }
+            ForEach(store.photos) { photo in
+              if let path = photo.path {
+                PhotoGridItem(
+                  photo: photo,
+                  path: path,
+                  isOrganizer: store.isOrganizer,
+                  onTap: {
+                    store.send(.photoTapped(photo))
+                  }
+                )
+              }
+            }
+          }
+        } header: {
+          VStack(alignment: .leading, spacing: 16) {
+            // Cover Image
+            if let coverImageURL = store.coverImageURL {
+              AsyncImage(url: coverImageURL) { phase in
+                switch phase {
+                case .success(let image):
+                  image
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                default:
+                  ProgressView()
+                }
+              }
+            } else if store.exhibition.coverImagePath != nil {
+              // 画像パスがある読み込みはローディングを表示
+              ProgressView()
+            }
+
+            // Exhibition details
+            VStack(alignment: .leading, spacing: 8) {
+              Text(store.exhibition.name)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+
+              if let description = store.exhibition.description {
+                Text(description)
+                  .font(.body)
+                  .padding(.top, 4)
+              }
+            }
+
+            Divider()
+
+            // Date information
+            VStack(alignment: .leading, spacing: 8) {
+              Label("Period", systemImage: SystemImageMapping.getIconName(from: "calendar"))
+                .font(.headline)
+
+              Text(formatDateRange(from: store.exhibition.from, to: store.exhibition.to))
+                .font(.subheadline)
+            }
+
+            // Organizer information
+            if let name = store.exhibition.organizer.name {
+              Divider()
+              VStack(alignment: .leading, spacing: 8) {
+                Label("Organizer", systemImage: SystemImageMapping.getIconName(from: "person"))
+                  .font(.headline)
+                Text(name)
+                  .font(.subheadline)
+              }
+            }
+
+            // Photos section
+            Divider()
+            VStack(alignment: .leading, spacing: 12) {
+              HStack {
+                #if SKIP
+                  HStack(spacing: 8) {
+                    Image("photo.on.rectangle", bundle: .module)
+                    Text("Photos")
+                  }
+                #else
+                  Label(
+                    "Photos",
+                    systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle")
                   )
+                  .font(.headline)
+                #endif
+
+                Spacer()
+
+                if store.isOrganizer {
+                  Button {
+                    store.send(.addPhotoButtonTapped)
+                  } label: {
+                    Label("Add", systemImage: SystemImageMapping.getIconName(from: "plus"))
+                      .font(.subheadline)
+                  }
+                  .disabled(store.photos.count >= maxExhibitionPhotos || store.isUploadingPhoto)
                 }
               }
             }
           }
+          .padding()
         }
       }
-      .padding()
     }
     #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)
