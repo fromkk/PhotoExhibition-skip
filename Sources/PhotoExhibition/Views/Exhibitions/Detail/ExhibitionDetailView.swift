@@ -10,7 +10,9 @@ import SwiftUI
 private let maxExhibitionPhotos = 30
 
 @Observable
-final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate, ExhibitionEditStoreDelegate {
+final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
+  ExhibitionEditStoreDelegate
+{
   enum Action {
     case checkPermissions
     case editExhibition
@@ -147,7 +149,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate, ExhibitionEd
 
     Task {
       do {
-        self.photos = try await photoClient.fetchPhotos(exhibitionId: exhibition.id)
+        self.photos = try await photoClient.fetchPhotos(
+          exhibitionId: exhibition.id)
       } catch {
         print("Failed to load photos: \(error.localizedDescription)")
         self.error = error
@@ -185,7 +188,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate, ExhibitionEd
         } catch {
           // 画像アップロードに失敗した場合、Firestoreから写真データを削除
           print("Failed to upload photo: \(error.localizedDescription)")
-          try? await photoClient.deletePhoto(exhibitionId: exhibition.id, photoId: initialPhoto.id)
+          try? await photoClient.deletePhoto(
+            exhibitionId: exhibition.id, photoId: initialPhoto.id)
           self.error = error
         }
       } catch {
@@ -265,7 +269,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate, ExhibitionEd
     }
   }
 
-  func photoDetailStore(_ store: PhotoDetailStore, didDeletePhoto photoId: String) {
+  func photoDetailStore(
+    _ store: PhotoDetailStore, didDeletePhoto photoId: String
+  ) {
     // 写真リストから削除
     photos.removeAll(where: { $0.id == photoId })
 
@@ -288,7 +294,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate, ExhibitionEd
   private func reloadExhibition() {
     Task {
       do {
-        let updatedExhibition = try await exhibitionsClient.get(id: exhibition.id)
+        let updatedExhibition = try await exhibitionsClient.get(
+          id: exhibition.id)
         self.exhibition = updatedExhibition
 
         // カバー画像も再読み込み
@@ -371,8 +378,17 @@ struct ExhibitionDetailView: View {
         Divider()
         VStack(alignment: .leading, spacing: 12) {
           HStack {
-            Label("Photos", systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle"))
+            #if SKIP
+              HStack(spacing: 8) {
+                Image("photo.on.rectangle", bundle: .module)
+                Text("Photos")
+              }
+            #else
+              Label(
+                "Photos", systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle")
+              )
               .font(.headline)
+            #endif
 
             Spacer()
 
@@ -415,17 +431,6 @@ struct ExhibitionDetailView: View {
               }
             }
           }
-
-          if store.isUploadingPhoto {
-            HStack {
-              ProgressView()
-              Text("Uploading photo...")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.vertical, 8)
-          }
         }
       }
       .padding()
@@ -440,13 +445,17 @@ struct ExhibitionDetailView: View {
             Button {
               store.send(.editExhibition)
             } label: {
-              Label("Edit", systemImage: SystemImageMapping.getIconName(from: "pencil"))
+              Label(
+                "Edit",
+                systemImage: SystemImageMapping.getIconName(from: "pencil"))
             }
 
             Button(role: .destructive) {
               store.send(.deleteExhibition)
             } label: {
-              Label("Delete", systemImage: SystemImageMapping.getIconName(from: "trash"))
+              Label(
+                "Delete",
+                systemImage: SystemImageMapping.getIconName(from: "trash"))
             }
           } label: {
             Image(systemName: SystemImageMapping.getIconName(from: "ellipsis"))
@@ -480,7 +489,8 @@ struct ExhibitionDetailView: View {
           title: photo.title ?? "",
           description: photo.description ?? ""
         ) { title, description in
-          store.send(.updateUploadedPhoto(title: title, description: description))
+          store.send(
+            .updateUploadedPhoto(title: title, description: description))
         }
         .onDisappear {
           if store.showPhotoEditSheet {
@@ -498,7 +508,9 @@ struct ExhibitionDetailView: View {
       }
       .disabled(store.isDeleting)
     } message: {
-      Text("Are you sure you want to delete this exhibition? This action cannot be undone.")
+      Text(
+        "Are you sure you want to delete this exhibition? This action cannot be undone."
+      )
     }
     .onChange(of: store.shouldDismiss) { _, shouldDismiss in
       if shouldDismiss {
@@ -525,7 +537,8 @@ struct ExhibitionDetailView: View {
     dateFormatter.dateStyle = .long
     dateFormatter.timeStyle = .short
 
-    return "\(dateFormatter.string(from: from)) - \(dateFormatter.string(from: to))"
+    return
+      "\(dateFormatter.string(from: from)) - \(dateFormatter.string(from: to))"
   }
 }
 
@@ -582,19 +595,19 @@ struct PhotoGridItem: View {
       // タイトルがある場合は小さなインジケータを表示
       if photo.title != nil || photo.description != nil {
         #if SKIP
-        Image("text.document", bundle: .module)
-          .font(.caption)
-          .padding(4)
-          .foregroundStyle(.white)
-          .background(Circle().fill(Color.black.opacity(0.5)))
-          .padding(4)
+          Image("text.document", bundle: .module)
+            .font(.caption)
+            .padding(4)
+            .foregroundStyle(.white)
+            .background(Circle().fill(Color.black.opacity(0.5)))
+            .padding(4)
         #else
-        Image(systemName: "text.document")
-          .font(.caption)
-          .padding(4)
-          .foregroundStyle(.white)
-          .background(Circle().fill(Color.black.opacity(0.5)))
-          .padding(4)
+          Image(systemName: "text.document")
+            .font(.caption)
+            .padding(4)
+            .foregroundStyle(.white)
+            .background(Circle().fill(Color.black.opacity(0.5)))
+            .padding(4)
         #endif
       }
     }

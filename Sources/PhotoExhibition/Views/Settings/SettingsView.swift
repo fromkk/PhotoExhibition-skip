@@ -165,11 +165,11 @@ struct SettingsView: View {
         } label: {
           HStack {
             #if SKIP
-            Image("photo.on.rectangle", bundle: .module)
-              .frame(width: 24, height: 24)
+              Image("photo.on.rectangle", bundle: .module)
+                .frame(width: 24, height: 24)
             #else
-            Image(systemName: "photo.on.rectangle")
-              .frame(width: 24, height: 24)
+              Image(systemName: "photo.on.rectangle")
+                .frame(width: 24, height: 24)
             #endif
             Text("My Exhibitions")
               .padding(.leading, 8)
@@ -188,11 +188,11 @@ struct SettingsView: View {
         } label: {
           HStack {
             #if SKIP
-            Image("text.document", bundle: .module)
-              .frame(width: 24, height: 24)
+              Image("text.document", bundle: .module)
+                .frame(width: 24, height: 24)
             #else
-            Image(systemName: "text.document")
-              .frame(width: 24, height: 24)
+              Image(systemName: "text.document")
+                .frame(width: 24, height: 24)
             #endif
             Text("Terms of Service")
               .padding(.leading, 8)
@@ -209,11 +209,11 @@ struct SettingsView: View {
         } label: {
           HStack {
             #if SKIP
-            Image("lock.document", bundle: .module)
-              .frame(width: 24, height: 24)
+              Image("lock.document", bundle: .module)
+                .frame(width: 24, height: 24)
             #else
-            Image(systemName: "lock.document")
-              .frame(width: 24, height: 24)
+              Image(systemName: "lock.document")
+                .frame(width: 24, height: 24)
             #endif
             Text("Privacy Policy")
               .padding(.leading, 8)

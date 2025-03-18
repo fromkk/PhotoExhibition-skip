@@ -517,16 +517,6 @@
         }
       }
     },
-    "Uploading photo..." : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "写真をアップロード中..."
-          }
-        }
-      }
-    },
     "Username" : {
       "localizations" : {
         "ja" : {

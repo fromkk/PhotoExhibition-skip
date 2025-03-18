@@ -172,10 +172,10 @@ struct RootView: View {
               }
               .tabItem {
                 #if SKIP
-                Image("photo", bundle: .module)
-                Text("Exhibitions")
+                  Image("photo", bundle: .module)
+                  Text("Exhibitions")
                 #else
-                Label("Exhibitions", systemImage: "photo")
+                  Label("Exhibitions", systemImage: "photo")
                 #endif
               }
             }
