@@ -25,6 +25,7 @@ enum SystemImageMapping {
       case "exclamationmark.triangle": return "Icons.Outlined.Warning"
       case "exclamationmark.triangle.fill": return "Icons.Filled.Warning"
       case "face.smiling": return "Icons.Outlined.Face"
+      case "gear": return "Icons.Outlined.Settings"
       case "gearshape": return "Icons.Outlined.Settings"
       case "gearshape.fill": return "Icons.Filled.Settings"
       case "hand.thumbsup": return "Icons.Outlined.ThumbUp"

@@ -18,7 +18,7 @@ struct MyExhibitionsView: View {
       } else if store.exhibitions.isEmpty {
         #if SKIP
           HStack(spacing: 8) {
-            Image(systemName: SystemImageMapping.getIconName(from: "photo.on.rectangle"))
+            Image("photo.on.rectangle", bundle: .module)
             Text("No Exhibitions")
           }
         #else

@@ -449,7 +449,7 @@ struct ExhibitionDetailView: View {
               Label("Delete", systemImage: SystemImageMapping.getIconName(from: "trash"))
             }
           } label: {
-            Image(systemName: SystemImageMapping.getIconName(from: "ellipsis.circle"))
+            Image(systemName: SystemImageMapping.getIconName(from: "ellipsis"))
           }
         }
       }
@@ -581,12 +581,21 @@ struct PhotoGridItem: View {
 
       // タイトルがある場合は小さなインジケータを表示
       if photo.title != nil || photo.description != nil {
-        Image(systemName: SystemImageMapping.getIconName(from: "doc.text"))
+        #if SKIP
+        Image("text.document", bundle: .module)
           .font(.caption)
           .padding(4)
           .foregroundStyle(.white)
           .background(Circle().fill(Color.black.opacity(0.5)))
           .padding(4)
+        #else
+        Image(systemName: "text.document")
+          .font(.caption)
+          .padding(4)
+          .foregroundStyle(.white)
+          .background(Circle().fill(Color.black.opacity(0.5)))
+          .padding(4)
+        #endif
       }
     }
     .task {
