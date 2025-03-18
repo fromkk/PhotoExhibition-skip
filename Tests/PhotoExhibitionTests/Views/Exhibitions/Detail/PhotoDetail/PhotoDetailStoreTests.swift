@@ -44,6 +44,18 @@ final class PhotoDetailStoreTests: XCTestCase {
     createdAt: Date(),
     updatedAt: Date()
   )
+  private let photos: [Photo] = [
+    Photo(
+      id: "test-photo-id",
+      path: "test-path",
+      title: "Test Photo",
+      description: "Test Description",
+      takenDate: Date(),
+      photographer: "Test Photographer",
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+  ]
 
   override func setUp() async throws {
     mockPhotoClient = MockPhotoClient()
@@ -53,6 +65,7 @@ final class PhotoDetailStoreTests: XCTestCase {
       exhibitionId: exhibitionId,
       photo: photo,
       isOrganizer: true,
+      photos: photos,
       delegate: mockDelegate,
       imageCache: mockImageCache,
       photoClient: mockPhotoClient

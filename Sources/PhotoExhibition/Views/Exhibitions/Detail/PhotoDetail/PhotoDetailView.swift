@@ -23,7 +23,6 @@ final class PhotoDetailStore: Store {
     case deleteButtonTapped
     case confirmDeletePhoto
     case resetZoom
-    case loadPhotos
     case showNextPhoto
     case showPreviousPhoto
   }
@@ -55,6 +54,7 @@ final class PhotoDetailStore: Store {
     exhibitionId: String,
     photo: Photo,
     isOrganizer: Bool,
+    photos: [Photo],
     delegate: (any PhotoDetailStoreDelegate)? = nil,
     imageCache: StorageImageCacheProtocol = StorageImageCache.shared,
     photoClient: PhotoClient = DefaultPhotoClient()
@@ -65,11 +65,12 @@ final class PhotoDetailStore: Store {
     self.delegate = delegate
     self.imageCache = imageCache
     self.photoClient = photoClient
+    self.photos = photos
+    self.currentPhotoIndex = photos.firstIndex(where: { $0.id == photo.id }) ?? 0
 
     // 初期化時に画像の読み込みを開始
     Task {
-      PhotoDetailStore.loadImage(self)
-      PhotoDetailStore.loadPhotos(self)
+       try await loadImage()
     }
   }
 
@@ -79,19 +80,25 @@ final class PhotoDetailStore: Store {
       // 閉じるアクションはViewで処理
       break
     case .loadImage:
-      PhotoDetailStore.loadImage(self)
+      Task {
+        try await loadImage()
+      }
     case .editButtonTapped:
       if isOrganizer {
         showEditSheet = true
       }
     case .updatePhoto(let title, let description):
-      PhotoDetailStore.updatePhoto(self, title: title, description: description)
+      Task {
+        try await updatePhoto(title: title, description: description)
+      }
     case .deleteButtonTapped:
       if isOrganizer {
         showDeleteConfirmation = true
       }
     case .confirmDeletePhoto:
-      PhotoDetailStore.deletePhoto(self)
+      Task {
+        try await deletePhoto()
+      }
     case .resetZoom:
       shouldResetZoom = true
       // 次のフレームでリセットフラグをオフにする
@@ -99,150 +106,130 @@ final class PhotoDetailStore: Store {
         try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
         shouldResetZoom = false
       }
-    case .loadPhotos:
-      PhotoDetailStore.loadPhotos(self)
     case .showNextPhoto:
-      PhotoDetailStore.showNextPhoto(self)
+      Task {
+        await showNextPhoto()
+      }
     case .showPreviousPhoto:
-      PhotoDetailStore.showPreviousPhoto(self)
+      Task {
+        await showPreviousPhoto()
+      }
     }
   }
 
-  private static func loadImage(_ store: PhotoDetailStore) {
-    guard let path = store.photo.path else { return }
+  private func loadImage() async throws {
+    guard let path = photo.path else { return }
 
-    store.isLoading = true
+    isLoading = true
 
     Task {
       do {
-        store.imageURL = try await store.imageCache.getImageURL(for: path)
+        imageURL = try await imageCache.getImageURL(for: path)
       } catch {
         print("Failed to load image: \(error.localizedDescription)")
-        store.error = error
+        self.error = error
       }
 
-      store.isLoading = false
+      isLoading = false
     }
   }
 
-  private static func updatePhoto(_ store: PhotoDetailStore, title: String, description: String) {
+  private func updatePhoto(title: String, description: String) async throws {
     Task {
       do {
-        try await store.photoClient.updatePhoto(
-          exhibitionId: store.exhibitionId,
-          photoId: store.photo.id,
+        try await photoClient.updatePhoto(
+          exhibitionId: exhibitionId,
+          photoId: photo.id,
           title: title.isEmpty ? nil : title,
           description: description.isEmpty ? nil : description
         )
 
         // 更新された写真情報を作成
         let updatedPhoto = Photo(
-          id: store.photo.id,
-          path: store.photo.path,
+          id: photo.id,
+          path: photo.path,
           title: title.isEmpty ? nil : title,
           description: description.isEmpty ? nil : description,
-          takenDate: store.photo.takenDate,
-          photographer: store.photo.photographer,
-          createdAt: store.photo.createdAt,
+          takenDate: photo.takenDate,
+          photographer: photo.photographer,
+          createdAt: photo.createdAt,
           updatedAt: Date()
         )
 
         // 複数写真がある場合は現在の写真も更新
-        if !store.photos.isEmpty,
-          let index = store.photos.firstIndex(where: { $0.id == store.photo.id })
+        if !photos.isEmpty,
+          let index = photos.firstIndex(where: { $0.id == photo.id })
         {
-          store.photos[index] = updatedPhoto
+          photos[index] = updatedPhoto
         }
 
         // デリゲートに通知
-        store.delegate?.photoDetailStore(store, didUpdatePhoto: updatedPhoto)
+        delegate?.photoDetailStore(self, didUpdatePhoto: updatedPhoto)
       } catch {
         print("Failed to update photo: \(error.localizedDescription)")
-        store.error = error
+        self.error = error
       }
 
-      store.showEditSheet = false
+      showEditSheet = false
     }
   }
 
-  private static func deletePhoto(_ store: PhotoDetailStore) {
+  private func deletePhoto() async throws {
     Task {
       do {
-        try await store.photoClient.deletePhoto(
-          exhibitionId: store.exhibitionId, photoId: store.photo.id)
-        store.isDeleted = true
+        try await photoClient.deletePhoto(
+          exhibitionId: exhibitionId, photoId: photo.id)
+        isDeleted = true
 
         // デリゲートに通知
-        store.delegate?.photoDetailStore(store, didDeletePhoto: store.photo.id)
+        delegate?.photoDetailStore(self, didDeletePhoto: photo.id)
       } catch {
         print("Failed to delete photo: \(error.localizedDescription)")
-        store.error = error
+        self.error = error
       }
 
-      store.showDeleteConfirmation = false
+      showDeleteConfirmation = false
     }
   }
 
-  private static func loadPhotos(_ store: PhotoDetailStore) {
-    store.isLoadingPhotos = true
+  private func showNextPhoto() async {
+    guard !photos.isEmpty else { return }
 
-    Task {
-      do {
-        // 展示会の全写真を取得
-        let photos = try await store.photoClient.fetchPhotos(exhibitionId: store.exhibitionId)
-        store.photos = photos
-
-        // 現在の写真のインデックスを設定
-        if let index = photos.firstIndex(where: { $0.id == store.photo.id }) {
-          store.currentPhotoIndex = index
-        }
-      } catch {
-        print("Failed to load photos: \(error.localizedDescription)")
-        store.error = error
-      }
-
-      store.isLoadingPhotos = false
-    }
-  }
-
-  private static func showNextPhoto(_ store: PhotoDetailStore) {
-    guard !store.photos.isEmpty else { return }
-
-    let nextIndex = (store.currentPhotoIndex + 1) % store.photos.count
-    store.currentPhotoIndex = nextIndex
+    let nextIndex = (currentPhotoIndex + 1) % photos.count
+    currentPhotoIndex = nextIndex
 
     // 次の写真の画像を読み込む
     Task {
-      if let path = store.photos[nextIndex].path {
-        store.isLoading = true
+      if let path = photos[nextIndex].path {
+        isLoading = true
         do {
-          store.imageURL = try await store.imageCache.getImageURL(for: path)
+          imageURL = try await imageCache.getImageURL(for: path)
         } catch {
           print("Failed to load next image: \(error.localizedDescription)")
-          store.error = error
+          self.error = error
         }
-        store.isLoading = false
+        isLoading = false
       }
     }
   }
 
-  private static func showPreviousPhoto(_ store: PhotoDetailStore) {
-    guard !store.photos.isEmpty else { return }
+  private func showPreviousPhoto() async {
+    guard !photos.isEmpty else { return }
 
-    let previousIndex = (store.currentPhotoIndex - 1 + store.photos.count) % store.photos.count
-    store.currentPhotoIndex = previousIndex
+    let previousIndex = (currentPhotoIndex - 1 + photos.count) % photos.count
+    currentPhotoIndex = previousIndex
 
     // 前の写真の画像を読み込む
     Task {
-      if let path = store.photos[previousIndex].path {
-        store.isLoading = true
+      if let path = photos[previousIndex].path {
+        isLoading = true
         do {
-          store.imageURL = try await store.imageCache.getImageURL(for: path)
+          imageURL = try await imageCache.getImageURL(for: path)
         } catch {
           print("Failed to load previous image: \(error.localizedDescription)")
-          store.error = error
+          self.error = error
         }
-        store.isLoading = false
+        isLoading = false
       }
     }
   }
@@ -262,7 +249,10 @@ struct PhotoDetailView: View {
   @State private var dragOffset: CGFloat = 0
 
   init(
-    exhibitionId: String, photo: Photo, isOrganizer: Bool,
+    exhibitionId: String,
+    photo: Photo,
+    isOrganizer: Bool,
+    photos: [Photo],
     delegate: (any PhotoDetailStoreDelegate)? = nil,
     imageCache: StorageImageCacheProtocol = StorageImageCache.shared,
     photoClient: PhotoClient = DefaultPhotoClient()
@@ -271,6 +261,7 @@ struct PhotoDetailView: View {
       exhibitionId: exhibitionId,
       photo: photo,
       isOrganizer: isOrganizer,
+      photos: photos,
       delegate: delegate,
       imageCache: imageCache,
       photoClient: photoClient
@@ -577,7 +568,6 @@ struct PhotoDetailView: View {
     .onAppear {
       // 画面表示時に画像を読み込む
       store.send(.loadImage)
-      store.send(.loadPhotos)
     }
   }
 
@@ -652,6 +642,7 @@ struct PhotoEditView: View {
       createdAt: Date(),
       updatedAt: Date()
     ),
-    isOrganizer: true
+    isOrganizer: true,
+    photos: []
   )
 }

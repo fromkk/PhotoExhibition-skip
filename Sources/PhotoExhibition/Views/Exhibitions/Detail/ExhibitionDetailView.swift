@@ -467,6 +467,7 @@ struct ExhibitionDetailView: View {
           exhibitionId: store.exhibition.id,
           photo: photo,
           isOrganizer: store.isOrganizer,
+          photos: store.photos,
           delegate: store,
           imageCache: store.imageCache,
           photoClient: store.photoClient

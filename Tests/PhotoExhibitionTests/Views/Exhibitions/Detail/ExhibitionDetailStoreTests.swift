@@ -819,6 +819,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
         exhibitionId: testExhibition.id,
         photo: testPhoto,
         isOrganizer: true,
+        photos: [testPhoto],
         delegate: store,
         imageCache: mockStorageImageCache,
         photoClient: mockPhotoClient
@@ -876,6 +877,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
         exhibitionId: testExhibition.id,
         photo: testPhoto1,
         isOrganizer: true,
+        photos: [testPhoto1, testPhoto2],
         delegate: store,
         imageCache: mockStorageImageCache,
         photoClient: mockPhotoClient
