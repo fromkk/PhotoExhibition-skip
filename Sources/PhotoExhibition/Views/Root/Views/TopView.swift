@@ -28,7 +28,7 @@ struct TopView: View {
 
           HStack(spacing: 16) {
             Button {
-              #if SKIP
+              #if SKIP && os(iOS)
                 openURL(Constants.termsOfServiceURL)
               #else
                 store.send(.termsOfServiceButtonTapped)
@@ -40,7 +40,7 @@ struct TopView: View {
             }
 
             Button {
-              #if SKIP
+              #if SKIP && os(iOS)
                 openURL(Constants.privacyPolicyURL)
               #else
                 store.send(.privacyPolicyButtonTapped)
@@ -65,7 +65,7 @@ struct TopView: View {
           AuthView(store: store)
         }
       }
-      #if !SKIP
+    #if !SKIP && os(iOS)
         .navigationDestination(isPresented: $store.showTermsOfService) {
           WebView(url: Constants.termsOfServiceURL)
         }

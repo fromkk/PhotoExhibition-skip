@@ -180,7 +180,7 @@ struct SettingsView: View {
 
       Section {
         Button {
-          #if SKIP
+          #if SKIP && os(iOS)
             openURL(Constants.termsOfServiceURL)
           #else
             store.send(.termsOfServiceButtonTapped)
@@ -201,7 +201,7 @@ struct SettingsView: View {
         .buttonStyle(.plain)
 
         Button {
-          #if SKIP
+          #if SKIP && os(iOS)
             openURL(Constants.privacyPolicyURL)
           #else
             store.send(.privacyPolicyButtonTapped)
@@ -249,7 +249,7 @@ struct SettingsView: View {
           .navigationTitle("My Exhibitions")
       }
     }
-    #if !SKIP
+    #if !SKIP && os(iOS)
       .navigationDestination(isPresented: $store.showTermsOfService) {
         WebView(url: Constants.termsOfServiceURL)
       }

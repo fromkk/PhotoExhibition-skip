@@ -61,6 +61,7 @@ class AppMainDelegate: NSObject, AppMainDelegateBase {
   #elseif canImport(AppKit)
     func applicationWillFinishLaunching(_ notification: Notification) {
       AppDelegate.shared.onStart(application)
+      FirebaseApp.configure()
     }
 
     func applicationWillTerminate(_ application: Notification) {
