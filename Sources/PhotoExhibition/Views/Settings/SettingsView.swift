@@ -175,23 +175,6 @@ struct SettingsView: View {
           }
         }
         .buttonStyle(.plain)
-
-        Button {
-          store.send(.contactButtonTapped)
-        } label: {
-          HStack {
-            #if SKIP
-              Image("envelope", bundle: .module)
-                .frame(width: 24, height: 24)
-            #else
-              Image(systemName: "envelope")
-                .frame(width: 24, height: 24)
-            #endif
-            Text("Contact")
-              .padding(.leading, 8)
-          }
-        }
-        .buttonStyle(.plain)
       }
 
       Section {
@@ -235,6 +218,23 @@ struct SettingsView: View {
 
             #endif
             Text("Privacy Policy")
+              .padding(.leading, 8)
+          }
+        }
+        .buttonStyle(.plain)
+
+        Button {
+          store.send(.contactButtonTapped)
+        } label: {
+          HStack {
+            #if SKIP
+              Image("envelope", bundle: .module)
+                .frame(width: 24, height: 24)
+            #else
+              Image(systemName: "envelope")
+                .frame(width: 24, height: 24)
+            #endif
+            Text("Contact")
               .padding(.leading, 8)
           }
         }
