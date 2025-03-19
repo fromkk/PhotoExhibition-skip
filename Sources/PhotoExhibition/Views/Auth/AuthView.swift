@@ -41,9 +41,6 @@ protocol AuthStoreDelegate: AnyObject {
     self.authMode = authMode
     self.signInClient = signIngClient
     self.signUpClient = signUpClient
-
-    self.email = email
-    self.password = password
   }
 
   func send(_ action: Action) {
