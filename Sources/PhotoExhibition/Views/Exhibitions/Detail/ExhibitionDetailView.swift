@@ -273,6 +273,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     guard isOrganizer else { return }
 
     isDeleting = true
+    error = nil
 
     Task {
       do {
@@ -281,7 +282,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       } catch {
         self.error = error
       }
-
       isDeleting = false
       showDeleteConfirmation = false
     }
