@@ -85,10 +85,8 @@ protocol ProfileSetupStoreDelegate: AnyObject {
           var newIconPath = iconPath
           if let selectedIconURL = selectedIconURL {
             // 新しいファイルパスを生成
-            let fileName =
-              UUID().uuidString + "."
-              + (selectedIconURL.pathExtension.isEmpty ? "jpg" : selectedIconURL.pathExtension)
-            let path = "members/\(member.id)/icons/\(fileName)"
+            let fileExtension = selectedIconURL.pathExtension.isEmpty ? "jpg" : selectedIconURL.pathExtension
+            let path = "members/\(member.id)/icon.\(fileExtension)"
 
             // 画像をアップロード
             _ = try await storageClient.upload(from: selectedIconURL, to: path)

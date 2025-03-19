@@ -12,7 +12,6 @@ protocol ExhibitionsClient: Sendable {
   func fetch(now: Date, cursor: String?) async throws -> (
     exhibitions: [Exhibition], nextCursor: String?
   )
-  func create(data: [String: any Sendable]) async throws -> String
   func create(id: String, data: [String: any Sendable]) async throws
   func update(id: String, data: [String: any Sendable]) async throws
   func delete(id: String) async throws
@@ -86,14 +85,6 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
     let nextCursor =
       exhibitions.documents.count == pageSize ? exhibitions.documents.last?.documentID : nil
     return (result, nextCursor)
-  }
-
-  func create(data: [String: any Sendable]) async throws -> String {
-    let documentReference = try await Firestore.firestore().collection(
-      "exhibitions"
-    ).addDocument(
-      data: data)
-    return documentReference.documentID
   }
 
   func create(id: String, data: [String: any Sendable]) async throws {

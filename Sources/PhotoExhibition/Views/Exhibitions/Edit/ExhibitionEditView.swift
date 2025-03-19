@@ -22,6 +22,10 @@ private let logger = Logger(
 // 展示会の作成・編集用のStore
 @Observable
 final class ExhibitionEditStore: Store {
+  enum Errors: Error {
+    case noExhibitionId
+  }
+
   enum Mode: Equatable {
     case create
     case edit(Exhibition)
@@ -157,20 +161,13 @@ final class ExhibitionEditStore: Store {
       initialData["createdAt"] = FieldValue.serverTimestamp()
     }
 
-    // 既存のカバー画像パスがある場合は保持する
-    if case .edit(let exhibition) = mode, let existingPath = exhibition.coverImagePath,
-      pickedImageURL == nil
-    {
-      initialData["coverImagePath"] = existingPath
-    }
-
     // Firestoreにデータを作成/更新
     switch mode {
     case .create:
       if let exhibitionId = exhibitionId {
         try await exhibitionsClient.create(id: exhibitionId, data: initialData)
       } else {
-        exhibitionId = try await exhibitionsClient.create(data: initialData)
+        throw Errors.noExhibitionId
       }
     case .edit(let exhibition):
       try await exhibitionsClient.update(id: exhibition.id, data: initialData)
@@ -304,7 +301,7 @@ struct ExhibitionEditView: View {
                             .appendingPathComponent(UUID().uuidString + ".jpg")
                           if let imageData = image.jpegData(compressionQuality: 0.8) {
                             try? imageData.write(to: tempURL)
-                            store.send(.updateCoverImage(tempURL))
+                            store.pickedImageURL = tempURL
                           }
                         }
                       }
