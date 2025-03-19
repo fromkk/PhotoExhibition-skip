@@ -25,6 +25,7 @@ final class PhotoDetailStore: Store {
     case resetZoom
     case showNextPhoto
     case showPreviousPhoto
+    case reportButtonTapped
   }
 
   let exhibitionId: String
@@ -49,6 +50,9 @@ final class PhotoDetailStore: Store {
 
   private let imageCache: StorageImageCacheProtocol
   private let photoClient: PhotoClient
+
+  var showReport: Bool = false
+  private(set) var reportStore: ReportStore?
 
   init(
     exhibitionId: String,
@@ -114,6 +118,9 @@ final class PhotoDetailStore: Store {
       Task {
         await showPreviousPhoto()
       }
+    case .reportButtonTapped:
+      reportStore = ReportStore(type: .photo, id: photo.id)
+      showReport = true
     }
   }
 
@@ -455,6 +462,17 @@ struct PhotoDetailView: View {
                   .clipShape(Circle())
               }
             }
+          } else {
+            Button {
+              store.send(.reportButtonTapped)
+            } label: {
+              Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
+                .font(.title2)
+                .foregroundStyle(.white)
+                .padding(12)
+                .background(Color.black.opacity(0.5))
+                .clipShape(Circle())
+            }
           }
         }
         .padding()
@@ -575,6 +593,11 @@ struct PhotoDetailView: View {
     .onAppear {
       // 画面表示時に画像を読み込む
       store.send(.loadImage)
+    }
+    .sheet(isPresented: $store.showReport) {
+      if let reportStore = store.reportStore {
+        ReportView(store: reportStore)
+      }
     }
   }
 

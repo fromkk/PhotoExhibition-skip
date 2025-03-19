@@ -27,6 +27,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case updateUploadedPhoto(title: String, description: String)
     case cancelPhotoEdit
     case reloadExhibition
+    case reportButtonTapped
   }
 
   var exhibition: Exhibition
@@ -50,6 +51,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var showPhotoDetail: Bool = false
   var uploadedPhoto: Photo? = nil
   var showPhotoEditSheet: Bool = false
+
+  var showReport: Bool = false
+  private(set) var reportStore: ReportStore?
 
   private let exhibitionsClient: ExhibitionsClient
   private let currentUserClient: CurrentUserClient
@@ -116,6 +120,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       showPhotoEditSheet = false
     case .reloadExhibition:
       reloadExhibition()
+    case .reportButtonTapped:
+      reportStore = ReportStore(type: .exhibition, id: exhibition.id)
+      showReport = true
     }
   }
 
@@ -463,6 +470,12 @@ struct ExhibitionDetailView: View {
           } label: {
             Image(systemName: SystemImageMapping.getIconName(from: "ellipsis"))
           }
+        } else {
+          Button {
+            store.send(.reportButtonTapped)
+          } label: {
+            Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
+          }
         }
       }
     }
@@ -533,6 +546,11 @@ struct ExhibitionDetailView: View {
         set: { store.send(.photoSelected($0)) }
       )
     )
+    .sheet(isPresented: $store.showReport) {
+      if let reportStore = store.reportStore {
+        ReportView(store: reportStore)
+      }
+    }
   }
 
   private func formatDateRange(from: Date, to: Date) -> String {

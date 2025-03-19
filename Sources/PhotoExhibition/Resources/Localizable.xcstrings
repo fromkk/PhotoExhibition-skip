@@ -566,6 +566,36 @@
           }
         }
       }
+    },
+    "Report" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "報告"
+          }
+        }
+      }
+    },
+    "Reason" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "理由"
+          }
+        }
+      }
+    },
+    "Please provide a reason for reporting this content." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "報告する理由を入力してください。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
