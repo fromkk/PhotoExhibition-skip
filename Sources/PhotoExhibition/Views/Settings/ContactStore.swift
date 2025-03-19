@@ -9,7 +9,6 @@ import SwiftUI
     case titleChanged(String)
     case contentChanged(String)
     case sendButtonTapped
-    case dismissButtonTapped
   }
 
   var title: String = ""
@@ -35,20 +34,11 @@ import SwiftUI
       Task {
         await sendContact()
       }
-    case .dismissButtonTapped:
-      shouldDismiss = true
     }
   }
 
   private func sendContact() async {
-    isLoading = true
-    do {
-      try await contactClient.send(title: title, content: content)
-      shouldDismiss = true
-    } catch {
-      self.error = error
-      isErrorAlertPresented = true
-    }
-    isLoading = false
+    await contactClient.send(title: title, content: content)
+    shouldDismiss = true
   }
 }

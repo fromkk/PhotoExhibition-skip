@@ -24,13 +24,6 @@ struct ContactView: View {
       }
       .navigationTitle("Contact")
       .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("Cancel") {
-            store.send(.dismissButtonTapped)
-          }
-          .disabled(store.isLoading)
-        }
-
         ToolbarItem(placement: .confirmationAction) {
           Button("Send") {
             store.send(.sendButtonTapped)
