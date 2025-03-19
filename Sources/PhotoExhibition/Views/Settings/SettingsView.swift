@@ -138,7 +138,7 @@ struct SettingsView: View {
             store.send(.editProfileButtonTapped)
           } label: {
             HStack {
-              if let iconPath = member.icon {
+              if let iconPath = member.iconPath {
                 AsyncImageWithIconPath(iconPath: iconPath)
               } else {
                 Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))

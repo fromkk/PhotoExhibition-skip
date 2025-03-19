@@ -9,7 +9,7 @@ import Foundation
 struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   init(
     id: String, name: String, description: String? = nil, from: Date, to: Date,
-    organizer: Member, coverImagePath: String? = nil, createdAt: Date, updatedAt: Date
+    organizer: Member, coverImagePath: String? = nil, cover_256x256: String? = nil, cover_512x512: String? = nil, cover_1024x1024: String? = nil, createdAt: Date, updatedAt: Date
   ) {
     self.id = id
     self.name = name
@@ -18,6 +18,9 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     self.to = to
     self.organizer = organizer
     self.coverImagePath = coverImagePath
+    self.cover_256x256 = cover_256x256
+    self.cover_512x512 = cover_512x512
+    self.cover_1024x1024 = cover_1024x1024
     self.createdAt = createdAt
     self.updatedAt = updatedAt
   }
@@ -29,6 +32,9 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   let to: Date
   let organizer: Member
   let coverImagePath: String?
+  let cover_256x256: String?
+  let cover_512x512: String?
+  let cover_1024x1024: String?
   let createdAt: Date
   let updatedAt: Date
 
@@ -49,7 +55,14 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     self.to = toTimestamp.dateValue()
     self.organizer = organizer
     self.coverImagePath = data["coverImagePath"] as? String
+    self.cover_256x256 = data["cover_256x256"] as? String
+    self.cover_512x512 = data["cover_512x512"] as? String
+    self.cover_1024x1024 = data["cover_1024x1024"] as? String
     self.createdAt = createdAtTimestamp.dateValue()
     self.updatedAt = updatedAtTimestamp.dateValue()
+  }
+
+  var coverPath: String? {
+    return cover_1024x1024 ?? cover_512x512 ?? cover_256x256 ?? coverImagePath
   }
 }

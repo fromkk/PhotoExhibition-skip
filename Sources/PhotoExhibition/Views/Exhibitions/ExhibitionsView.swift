@@ -149,7 +149,7 @@ struct ExhibitionRow: View {
   }
 
   private func loadCoverImage() async {
-    guard let coverImagePath = exhibition.coverImagePath else { return }
+    guard let coverImagePath = exhibition.coverPath else { return }
 
     isLoadingImage = true
 

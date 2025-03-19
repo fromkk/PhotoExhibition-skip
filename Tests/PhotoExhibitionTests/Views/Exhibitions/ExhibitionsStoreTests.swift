@@ -31,6 +31,9 @@ final class ExhibitionsStoreTests: XCTestCase {
         to: Date().addingTimeInterval(60 * 60 * 24 * 7),
         organizer: organizer,
         coverImagePath: "test/cover-1.jpg",
+        cover_256x256: "test/cover-1_256x256.jpg",
+        cover_512x512: "test/cover-1_512x512.jpg",
+        cover_1024x1024: "test/cover-1_1024x1024.jpg",
         createdAt: Date(),
         updatedAt: Date()
       ),
@@ -42,6 +45,9 @@ final class ExhibitionsStoreTests: XCTestCase {
         to: Date().addingTimeInterval(60 * 60 * 24 * 17),
         organizer: organizer,
         coverImagePath: "test/cover-2.jpg",
+        cover_256x256: "test/cover-2_256x256.jpg",
+        cover_512x512: "test/cover-2_512x512.jpg",
+        cover_1024x1024: "test/cover-2_1024x1024.jpg",
         createdAt: Date(),
         updatedAt: Date()
       ),
@@ -141,6 +147,9 @@ final class ExhibitionsStoreTests: XCTestCase {
         to: Date().addingTimeInterval(60 * 60 * 24 * 27),
         organizer: mockExhibitions[0].organizer,
         coverImagePath: "test/cover-3.jpg",
+        cover_256x256: "test/cover-3_256x256.jpg",
+        cover_512x512: "test/cover-3_512x512.jpg",
+        cover_1024x1024: "test/cover-3_1024x1024.jpg",
         createdAt: Date(),
         updatedAt: Date()
       )

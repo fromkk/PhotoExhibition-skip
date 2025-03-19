@@ -37,6 +37,9 @@ final class PhotoDetailStoreTests: XCTestCase {
   private let photo = Photo(
     id: "test-photo-id",
     path: "test-path",
+    path_256x256: "test-path_256x256",
+    path_512x512: "test-path_512x512",
+    path_1024x1024: "test-path_1024x1024",
     title: "Test Photo",
     description: "Test Description",
     takenDate: Date(),
@@ -48,6 +51,9 @@ final class PhotoDetailStoreTests: XCTestCase {
     Photo(
       id: "test-photo-id",
       path: "test-path",
+      path_256x256: "test-path_256x256",
+      path_512x512: "test-path_512x512",
+      path_1024x1024: "test-path_1024x1024",
       title: "Test Photo",
       description: "Test Description",
       takenDate: Date(),

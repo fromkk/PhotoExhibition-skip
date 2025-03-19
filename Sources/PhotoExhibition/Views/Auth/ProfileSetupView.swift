@@ -60,7 +60,7 @@ protocol ProfileSetupStoreDelegate: AnyObject {
     }
 
     // 既存のアイコンがあれば表示用URLを取得
-    if let iconPath = member.icon {
+    if let iconPath = member.iconPath {
       self.iconPath = iconPath
       Task {
         do {

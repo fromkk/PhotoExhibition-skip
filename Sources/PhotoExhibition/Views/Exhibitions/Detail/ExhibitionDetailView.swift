@@ -140,7 +140,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   }
 
   private func loadCoverImage() {
-    guard let coverImagePath = exhibition.coverImagePath else { return }
+    guard let coverImagePath = exhibition.coverPath else { return }
 
     isLoadingCoverImage = true
 
@@ -699,10 +699,16 @@ struct PhotoGridItem: View {
             id: "organizer1",
             name: "John Doe",
             icon: nil,
+            icon_256x256: nil,
+            icon_512x512: nil,
+            icon_1024x1024: nil,
             createdAt: Date(),
             updatedAt: Date()
           ),
           coverImagePath: nil,
+          cover_256x256: nil,
+          cover_512x512: nil,
+          cover_1024x1024: nil,
           createdAt: Date(),
           updatedAt: Date()
         )

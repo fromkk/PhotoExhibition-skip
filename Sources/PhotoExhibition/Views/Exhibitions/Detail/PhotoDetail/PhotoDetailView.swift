@@ -125,7 +125,7 @@ final class PhotoDetailStore: Store {
   }
 
   private func loadImage() async throws {
-    guard let path = photo.path else { return }
+    guard let path = photo.imagePath else { return }
 
     isLoading = true
 
@@ -207,7 +207,7 @@ final class PhotoDetailStore: Store {
 
     // 次の写真の画像を読み込む
     Task {
-      if let path = photos[nextIndex].path {
+      if let path = photos[nextIndex].imagePath {
         isLoading = true
         do {
           imageURL = try await imageCache.getImageURL(for: path)
@@ -228,7 +228,7 @@ final class PhotoDetailStore: Store {
 
     // 前の写真の画像を読み込む
     Task {
-      if let path = photos[previousIndex].path {
+      if let path = photos[previousIndex].imagePath {
         isLoading = true
         do {
           imageURL = try await imageCache.getImageURL(for: path)

@@ -86,7 +86,7 @@ final class ExhibitionEditStore: Store {
       self.coverImagePath = exhibition.coverImagePath
 
       // カバー画像の読み込み
-      if let coverImagePath = exhibition.coverImagePath {
+      if let coverImagePath = exhibition.coverPath {
         loadCoverImage(path: coverImagePath)
       }
     }
