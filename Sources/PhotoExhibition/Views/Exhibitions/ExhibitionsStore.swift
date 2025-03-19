@@ -77,7 +77,14 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       )
       exhibitionToEdit = exhibition
     case .showExhibitionDetail(let exhibition):
-      exhibitionDetailStore = ExhibitionDetailStore(exhibition: exhibition)
+      exhibitionDetailStore = ExhibitionDetailStore(
+        exhibition: exhibition,
+        exhibitionsClient: exhibitionsClient,
+        currentUserClient: currentUserClient,
+        storageClient: storageClient,
+        imageCache: imageCache,
+        photoClient: photoClient
+      )
       isExhibitionDetailShown = true
     case .loadMore:
       if !isLoading && hasMore {

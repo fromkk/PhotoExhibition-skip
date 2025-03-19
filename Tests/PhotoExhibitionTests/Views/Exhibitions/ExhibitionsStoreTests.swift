@@ -131,7 +131,13 @@ final class ExhibitionsStoreTests: XCTestCase {
 
   func testLoadMoreActionFetchesMoreExhibitions() async {
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // 初期データを取得
     store.send(ExhibitionsStore.Action.task)
@@ -179,7 +185,13 @@ final class ExhibitionsStoreTests: XCTestCase {
 
   func testLoadMoreActionDoesNotFetchWhenNoMoreData() async {
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // 初期データを取得
     store.send(ExhibitionsStore.Action.task)
@@ -204,7 +216,13 @@ final class ExhibitionsStoreTests: XCTestCase {
 
   func testRefreshActionFetchesExhibitions() async {
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // refreshアクションを送信
     store.send(ExhibitionsStore.Action.refresh)
@@ -224,7 +242,13 @@ final class ExhibitionsStoreTests: XCTestCase {
 
   func testCreateExhibitionActionShowsCreateSheet() {
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // createExhibitionアクションを送信
     store.send(ExhibitionsStore.Action.createExhibition)
@@ -235,7 +259,13 @@ final class ExhibitionsStoreTests: XCTestCase {
 
   func testEditExhibitionActionSetsExhibitionToEdit() {
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // 編集する展示会
     let exhibitionToEdit = mockExhibitions[0]
@@ -280,7 +310,13 @@ final class ExhibitionsStoreTests: XCTestCase {
       domain: "test", code: 123, userInfo: [NSLocalizedDescriptionKey: "Fetch error"])
 
     // ストアの作成
-    let store = ExhibitionsStore(exhibitionsClient: mockExhibitionsClient)
+    let store = ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient
+    )
 
     // taskアクションを送信
     store.send(ExhibitionsStore.Action.task)

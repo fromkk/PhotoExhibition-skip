@@ -8,7 +8,6 @@ let logger: Logger = Logger(subsystem: "PhotoExhibition", category: "Tests")
 
 @available(macOS 13, *)
 final class PhotoExhibitionTests: XCTestCase {
-
   func testPhotoExhibition() throws {
     logger.log("running testPhotoExhibition")
     XCTAssertEqual(1 + 2, 3, "basic test")
@@ -21,7 +20,6 @@ final class PhotoExhibitionTests: XCTestCase {
     let testData = try JSONDecoder().decode(TestData.self, from: Data(contentsOf: resourceURL))
     XCTAssertEqual("PhotoExhibition", testData.testModuleName)
   }
-
 }
 
 struct TestData: Codable, Hashable {
