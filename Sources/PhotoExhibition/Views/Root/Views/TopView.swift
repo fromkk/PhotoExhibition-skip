@@ -65,7 +65,7 @@ struct TopView: View {
           AuthView(store: store)
         }
       }
-    #if !SKIP && os(iOS)
+      #if !SKIP && os(iOS)
         .navigationDestination(isPresented: $store.showTermsOfService) {
           WebView(url: Constants.termsOfServiceURL)
         }

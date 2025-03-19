@@ -22,11 +22,14 @@ protocol SettingsStoreDelegate: AnyObject {
   var showMyExhibitions: Bool = false
   var showTermsOfService: Bool = false
   var showPrivacyPolicy: Bool = false
+  var showContact: Bool = false
 
   // プロフィール編集画面用のストア
   private(set) var profileSetupStore: ProfileSetupStore?
   // マイ展示会画面用のストア
   private(set) var myExhibitionsStore: MyExhibitionsStore?
+  // 問い合わせ画面用のストア
+  private(set) var contactStore: ContactStore?
 
   init(
     currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
@@ -47,6 +50,7 @@ protocol SettingsStoreDelegate: AnyObject {
     case presentDeleteAccountConfirmation
     case termsOfServiceButtonTapped
     case privacyPolicyButtonTapped
+    case contactButtonTapped
   }
 
   var isErrorAlertPresented: Bool = false
@@ -98,6 +102,9 @@ protocol SettingsStoreDelegate: AnyObject {
       showTermsOfService = true
     case .privacyPolicyButtonTapped:
       showPrivacyPolicy = true
+    case .contactButtonTapped:
+      contactStore = ContactStore()
+      showContact = true
     }
   }
 
@@ -176,6 +183,23 @@ struct SettingsView: View {
           }
         }
         .buttonStyle(.plain)
+
+        Button {
+          store.send(.contactButtonTapped)
+        } label: {
+          HStack {
+            #if SKIP
+              Image("envelope", bundle: .module)
+                .frame(width: 24, height: 24)
+            #else
+              Image(systemName: "envelope")
+                .frame(width: 24, height: 24)
+            #endif
+            Text("Contact")
+              .padding(.leading, 8)
+          }
+        }
+        .buttonStyle(.plain)
       }
 
       Section {
@@ -247,6 +271,11 @@ struct SettingsView: View {
       if let myExhibitionsStore = store.myExhibitionsStore {
         MyExhibitionsView(store: myExhibitionsStore)
           .navigationTitle("My Exhibitions")
+      }
+    }
+    .navigationDestination(isPresented: $store.showContact) {
+      if let contactStore = store.contactStore {
+        ContactView(store: contactStore)
       }
     }
     #if !SKIP && os(iOS)

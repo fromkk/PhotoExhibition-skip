@@ -87,6 +87,16 @@
         }
       }
     },
+    "Contact" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お問い合わせ"
+          }
+        }
+      }
+    },
     "Create a new exhibition" : {
       "localizations" : {
         "ja" : {
@@ -433,6 +443,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アイコンを選択"
+          }
+        }
+      }
+    },
+    "Send" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信"
           }
         }
       }
