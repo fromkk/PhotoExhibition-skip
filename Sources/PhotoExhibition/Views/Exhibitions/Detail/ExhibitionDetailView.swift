@@ -57,6 +57,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var uploadedPhoto: Photo? = nil
   var showPhotoEditSheet: Bool = false
 
+  // PhotoDetailStoreを保持
+  private(set) var photoDetailStore: PhotoDetailStore?
+
   var showReport: Bool = false
   private(set) var reportStore: ReportStore?
 
@@ -65,6 +68,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   private let storageClient: StorageClient
   let imageCache: StorageImageCacheProtocol
   let photoClient: PhotoClient
+
+  var exhibitionEditStore: ExhibitionEditStore?
 
   init(
     exhibition: Exhibition,
@@ -93,6 +98,10 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       checkIfUserIsOrganizer()
     case .editExhibition:
       if isOrganizer {
+        exhibitionEditStore = ExhibitionEditStore(
+          mode: .edit(exhibition),
+          delegate: self
+        )
         showEditSheet = true
       }
     case .deleteExhibition:
@@ -117,6 +126,16 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       loadPhotos()
     case .photoTapped(let photo):
       selectedPhoto = photo
+      // PhotoDetailStoreを生成
+      photoDetailStore = PhotoDetailStore(
+        exhibitionId: exhibition.id,
+        photo: photo,
+        isOrganizer: isOrganizer,
+        photos: photos,
+        delegate: self,
+        imageCache: imageCache,
+        photoClient: photoClient
+      )
       showPhotoDetail = true
     case .updateUploadedPhoto(let title, let description):
       updateUploadedPhoto(title: title, description: description)
@@ -487,23 +506,15 @@ struct ExhibitionDetailView: View {
       }
     }
     .sheet(isPresented: $store.showEditSheet) {
-      ExhibitionEditView(
-        store: ExhibitionEditStore(
-          mode: .edit(store.exhibition),
-          delegate: store
-        ))
+      if let store = store.exhibitionEditStore {
+        ExhibitionEditView(
+          store: store
+        )
+      }
     }
     .fullScreenCover(isPresented: $store.showPhotoDetail) {
-      if let photo = store.selectedPhoto {
-        PhotoDetailView(
-          exhibitionId: store.exhibition.id,
-          photo: photo,
-          isOrganizer: store.isOrganizer,
-          photos: store.photos,
-          delegate: store,
-          imageCache: store.imageCache,
-          photoClient: store.photoClient
-        )
+      if let store = store.photoDetailStore {
+        PhotoDetailView(store: store)
       }
     }
     .sheet(isPresented: $store.showPhotoEditSheet) {

@@ -255,24 +255,8 @@ struct PhotoDetailView: View {
   // スワイプ検出用
   @State private var dragOffset: CGFloat = 0
 
-  init(
-    exhibitionId: String,
-    photo: Photo,
-    isOrganizer: Bool,
-    photos: [Photo],
-    delegate: (any PhotoDetailStoreDelegate)? = nil,
-    imageCache: StorageImageCacheProtocol = StorageImageCache.shared,
-    photoClient: PhotoClient = DefaultPhotoClient()
-  ) {
-    self.store = PhotoDetailStore(
-      exhibitionId: exhibitionId,
-      photo: photo,
-      isOrganizer: isOrganizer,
-      photos: photos,
-      delegate: delegate,
-      imageCache: imageCache,
-      photoClient: photoClient
-    )
+  init(store: PhotoDetailStore) {
+    self.store = store
   }
 
   var body: some View {
@@ -637,19 +621,21 @@ struct PhotoEditView: View {
 
 #Preview {
   PhotoDetailView(
-    exhibitionId: "preview",
-    photo: Photo(
-      id: "photo1",
-      path: nil,
-      title: "Sample Photo",
-      description:
-        "This is a sample photo description that shows how the detail view will look with text overlay.",
-      takenDate: Date(),
-      photographer: "John Doe",
-      createdAt: Date(),
-      updatedAt: Date()
-    ),
-    isOrganizer: true,
-    photos: []
+    store: PhotoDetailStore(
+      exhibitionId: "preview",
+      photo: Photo(
+        id: "photo1",
+        path: nil,
+        title: "Sample Photo",
+        description:
+          "This is a sample photo description that shows how the detail view will look with text overlay.",
+        takenDate: Date(),
+        photographer: "John Doe",
+        createdAt: Date(),
+        updatedAt: Date()
+      ),
+      isOrganizer: true,
+      photos: []
+    )
   )
 }
