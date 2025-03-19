@@ -276,260 +276,152 @@ struct PhotoDetailView: View {
   }
 
   var body: some View {
-    ZStack {
-      // 背景を黒にする
-      Color.black.ignoresSafeArea()
+    NavigationStack {
+      ZStack {
+        // 背景を黒にする
+        Color.black.ignoresSafeArea()
 
-      // 写真表示
-      if let imageURL = store.imageURL {
-        AsyncImage(url: imageURL) { phase in
-          switch phase {
-          case .success(let image):
-            image
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .scaleEffect(scale)
-              .offset(offset)
-              #if !SKIP
-                .gesture(
-                  // ピンチジェスチャーで拡大縮小
-                  MagnificationGesture()
-                    .onChanged { value in
-                      // valueをDoubleに明示的に変換してからCGFloatに変換
-                      let magnitudeDouble = Double(value.magnitude)
-                      let magnitudeValue = CGFloat(magnitudeDouble)
-                      let newScale = lastScale * magnitudeValue
-                      // 1.0〜5.0の範囲に制限
-                      scale = min(max(newScale, CGFloat(1.0)), CGFloat(5.0))
-                    }
-                    .onEnded { _ in
-                      lastScale = scale
-                      // スケールが1.0未満なら1.0に戻す
-                      if scale < CGFloat(1.0) {
-                        scale = CGFloat(1.0)
-                        lastScale = CGFloat(1.0)
+        // 写真表示
+        if let imageURL = store.imageURL {
+          AsyncImage(url: imageURL) { phase in
+            switch phase {
+            case .success(let image):
+              image
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .scaleEffect(scale)
+                .offset(offset)
+                #if !SKIP
+                  .gesture(
+                    // ピンチジェスチャーで拡大縮小
+                    MagnificationGesture()
+                      .onChanged { value in
+                        // valueをDoubleに明示的に変換してからCGFloatに変換
+                        let magnitudeDouble = Double(value.magnitude)
+                        let magnitudeValue = CGFloat(magnitudeDouble)
+                        let newScale = lastScale * magnitudeValue
+                        // 1.0〜5.0の範囲に制限
+                        scale = min(max(newScale, CGFloat(1.0)), CGFloat(5.0))
                       }
-                      // スケールが5.0を超えたら5.0に制限
-                      if scale > CGFloat(5.0) {
-                        scale = CGFloat(5.0)
-                        lastScale = CGFloat(5.0)
-                      }
-                      // スケールが1.0になったら位置もリセット
-                      if scale <= CGFloat(1.0) {
-                        withAnimation(.spring()) {
-                          offset = .zero
-                          lastOffset = .zero
+                      .onEnded { _ in
+                        lastScale = scale
+                        // スケールが1.0未満なら1.0に戻す
+                        if scale < CGFloat(1.0) {
+                          scale = CGFloat(1.0)
+                          lastScale = CGFloat(1.0)
+                        }
+                        // スケールが5.0を超えたら5.0に制限
+                        if scale > CGFloat(5.0) {
+                          scale = CGFloat(5.0)
+                          lastScale = CGFloat(5.0)
+                        }
+                        // スケールが1.0になったら位置もリセット
+                        if scale <= CGFloat(1.0) {
+                          withAnimation(.spring()) {
+                            offset = .zero
+                            lastOffset = .zero
+                          }
                         }
                       }
-                    }
-                )
-                .simultaneousGesture(
-                  // ドラッグジェスチャーでスクロール（拡大時のみ有効）
-                  DragGesture()
-                    .onChanged { value in
-                      // 拡大時のみスクロールを有効にする
-                      if scale > CGFloat(1.0) {
-                        offset = CGSize(
-                          width: lastOffset.width + value.translation.width,
-                          height: lastOffset.height + value.translation.height
-                        )
-                      }
-                    }
-                    .onEnded { _ in
-                      lastOffset = offset
-                    }
-                )
-                // 水平方向のスワイプジェスチャー（拡大していない時のみ有効）
-                .simultaneousGesture(
-                  DragGesture(minimumDistance: 20, coordinateSpace: .local)
-                    .onChanged { value in
-                      // 拡大していない時のみスワイプを有効にする
-                      if scale <= CGFloat(1.0) {
-                        dragOffset = value.translation.width
-                      }
-                    }
-                    .onEnded { value in
-                      // スワイプの方向と距離に基づいて写真を切り替え
-                      if scale <= CGFloat(1.0) {
-                        let threshold: CGFloat = 50
-                        if dragOffset > threshold {
-                          // 右にスワイプ -> 前の写真
-                          store.send(.showPreviousPhoto)
-                        } else if dragOffset < -threshold {
-                          // 左にスワイプ -> 次の写真
-                          store.send(.showNextPhoto)
+                  )
+                  .simultaneousGesture(
+                    // ドラッグジェスチャーでスクロール（拡大時のみ有効）
+                    DragGesture()
+                      .onChanged { value in
+                        // 拡大時のみスクロールを有効にする
+                        if scale > CGFloat(1.0) {
+                          offset = CGSize(
+                            width: lastOffset.width + value.translation.width,
+                            height: lastOffset.height + value.translation.height
+                          )
                         }
-                        dragOffset = 0
                       }
-                    }
-                )
-                // ダブルタップでリセット
-                .onTapGesture(count: 2) {
-                  resetZoom()
-                }
-              #endif
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-          case .failure:
-            Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
-              .font(.largeTitle)
-              .foregroundStyle(.white)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-          case .empty:
-            if store.isLoading {
-              ProgressView()
+                      .onEnded { _ in
+                        lastOffset = offset
+                      }
+                  )
+                  // 水平方向のスワイプジェスチャー（拡大していない時のみ有効）
+                  .simultaneousGesture(
+                    DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                      .onChanged { value in
+                        // 拡大していない時のみスワイプを有効にする
+                        if scale <= CGFloat(1.0) {
+                          dragOffset = value.translation.width
+                        }
+                      }
+                      .onEnded { value in
+                        // スワイプの方向と距離に基づいて写真を切り替え
+                        if scale <= CGFloat(1.0) {
+                          let threshold: CGFloat = 50
+                          if dragOffset > threshold {
+                            // 右にスワイプ -> 前の写真
+                            store.send(.showPreviousPhoto)
+                          } else if dragOffset < -threshold {
+                            // 左にスワイプ -> 次の写真
+                            store.send(.showNextPhoto)
+                          }
+                          dragOffset = 0
+                        }
+                      }
+                  )
+                  // ダブルタップでリセット
+                  .onTapGesture(count: 2) {
+                    resetZoom()
+                  }
+                #endif
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
+            case .failure:
+              Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
+                .font(.largeTitle)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            case .empty:
+              if store.isLoading {
+                ProgressView()
+                  .frame(maxWidth: .infinity, maxHeight: .infinity)
+              } else {
+                Color.clear
+              }
+            @unknown default:
               Color.clear
             }
-          @unknown default:
-            Color.clear
           }
+        } else if store.isLoading {
+          ProgressView()
+        } else {
+          // 画像がない場合のプレースホルダー
+          Image(systemName: SystemImageMapping.getIconName(from: "photo"))
+            .font(.system(size: 50))
+            .foregroundStyle(.white.opacity(0.5))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-      } else if store.isLoading {
-        ProgressView()
-      } else {
-        // 画像がない場合のプレースホルダー
-        Image(systemName: SystemImageMapping.getIconName(from: "photo"))
-          .font(.system(size: 50))
-          .foregroundStyle(.white.opacity(0.5))
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
-      }
 
-      // オーバーレイコントロール
-      VStack {
-        // 上部コントロール
-        HStack {
-          Button {
-            dismiss()
-          } label: {
-            Image(systemName: SystemImageMapping.getIconName(from: "xmark"))
-              .font(.title2)
-              .foregroundStyle(.white)
-              .padding(12)
-              .background(Color.black.opacity(0.5))
-              .clipShape(Circle())
-          }
-
+        // オーバーレイコントロール
+        VStack {
           Spacer()
 
-          // 写真インジケーター（複数写真がある場合のみ表示）
-          if store.photos.count > 1 {
-            Text("\(store.currentPhotoIndex + 1) / \(store.photos.count)")
-              .font(.subheadline)
-              .foregroundStyle(.white)
-              .padding(8)
-              .background(Color.black.opacity(0.5))
-              .clipShape(Capsule())
-          }
-
-          Spacer()
-
-          // リセットボタンを追加（拡大時のみ表示）
-          if scale > CGFloat(1.0) {
-            Button {
-              resetZoom()
-            } label: {
-              Image(systemName: SystemImageMapping.getIconName(from: "arrow.counterclockwise"))
-                .font(.title2)
-                .foregroundStyle(.white)
-                .padding(12)
-                .background(Color.black.opacity(0.5))
-                .clipShape(Circle())
-            }
-          }
-
-          if store.isOrganizer {
-            HStack(spacing: 16) {
-              Button {
-                store.send(.editButtonTapped)
-              } label: {
-                Image(systemName: SystemImageMapping.getIconName(from: "pencil"))
-                  .font(.title2)
-                  .foregroundStyle(.white)
-                  .padding(12)
-                  .background(Color.black.opacity(0.5))
-                  .clipShape(Circle())
-              }
-
-              Button {
-                store.send(.deleteButtonTapped)
-              } label: {
-                Image(systemName: SystemImageMapping.getIconName(from: "trash"))
-                  .font(.title2)
-                  .foregroundStyle(.white)
-                  .padding(12)
-                  .background(Color.black.opacity(0.5))
-                  .clipShape(Circle())
-              }
-            }
-          } else {
-            Button {
-              store.send(.reportButtonTapped)
-            } label: {
-              Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
-                .font(.title2)
-                .foregroundStyle(.white)
-                .padding(12)
-                .background(Color.black.opacity(0.5))
-                .clipShape(Circle())
-            }
-          }
-        }
-        .padding()
-
-        Spacer()
-
-        // 左右のナビゲーションボタン（拡大していない時のみ表示）
-        if scale <= CGFloat(1.0) && store.photos.count > 1 {
-          HStack {
-            // 前の写真ボタン
-            Button {
-              store.send(.showPreviousPhoto)
-            } label: {
-              Image(systemName: SystemImageMapping.getIconName(from: "chevron.left"))
-                .font(.title)
-                .foregroundStyle(.white)
-                .padding(16)
-                .background(Color.black.opacity(0.5))
-                .clipShape(Circle())
-            }
-            .padding(.leading)
-
-            Spacer()
-
-            // 次の写真ボタン
-            Button {
-              store.send(.showNextPhoto)
-            } label: {
-              Image(systemName: SystemImageMapping.getIconName(from: "chevron.right"))
-                .font(.title)
-                .foregroundStyle(.white)
-                .padding(16)
-                .background(Color.black.opacity(0.5))
-                .clipShape(Circle())
-            }
-            .padding(.trailing)
-          }
-        }
-
-        // 下部のタイトルと説明
-        if store.photos.isEmpty
-          ? (store.photo.title != nil || store.photo.description != nil)
-          : (store.photos[store.currentPhotoIndex].title != nil
-            || store.photos[store.currentPhotoIndex].description != nil)
-        {
           VStack(alignment: .leading, spacing: 8) {
+            if store.photos.count > 1 {
+              Text("\(store.currentPhotoIndex + 1) / \(store.photos.count)")
+                .font(.subheadline)
+                .foregroundStyle(.white)
+                .padding(8)
+                .background(Color.black.opacity(0.5))
+                .clipShape(Capsule())
+                .padding(.bottom, 8)
+            }
+
+            // 下部のタイトルと説明
             if let title = store.photos.isEmpty
-              ? store.photo.title : store.photos[store.currentPhotoIndex].title
+                ? store.photo.title : store.photos[store.currentPhotoIndex].title
             {
               Text(title)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.subheadline)
                 .foregroundStyle(.white)
             }
 
             if let description = store.photos.isEmpty
-              ? store.photo.description : store.photos[store.currentPhotoIndex].description
+                ? store.photo.description : store.photos[store.currentPhotoIndex].description
             {
               Text(description)
                 .font(.body)
@@ -545,9 +437,94 @@ struct PhotoDetailView: View {
           )
         }
       }
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button {
+            dismiss()
+          } label: {
+            Image(systemName: SystemImageMapping.getIconName(from: "xmark"))
+              .foregroundStyle(.white)
+              .accessibilityLabel("Close")
+          }
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+          HStack(spacing: 16) {
+            if scale > CGFloat(1.0) {
+              Button {
+                resetZoom()
+              } label: {
+                Image(systemName: SystemImageMapping.getIconName(from: "arrow.counterclockwise"))
+                  .foregroundStyle(.white)
+                  .accessibilityLabel("Reset zoom")
+              }
+            }
+
+            if store.isOrganizer {
+              Button {
+                store.send(.editButtonTapped)
+              } label: {
+                Image(systemName: SystemImageMapping.getIconName(from: "pencil"))
+                  .foregroundStyle(.white)
+                  .accessibilityLabel("Edit photo")
+              }
+
+              Button {
+                store.send(.deleteButtonTapped)
+              } label: {
+                Image(systemName: SystemImageMapping.getIconName(from: "trash"))
+                  .foregroundStyle(.white)
+                  .accessibilityLabel("Delete photo")
+              }
+            } else {
+              Button {
+                store.send(.reportButtonTapped)
+              } label: {
+                Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
+                  .foregroundStyle(.white)
+                  .accessibilityLabel("Report photo")
+              }
+            }
+          }
+        }
+
+        ToolbarItem(placement: .bottomBar) {
+          // 左右のナビゲーションボタン（拡大していない時のみ表示）
+          if scale <= CGFloat(1.0) && store.photos.count > 1 {
+            HStack {
+              // 前の写真ボタン
+              Button {
+                store.send(.showPreviousPhoto)
+              } label: {
+                Image(systemName: SystemImageMapping.getIconName(from: "chevron.left"))
+                  .foregroundStyle(.white)
+                  .padding(16)
+                  .accessibilityLabel("Previous photo")
+              }
+              .padding(.leading)
+
+              Spacer()
+
+              // 次の写真ボタン
+              Button {
+                store.send(.showNextPhoto)
+              } label: {
+                Image(systemName: SystemImageMapping.getIconName(from: "chevron.right"))
+                  .foregroundStyle(.white)
+                  .padding(16)
+                  .accessibilityLabel("Next photo")
+              }
+              .padding(.trailing)
+            }
+          }
+        }
+      }
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbarBackground(Color.black.opacity(0), for: .navigationBar)
+      .toolbarBackground(.visible, for: .navigationBar)
+      .toolbarColorScheme(.dark)
     }
     #if !SKIP && os(iOS)
-      .navigationBarHidden(true)
       .statusBar(hidden: true)
     #endif
     .sheet(isPresented: $store.showEditSheet) {

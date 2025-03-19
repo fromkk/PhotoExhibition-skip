@@ -63,6 +63,7 @@ struct ExhibitionsView: View {
             store.send(.createExhibition)
           } label: {
             Image(systemName: SystemImageMapping.getIconName(from: "plus"))
+              .accessibilityLabel("Create new exhibition")
           }
         }
       }

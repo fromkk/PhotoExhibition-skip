@@ -469,12 +469,14 @@ struct ExhibitionDetailView: View {
             }
           } label: {
             Image(systemName: SystemImageMapping.getIconName(from: "ellipsis"))
+              .accessibilityLabel("More options")
           }
         } else {
           Button {
             store.send(.reportButtonTapped)
           } label: {
             Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
+              .accessibilityLabel("Report exhibition")
           }
         }
       }
