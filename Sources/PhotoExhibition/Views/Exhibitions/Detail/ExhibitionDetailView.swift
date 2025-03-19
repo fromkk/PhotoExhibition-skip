@@ -623,12 +623,21 @@ struct PhotoGridItem: View {
             .background(Circle().fill(Color.black.opacity(0.5)))
             .padding(4)
         #else
+        if #available(iOS 18.0, *) {
           Image(systemName: "text.document")
             .font(.caption)
             .padding(4)
             .foregroundStyle(.white)
             .background(Circle().fill(Color.black.opacity(0.5)))
             .padding(4)
+        } else {
+          Image(systemName: "doc.text")
+            .font(.caption)
+            .padding(4)
+            .foregroundStyle(.white)
+            .background(Circle().fill(Color.black.opacity(0.5)))
+            .padding(4)
+        }
         #endif
       }
     }
