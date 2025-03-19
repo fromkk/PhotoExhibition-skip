@@ -100,7 +100,11 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       if isOrganizer {
         exhibitionEditStore = ExhibitionEditStore(
           mode: .edit(exhibition),
-          delegate: self
+          delegate: self,
+          currentUserClient: currentUserClient,
+          exhibitionsClient: exhibitionsClient,
+          storageClient: storageClient,
+          imageCache: imageCache
         )
         showEditSheet = true
       }

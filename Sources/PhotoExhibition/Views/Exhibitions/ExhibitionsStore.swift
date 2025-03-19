@@ -57,12 +57,24 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
     case .task, .refresh:
       fetchExhibitions()
     case .createExhibition:
-      exhibitionEditStore = ExhibitionEditStore(mode: .create)
-      exhibitionEditStore?.delegate = self
+      exhibitionEditStore = ExhibitionEditStore(
+        mode: .create,
+        delegate: self,
+        currentUserClient: currentUserClient,
+        exhibitionsClient: exhibitionsClient,
+        storageClient: storageClient,
+        imageCache: imageCache
+      )
       showCreateExhibition = true
     case .editExhibition(let exhibition):
-      exhibitionEditStore = ExhibitionEditStore(mode: .edit(exhibition))
-      exhibitionEditStore?.delegate = self
+      exhibitionEditStore = ExhibitionEditStore(
+        mode: .edit(exhibition),
+        delegate: self,
+        currentUserClient: currentUserClient,
+        exhibitionsClient: exhibitionsClient,
+        storageClient: storageClient,
+        imageCache: imageCache
+      )
       exhibitionToEdit = exhibition
     case .showExhibitionDetail(let exhibition):
       exhibitionDetailStore = ExhibitionDetailStore(exhibition: exhibition)
