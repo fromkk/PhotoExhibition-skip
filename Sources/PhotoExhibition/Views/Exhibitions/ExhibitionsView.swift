@@ -71,10 +71,14 @@ struct ExhibitionsView: View {
         store.send(.task)
       }
       .sheet(isPresented: $store.showCreateExhibition) {
-        ExhibitionEditView(store: ExhibitionEditStore(mode: .create))
+        if let editStore = store.exhibitionEditStore {
+          ExhibitionEditView(store: editStore)
+        }
       }
       .sheet(item: $store.exhibitionToEdit) { exhibition in
-        ExhibitionEditView(store: ExhibitionEditStore(mode: .edit(exhibition)))
+        if let editStore = store.exhibitionEditStore {
+          ExhibitionEditView(store: editStore)
+        }
       }
     }
   }

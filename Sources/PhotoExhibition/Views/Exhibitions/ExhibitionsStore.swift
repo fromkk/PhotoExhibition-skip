@@ -5,7 +5,7 @@ import SwiftUI
 #endif
 
 @Observable
-final class ExhibitionsStore: Store {
+final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   enum Action {
     case task
     case refresh
@@ -13,6 +13,8 @@ final class ExhibitionsStore: Store {
     case editExhibition(Exhibition)
     case showExhibitionDetail(Exhibition)
     case loadMore
+    case exhibitionCreated(Exhibition)
+    case exhibitionUpdated(Exhibition)
   }
 
   var exhibitions: [Exhibition] = []
@@ -27,6 +29,8 @@ final class ExhibitionsStore: Store {
   private(set) var exhibitionDetailStore: ExhibitionDetailStore?
   // 詳細画面への遷移状態
   var isExhibitionDetailShown: Bool = false
+  // 展示会編集画面用のストアを保持
+  private(set) var exhibitionEditStore: ExhibitionEditStore?
 
   private let exhibitionsClient: ExhibitionsClient
   private let currentUserClient: CurrentUserClient
@@ -53,29 +57,41 @@ final class ExhibitionsStore: Store {
     case .task, .refresh:
       fetchExhibitions()
     case .createExhibition:
+      exhibitionEditStore = ExhibitionEditStore(mode: .create)
+      exhibitionEditStore?.delegate = self
       showCreateExhibition = true
     case .editExhibition(let exhibition):
+      exhibitionEditStore = ExhibitionEditStore(mode: .edit(exhibition))
+      exhibitionEditStore?.delegate = self
       exhibitionToEdit = exhibition
     case .showExhibitionDetail(let exhibition):
-      exhibitionDetailStore = createExhibitionDetailStore(for: exhibition)
+      exhibitionDetailStore = ExhibitionDetailStore(exhibition: exhibition)
       isExhibitionDetailShown = true
     case .loadMore:
       if !isLoading && hasMore {
         fetchMoreExhibitions()
       }
+    case .exhibitionCreated(let exhibition):
+      exhibitions.insert(exhibition, at: 0)
+      showCreateExhibition = false
+      exhibitionEditStore = nil
+    case .exhibitionUpdated(let exhibition):
+      if let index = exhibitions.firstIndex(where: { $0.id == exhibition.id }) {
+        exhibitions[index] = exhibition
+      }
+      exhibitionToEdit = nil
+      exhibitionEditStore = nil
     }
   }
 
-  // 展示会詳細画面用のストアを作成するメソッド
-  private func createExhibitionDetailStore(for exhibition: Exhibition) -> ExhibitionDetailStore {
-    return ExhibitionDetailStore(
-      exhibition: exhibition,
-      exhibitionsClient: exhibitionsClient,
-      currentUserClient: currentUserClient,
-      storageClient: storageClient,
-      imageCache: imageCache,
-      photoClient: photoClient
-    )
+  // MARK: - ExhibitionEditStoreDelegate
+
+  func didSaveExhibition() {
+    send(.refresh)
+  }
+
+  func didCancelExhibition() {
+    // nothing to do
   }
 
   private func fetchExhibitions() {
