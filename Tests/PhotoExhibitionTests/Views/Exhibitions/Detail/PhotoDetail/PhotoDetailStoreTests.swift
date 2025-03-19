@@ -91,7 +91,7 @@ final class PhotoDetailStoreTests: XCTestCase {
 
     // 検証
     XCTAssertTrue(mockImageCache.getImageURLWasCalled)
-    XCTAssertEqual(mockImageCache.getImageURLPath, "test-path")
+    XCTAssertEqual(mockImageCache.getImageURLPath, "test-path_1024x1024")
     XCTAssertEqual(store.imageURL, expectedURL)
     XCTAssertFalse(store.isLoading)
   }

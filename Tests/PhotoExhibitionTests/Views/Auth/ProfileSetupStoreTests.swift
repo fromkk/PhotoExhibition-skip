@@ -197,7 +197,7 @@ final class ProfileSetupStoreTests: XCTestCase {
     XCTAssertTrue(mockStorageClient.uploadWasCalled)
     XCTAssertEqual(mockStorageClient.uploadFromURL, iconURL)
     XCTAssertTrue(
-      mockStorageClient.uploadToPath?.contains("members/\(testMember.id)/icons/") ?? false)
+      mockStorageClient.uploadToPath?.contains("members/\(testMember.id)/icon.jpg") ?? false)
 
     XCTAssertTrue(mockMemberUpdateClient.updateProfileWasCalled)
     XCTAssertEqual(mockMemberUpdateClient.updatedProfileMemberID, testMember.id)
