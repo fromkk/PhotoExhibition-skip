@@ -28,11 +28,7 @@ struct TopView: View {
 
           HStack(spacing: 16) {
             Button {
-              #if SKIP && os(iOS)
-                openURL(Constants.termsOfServiceURL)
-              #else
-                store.send(.termsOfServiceButtonTapped)
-              #endif
+              openURL(Constants.termsOfServiceURL)
             } label: {
               Text("Terms of Service")
                 .font(.footnote)
@@ -40,11 +36,7 @@ struct TopView: View {
             }
 
             Button {
-              #if SKIP && os(iOS)
-                openURL(Constants.privacyPolicyURL)
-              #else
-                store.send(.privacyPolicyButtonTapped)
-              #endif
+              openURL(Constants.privacyPolicyURL)
             } label: {
               Text("Privacy Policy")
                 .font(.footnote)
@@ -65,14 +57,6 @@ struct TopView: View {
           AuthView(store: store)
         }
       }
-      #if !SKIP && os(iOS)
-        .navigationDestination(isPresented: $store.showTermsOfService) {
-          WebView(url: Constants.termsOfServiceURL)
-        }
-        .navigationDestination(isPresented: $store.showPrivacyPolicy) {
-          WebView(url: Constants.privacyPolicyURL)
-        }
-      #endif
     }
   }
 }

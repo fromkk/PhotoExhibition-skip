@@ -20,8 +20,6 @@ protocol SettingsStoreDelegate: AnyObject {
   var member: Member?
   var isProfileEditPresented: Bool = false
   var showMyExhibitions: Bool = false
-  var showTermsOfService: Bool = false
-  var showPrivacyPolicy: Bool = false
   var showContact: Bool = false
 
   // プロフィール編集画面用のストア
@@ -48,8 +46,6 @@ protocol SettingsStoreDelegate: AnyObject {
     case myExhibitionsButtonTapped
     case deleteAccountButtonTapped
     case presentDeleteAccountConfirmation
-    case termsOfServiceButtonTapped
-    case privacyPolicyButtonTapped
     case contactButtonTapped
   }
 
@@ -98,10 +94,6 @@ protocol SettingsStoreDelegate: AnyObject {
       }
     case .presentDeleteAccountConfirmation:
       isDeleteAccountConfirmationPresented = true
-    case .termsOfServiceButtonTapped:
-      showTermsOfService = true
-    case .privacyPolicyButtonTapped:
-      showPrivacyPolicy = true
     case .contactButtonTapped:
       contactStore = ContactStore()
       showContact = true
@@ -204,11 +196,7 @@ struct SettingsView: View {
 
       Section {
         Button {
-          #if SKIP && os(iOS)
-            openURL(Constants.termsOfServiceURL)
-          #else
-            store.send(.termsOfServiceButtonTapped)
-          #endif
+          openURL(Constants.termsOfServiceURL)
         } label: {
           HStack {
             #if SKIP
@@ -230,11 +218,7 @@ struct SettingsView: View {
         .buttonStyle(.plain)
 
         Button {
-          #if SKIP && os(iOS)
-            openURL(Constants.privacyPolicyURL)
-          #else
-            store.send(.privacyPolicyButtonTapped)
-          #endif
+          openURL(Constants.privacyPolicyURL)
         } label: {
           HStack {
             #if SKIP
@@ -289,14 +273,6 @@ struct SettingsView: View {
         ContactView(store: contactStore)
       }
     }
-    #if !SKIP && os(iOS)
-      .navigationDestination(isPresented: $store.showTermsOfService) {
-        WebView(url: Constants.termsOfServiceURL)
-      }
-      .navigationDestination(isPresented: $store.showPrivacyPolicy) {
-        WebView(url: Constants.privacyPolicyURL)
-      }
-    #endif
     .task {
       store.send(.task)
     }
