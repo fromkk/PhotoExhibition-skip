@@ -441,9 +441,9 @@ struct ExhibitionDetailView: View {
               }
             }
           }
-          .padding()
         }
       }
+      .padding()
     }
     #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)
@@ -486,7 +486,7 @@ struct ExhibitionDetailView: View {
           delegate: store
         ))
     }
-    .sheet(isPresented: $store.showPhotoDetail) {
+    .fullScreenCover(isPresented: $store.showPhotoDetail) {
       if let photo = store.selectedPhoto {
         PhotoDetailView(
           exhibitionId: store.exhibition.id,
