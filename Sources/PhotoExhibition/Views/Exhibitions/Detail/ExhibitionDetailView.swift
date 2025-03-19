@@ -2,6 +2,11 @@ import Foundation
 import SkipKit
 import SwiftUI
 
+#if canImport(Photos)
+  import Photos
+  import PhotosUI
+#endif
+
 #if canImport(Observation)
   import Observation
 #endif
@@ -540,14 +545,38 @@ struct ExhibitionDetailView: View {
       store.send(.loadCoverImage)
       store.send(.loadPhotos)
     }
-    .withMediaPicker(
-      type: MediaPickerType.library,
-      isPresented: $store.photoPickerPresented,
-      selectedImageURL: Binding(
-        get: { store.selectedPhotoURL },
-        set: { store.send(.photoSelected($0)) }
+    #if SKIP
+      .withMediaPicker(
+        type: MediaPickerType.library,
+        isPresented: $store.photoPickerPresented,
+        selectedImageURL: Binding(
+          get: { store.selectedPhotoURL },
+          set: { store.send(.photoSelected($0)) }
+        )
       )
-    )
+    #else
+      .photosPicker(
+        isPresented: $store.photoPickerPresented,
+        selection: Binding(
+          get: { nil },
+          set: { item in
+            if let item = item {
+              Task {
+                if let data = try? await item.loadTransferable(type: Data.self),
+                  let image = UIImage(data: data)
+                {
+                  let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
+                    UUID().uuidString + ".jpg")
+                  if let imageData = image.jpegData(compressionQuality: 0.8) {
+                    try? imageData.write(to: tempURL)
+                    store.send(.photoSelected(tempURL))
+                  }
+                }
+              }
+            }
+          }
+        ))
+    #endif
     .sheet(isPresented: $store.showReport) {
       if let reportStore = store.reportStore {
         ReportView(store: reportStore)
@@ -625,21 +654,21 @@ struct PhotoGridItem: View {
             .background(Circle().fill(Color.black.opacity(0.5)))
             .padding(4)
         #else
-        if #available(iOS 18.0, *) {
-          Image(systemName: "text.document")
-            .font(.caption)
-            .padding(4)
-            .foregroundStyle(.white)
-            .background(Circle().fill(Color.black.opacity(0.5)))
-            .padding(4)
-        } else {
-          Image(systemName: "doc.text")
-            .font(.caption)
-            .padding(4)
-            .foregroundStyle(.white)
-            .background(Circle().fill(Color.black.opacity(0.5)))
-            .padding(4)
-        }
+          if #available(iOS 18.0, *) {
+            Image(systemName: "text.document")
+              .font(.caption)
+              .padding(4)
+              .foregroundStyle(.white)
+              .background(Circle().fill(Color.black.opacity(0.5)))
+              .padding(4)
+          } else {
+            Image(systemName: "doc.text")
+              .font(.caption)
+              .padding(4)
+              .foregroundStyle(.white)
+              .background(Circle().fill(Color.black.opacity(0.5)))
+              .padding(4)
+          }
         #endif
       }
     }

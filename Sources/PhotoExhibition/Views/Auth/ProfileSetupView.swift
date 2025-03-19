@@ -1,6 +1,11 @@
 import SkipKit
 import SwiftUI
 
+#if canImport(Photos)
+  import Photos
+  import PhotosUI
+#endif
+
 #if canImport(Observation)
   import Observation
 #endif
@@ -191,14 +196,38 @@ struct ProfileSetupView: View {
           }
         }
       }
-      .withMediaPicker(
-        type: MediaPickerType.library,
-        isPresented: $store.iconPickerPresented,
-        selectedImageURL: Binding(
-          get: { store.selectedIconURL },
-          set: { store.send(.iconSelected($0)) }
+      #if SKIP
+        .withMediaPicker(
+          type: MediaPickerType.library,
+          isPresented: $store.iconPickerPresented,
+          selectedImageURL: Binding(
+            get: { store.selectedIconURL },
+            set: { store.send(.iconSelected($0)) }
+          )
         )
-      )
+      #else
+        .photosPicker(
+          isPresented: $store.iconPickerPresented,
+          selection: Binding(
+            get: { nil },
+            set: { item in
+              if let item = item {
+                Task {
+                  if let data = try? await item.loadTransferable(type: Data.self),
+                    let image = UIImage(data: data)
+                  {
+                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
+                      UUID().uuidString + ".jpg")
+                    if let imageData = image.jpegData(compressionQuality: 0.8) {
+                      try? imageData.write(to: tempURL)
+                      store.send(.iconSelected(tempURL))
+                    }
+                  }
+                }
+              }
+            }
+          ))
+      #endif
 
       TextField("Username", text: $store.name)
         .textFieldStyle(.roundedBorder)

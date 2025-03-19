@@ -413,7 +413,7 @@ struct PhotoDetailView: View {
 
             // 下部のタイトルと説明
             if let title = store.photos.isEmpty
-                ? store.photo.title : store.photos[store.currentPhotoIndex].title
+              ? store.photo.title : store.photos[store.currentPhotoIndex].title
             {
               Text(title)
                 .font(.subheadline)
@@ -421,7 +421,7 @@ struct PhotoDetailView: View {
             }
 
             if let description = store.photos.isEmpty
-                ? store.photo.description : store.photos[store.currentPhotoIndex].description
+              ? store.photo.description : store.photos[store.currentPhotoIndex].description
             {
               Text(description)
                 .font(.body)

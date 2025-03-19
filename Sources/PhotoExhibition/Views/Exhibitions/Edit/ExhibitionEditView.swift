@@ -2,6 +2,11 @@ import OSLog
 import SkipKit
 import SwiftUI
 
+#if canImport(Photos)
+  import Photos
+  import PhotosUI
+#endif
+
 #if canImport(Observation)
   import Observation
 #endif
@@ -278,18 +283,42 @@ struct ExhibitionEditView: View {
             } label: {
               Text("Select Cover Image")
             }
+            #if SKIP
+              .withMediaPicker(
+                type: MediaPickerType.library,
+                isPresented: $store.imagePickerPresented,
+                selectedImageURL: $store.pickedImageURL
+              )
+            #else
+              .photosPicker(
+                isPresented: $store.imagePickerPresented,
+                selection: Binding(
+                  get: { nil },
+                  set: { item in
+                    if let item = item {
+                      Task {
+                        if let data = try? await item.loadTransferable(type: Data.self),
+                          let image = UIImage(data: data)
+                        {
+                          let tempURL = FileManager.default.temporaryDirectory
+                            .appendingPathComponent(UUID().uuidString + ".jpg")
+                          if let imageData = image.jpegData(compressionQuality: 0.8) {
+                            try? imageData.write(to: tempURL)
+                            store.send(.updateCoverImage(tempURL))
+                          }
+                        }
+                      }
+                    }
+                  }
+                ))
+            #endif
+
+            TextField("Exhibition Name", text: $store.name)
+
+            TextField("Description", text: $store.description)
+              .lineLimit(5)
+              .multilineTextAlignment(.leading)
           }
-          .withMediaPicker(
-            type: MediaPickerType.library,
-            isPresented: $store.imagePickerPresented,
-            selectedImageURL: $store.pickedImageURL
-          )
-
-          TextField("Exhibition Name", text: $store.name)
-
-          TextField("Description", text: $store.description)
-            .lineLimit(5)
-            .multilineTextAlignment(.leading)
         }
 
         Section("Period") {

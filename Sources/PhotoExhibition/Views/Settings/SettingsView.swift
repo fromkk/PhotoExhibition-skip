@@ -186,13 +186,13 @@ struct SettingsView: View {
               Image("text.document", bundle: .module)
                 .frame(width: 24, height: 24)
             #else
-            if #available(iOS 18.0, *) {
-              Image(systemName: "text.document")
-                .frame(width: 24, height: 24)
-            } else {
-              Image(systemName: "doc.text")
-                .frame(width: 24, height: 24)
-            }
+              if #available(iOS 18.0, *) {
+                Image(systemName: "text.document")
+                  .frame(width: 24, height: 24)
+              } else {
+                Image(systemName: "doc.text")
+                  .frame(width: 24, height: 24)
+              }
             #endif
             Text("Terms of Service")
               .padding(.leading, 8)
@@ -208,13 +208,13 @@ struct SettingsView: View {
               Image("lock.document", bundle: .module)
                 .frame(width: 24, height: 24)
             #else
-            if #available(iOS 18.0, *) {
-              Image(systemName: "lock.document")
-                .frame(width: 24, height: 24)
-            } else {
-              Image(systemName: "lock.doc")
-                .frame(width: 24, height: 24)
-            }
+              if #available(iOS 18.0, *) {
+                Image(systemName: "lock.document")
+                  .frame(width: 24, height: 24)
+              } else {
+                Image(systemName: "lock.doc")
+                  .frame(width: 24, height: 24)
+              }
 
             #endif
             Text("Privacy Policy")
