@@ -370,7 +370,7 @@ struct ExhibitionDetailView: View {
               .padding(.vertical)
           } else {
             ForEach(store.photos) { photo in
-              if let path = photo.path {
+              if let path = photo.imagePath {
                 PhotoGridItem(
                   photo: photo,
                   path: path,
