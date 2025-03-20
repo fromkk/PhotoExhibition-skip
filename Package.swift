@@ -18,8 +18,8 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/skiptools/skip.git", from: "1.3.4"),
-    .package(url: "https://github.com/skiptools/skip-lib", from: "1.3.4"),
-    .package(url: "https://github.com/skiptools/skip-model", from: "1.4.2"),
+    .package(url: "https://github.com/skiptools/skip-lib.git", from: "1.3.4"),
+    .package(url: "https://github.com/skiptools/skip-model.git", from: "1.4.2"),
     .package(url: "https://github.com/skiptools/skip-ui.git", from: "1.26.7"),
     .package(url: "https://github.com/skiptools/skip-unit.git", from: "1.1.1"),
     .package(url: "https://github.com/skiptools/skip-kit.git", from: "0.3.1"),
