@@ -534,6 +534,10 @@ struct ExhibitionDetailView: View {
                 Spacer()
 
                 if store.isOrganizer {
+                  if store.isUploadingPhoto {
+                    ProgressView()
+                  }
+
                   Button {
                     store.send(.addPhotoButtonTapped)
                   } label: {

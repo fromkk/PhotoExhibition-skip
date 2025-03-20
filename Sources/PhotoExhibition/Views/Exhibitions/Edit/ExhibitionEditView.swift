@@ -51,7 +51,13 @@ final class ExhibitionEditStore: Store {
   var shouldDismiss: Bool = false
 
   var imagePickerPresented: Bool = false
-  var pickedImageURL: URL?
+  var pickedImageURL: URL? {
+    didSet {
+      if pickedImageURL != nil {
+        coverImageURL = nil
+      }
+    }
+  }
   var coverImageURL: URL?
   var isLoadingCoverImage: Bool = false
   var coverImagePath: String?
@@ -177,7 +183,7 @@ final class ExhibitionEditStore: Store {
     if let pickedImageURL = pickedImageURL, let exhibitionId = exhibitionId {
       do {
         let fileName =
-          "cover." + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
+        "cover_\(Int(Date().timeIntervalSince1970))." + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
         let storagePath = "exhibitions/\(exhibitionId)/\(fileName)"
 
         // 画像をアップロード
