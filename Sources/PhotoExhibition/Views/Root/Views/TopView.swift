@@ -1,4 +1,3 @@
-import SkipWeb
 import SwiftUI
 
 struct TopView: View {

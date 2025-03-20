@@ -1,4 +1,3 @@
-import SkipWeb
 import SwiftUI
 
 #if canImport(Observation)
