@@ -18,6 +18,7 @@ final class MockPhotoClient: PhotoClient {
   var addPhotoWasCalled: Bool = false
   var addPhotoExhibitionId: String? = nil
   var addPhotoPath: String? = nil
+  var addPhotoSort: Int? = nil
   var mockAddedPhoto: Photo? = nil
   var addPhotoResult: Photo? = nil
 
@@ -65,10 +66,11 @@ final class MockPhotoClient: PhotoClient {
     return mockPhotos
   }
 
-  func addPhoto(exhibitionId: String, path: String) async throws -> Photo {
+  func addPhoto(exhibitionId: String, path: String, sort: Int) async throws -> Photo {
     addPhotoWasCalled = true
     addPhotoExhibitionId = exhibitionId
     addPhotoPath = path
+    addPhotoSort = sort
 
     // 非同期処理をシミュレート
     await Task.yield()
@@ -148,6 +150,7 @@ final class MockPhotoClient: PhotoClient {
     addPhotoWasCalled = false
     addPhotoExhibitionId = nil
     addPhotoPath = nil
+    addPhotoSort = nil
     addPhotoResult = nil
 
     updatePhotoWasCalled = false

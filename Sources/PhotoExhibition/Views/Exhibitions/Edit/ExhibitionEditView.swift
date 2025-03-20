@@ -183,7 +183,7 @@ final class ExhibitionEditStore: Store {
     if let pickedImageURL = pickedImageURL, let exhibitionId = exhibitionId {
       do {
         let fileName =
-        "cover_\(Int(Date().timeIntervalSince1970))." + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
+          "cover." + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
         let storagePath = "exhibitions/\(exhibitionId)/\(fileName)"
 
         // 画像をアップロード
