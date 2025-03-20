@@ -351,11 +351,16 @@ struct ExhibitionEditView: View {
           .disabled(store.isLoading)
         }
 
-        ToolbarItem(placement: .confirmationAction) {
-          Button("Save") {
-            store.send(.saveButtonTapped)
+        ToolbarItem(placement: .primaryAction) {
+          HStack {
+            if store.isLoading {
+              ProgressView()
+            }
+            Button("Save") {
+              store.send(.saveButtonTapped)
+            }
+            .disabled(store.isLoading)
           }
-          .disabled(store.isLoading)
         }
       }
       .alert("Error", isPresented: $store.showError) {
