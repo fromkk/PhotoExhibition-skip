@@ -17,6 +17,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
   let description: String?
   let takenDate: Date?
   let photographer: String?
+  let sort: Int
   let createdAt: Date
   let updatedAt: Date
 
@@ -30,6 +31,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     description: String? = nil,
     takenDate: Date? = nil,
     photographer: String? = nil,
+    sort: Int = 0,
     createdAt: Date,
     updatedAt: Date
   ) {
@@ -42,6 +44,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.description = description
     self.takenDate = takenDate
     self.photographer = photographer
+    self.sort = sort
     self.createdAt = createdAt
     self.updatedAt = updatedAt
   }
@@ -61,6 +64,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.title = data["title"] as? String
     self.description = data["description"] as? String
     self.photographer = data["photographer"] as? String
+    self.sort = data["sort"] as? Int ?? 0
 
     if let takenDateTimestamp = data["takenDate"] as? Timestamp {
       self.takenDate = takenDateTimestamp.dateValue()

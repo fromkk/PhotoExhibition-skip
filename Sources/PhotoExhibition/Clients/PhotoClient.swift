@@ -12,10 +12,11 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 // 展示会の写真を管理するクライアント
 protocol PhotoClient: Sendable {
   func fetchPhotos(exhibitionId: String) async throws -> [Photo]
-  func addPhoto(exhibitionId: String, path: String) async throws -> Photo
+  func addPhoto(exhibitionId: String, path: String, sort: Int) async throws -> Photo
   func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?)
     async throws
   func deletePhoto(exhibitionId: String, photoId: String) async throws
+  func updatePhotoSort(exhibitionId: String, photoId: String, sort: Int) async throws
 }
 
 // 展示会の写真モデル
@@ -47,7 +48,8 @@ actor DefaultPhotoClient: PhotoClient {
     let photosSnapshot = try await firestore.collection("exhibitions")
       .document(exhibitionId)
       .collection("photos")
-      .order(by: "createdAt", descending: true)
+      .order(by: "sort", descending: false)
+      .order(by: "createdAt", descending: false)
       .getDocuments()
 
     var photos: [Photo] = []
@@ -61,14 +63,15 @@ actor DefaultPhotoClient: PhotoClient {
     return photos
   }
 
-  func addPhoto(exhibitionId: String, path: String) async throws -> Photo {
-    logger.info("addPhoto for exhibition: \(exhibitionId), path: \(path)")
+  func addPhoto(exhibitionId: String, path: String, sort: Int) async throws -> Photo {
+    logger.info("addPhoto for exhibition: \(exhibitionId), path: \(path), sort: \(sort)")
 
     let firestore = Firestore.firestore()
     let photoData: [String: Any] = [
       "path": path,
       "createdAt": Timestamp(date: Date()),
       "updatedAt": Timestamp(date: Date()),
+      "sort": sort
     ]
 
     let photoRef = try await firestore.collection("exhibitions")
@@ -119,5 +122,21 @@ actor DefaultPhotoClient: PhotoClient {
       .collection("photos")
       .document(photoId)
       .delete()
+  }
+
+  func updatePhotoSort(exhibitionId: String, photoId: String, sort: Int) async throws {
+    logger.info("updatePhotoSort for exhibition: \(exhibitionId), photoId: \(photoId), sort: \(sort)")
+
+    let firestore = Firestore.firestore()
+    let updateData: [String: Any] = [
+      "sort": sort,
+      "updatedAt": Timestamp(date: Date())
+    ]
+
+    try await firestore.collection("exhibitions")
+      .document(exhibitionId)
+      .collection("photos")
+      .document(photoId)
+      .updateData(updateData)
   }
 }

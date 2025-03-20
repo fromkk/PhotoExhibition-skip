@@ -33,6 +33,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case cancelPhotoEdit
     case reloadExhibition
     case reportButtonTapped
+    case movePhoto(from: IndexSet, to: Int)
   }
 
   var exhibition: Exhibition
@@ -151,6 +152,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case .reportButtonTapped:
       reportStore = ReportStore(type: .exhibition, id: exhibition.id)
       showReport = true
+    case .movePhoto(let from, let to):
+      movePhoto(from: from, to: to)
     }
   }
 
@@ -208,14 +211,17 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
         // 先に写真情報をFirestoreに保存（パスのみ）
         let initialPhoto = try await photoClient.addPhoto(
-          exhibitionId: exhibition.id, path: photoPath)
+          exhibitionId: exhibition.id,
+          path: photoPath, 
+          sort: photos.count
+        )
 
         // 写真をStorageにアップロード
         do {
           try await storageClient.upload(from: url, to: photoPath)
 
           // 新しい写真を追加
-          photos.insert(initialPhoto, at: 0)
+          photos.append(initialPhoto)
 
           // アップロードした写真を選択して編集シートを表示
           uploadedPhoto = initialPhoto
@@ -342,6 +348,29 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       }
     }
   }
+
+  private func movePhoto(from: IndexSet, to: Int) {
+    guard isOrganizer else { return }
+
+    // 写真の順番を更新
+    photos.move(fromOffsets: from, toOffset: to)
+
+    // 新しい順番をFirestoreに保存
+    Task {
+      do {
+        for (index, photo) in photos.enumerated() {
+          try await photoClient.updatePhotoSort(
+            exhibitionId: exhibition.id,
+            photoId: photo.id,
+            sort: index
+          )
+        }
+      } catch {
+        print("Failed to update photo sort: \(error.localizedDescription)")
+        self.error = error
+      }
+    }
+  }
 }
 
 struct ExhibitionDetailView: View {
@@ -380,6 +409,9 @@ struct ExhibitionDetailView: View {
                   }
                 )
               }
+            }
+            .onMove { from, to in
+              store.send(.movePhoto(from: from, to: to))
             }
           }
         } header: {

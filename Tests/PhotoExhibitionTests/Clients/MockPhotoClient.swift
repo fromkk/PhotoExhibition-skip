@@ -33,6 +33,12 @@ final class MockPhotoClient: PhotoClient {
   var deletePhotoExhibitionId: String? = nil
   var deletePhotoId: String? = nil
 
+  // updatePhotoSort()の呼び出し追跡
+  var updatePhotoSortWasCalled: Bool = false
+  var updatePhotoSortExhibitionId: String? = nil
+  var updatePhotoSortId: String? = nil
+  var updatePhotoSortValue: Int? = nil
+
   // 成功/失敗のシミュレーション
   var shouldSucceed: Bool = true
   var errorToThrow: Error? = nil
@@ -79,12 +85,10 @@ final class MockPhotoClient: PhotoClient {
       return mockPhoto
     }
 
-    // デフォルトのモック写真を返す
-    return Photo(
-      id: "mock-photo-id",
-      path: path,
-      createdAt: Date(),
-      updatedAt: Date()
+    throw NSError(
+      domain: "MockPhotoClient",
+      code: 1,
+      userInfo: [NSLocalizedDescriptionKey: "No mock photo provided"]
     )
   }
 
@@ -100,7 +104,7 @@ final class MockPhotoClient: PhotoClient {
     // 非同期処理をシミュレート
     await Task.yield()
 
-    if !shouldSucceed, let error = errorToThrow {
+    if !shouldSucceed || shouldThrowError, let error = errorToThrow {
       throw error
     }
   }
@@ -113,7 +117,21 @@ final class MockPhotoClient: PhotoClient {
     // 非同期処理をシミュレート
     await Task.yield()
 
-    if !shouldSucceed, let error = errorToThrow {
+    if !shouldSucceed || shouldThrowError, let error = errorToThrow {
+      throw error
+    }
+  }
+
+  func updatePhotoSort(exhibitionId: String, photoId: String, sort: Int) async throws {
+    updatePhotoSortWasCalled = true
+    updatePhotoSortExhibitionId = exhibitionId
+    updatePhotoSortId = photoId
+    updatePhotoSortValue = sort
+
+    // 非同期処理をシミュレート
+    await Task.yield()
+
+    if !shouldSucceed || shouldThrowError, let error = errorToThrow {
       throw error
     }
   }
@@ -141,6 +159,11 @@ final class MockPhotoClient: PhotoClient {
     deletePhotoWasCalled = false
     deletePhotoExhibitionId = nil
     deletePhotoId = nil
+
+    updatePhotoSortWasCalled = false
+    updatePhotoSortExhibitionId = nil
+    updatePhotoSortId = nil
+    updatePhotoSortValue = nil
 
     shouldSucceed = true
     errorToThrow = nil
