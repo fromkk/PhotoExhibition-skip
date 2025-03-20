@@ -33,7 +33,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case cancelPhotoEdit
     case reloadExhibition
     case reportButtonTapped
-    case movePhoto(from: IndexSet, to: Int)
+    case moveCompleted
   }
 
   var exhibition: Exhibition
@@ -152,8 +152,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case .reportButtonTapped:
       reportStore = ReportStore(type: .exhibition, id: exhibition.id)
       showReport = true
-    case .movePhoto(let from, let to):
-      movePhoto(from: from, to: to)
+    case .moveCompleted:
+      movePhoto()
     }
   }
 
@@ -349,11 +349,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     }
   }
 
-  private func movePhoto(from: IndexSet, to: Int) {
+  private func movePhoto() {
     guard isOrganizer else { return }
-
-    // 写真の順番を更新
-    photos.move(fromOffsets: from, toOffset: to)
 
     // 新しい順番をFirestoreに保存
     Task {
@@ -373,9 +370,23 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   }
 }
 
+#if !SKIP
+  extension Photo: Transferable {
+    static var transferRepresentation: some TransferRepresentation {
+      CodableRepresentation(for: Photo.self, contentType: .photo)
+    }
+  }
+
+  extension UTType {
+    static let photo: UTType = .init(filenameExtension: "px")!
+  }
+#endif
+
 struct ExhibitionDetailView: View {
   @Bindable var store: ExhibitionDetailStore
   @Environment(\.dismiss) private var dismiss
+
+  @State private var draggingItem: Photo?
 
   init(store: ExhibitionDetailStore) {
     self.store = store
@@ -400,18 +411,50 @@ struct ExhibitionDetailView: View {
           } else {
             ForEach(store.photos) { photo in
               if let path = photo.imagePath {
-                PhotoGridItem(
-                  photo: photo,
-                  path: path,
-                  isOrganizer: store.isOrganizer,
-                  onTap: {
-                    store.send(.photoTapped(photo))
-                  }
-                )
+                if store.isOrganizer {
+                  makeGridItem(photo, path: path)
+                    #if !SKIP
+                      .draggable(photo) {
+                        /// custom preview
+                        PhotoGridItem(
+                          photo: photo,
+                          path: path,
+                          isOrganizer: store.isOrganizer,
+                          onTap: {}
+                        )
+                        .onAppear {
+                          draggingItem = photo
+                        }
+                      }
+                      .dropDestination(
+                        for: Photo.self,
+                        action: { items, location in
+                          store.send(.moveCompleted)
+                          draggingItem = nil
+                          return false
+                        },
+                        isTargeted: { status in
+                          if let draggingItem, status, draggingItem != photo {
+                            if let sourceIndex = store.photos.firstIndex(where: {
+                              $0 == draggingItem
+                            }),
+                              let destinationIndex = store.photos.firstIndex(where: { $0 == photo })
+                            {
+                              withAnimation(
+                                .bouncy,
+                                {
+                                  let sourceItem = store.photos.remove(at: sourceIndex)
+                                  store.photos.insert(sourceItem, at: destinationIndex)
+                                })
+                            }
+                          }
+                        }
+                      )
+                    #endif
+                } else {
+                  makeGridItem(photo, path: path)
+                }
               }
-            }
-            .onMove { from, to in
-              store.send(.movePhoto(from: from, to: to))
             }
           }
         } header: {
@@ -629,6 +672,17 @@ struct ExhibitionDetailView: View {
         ReportView(store: reportStore)
       }
     }
+  }
+
+  private func makeGridItem(_ photo: Photo, path: String) -> PhotoGridItem {
+    PhotoGridItem(
+      photo: photo,
+      path: path,
+      isOrganizer: store.isOrganizer,
+      onTap: {
+        store.send(.photoTapped(photo))
+      }
+    )
   }
 
   private func formatDateRange(from: Date, to: Date) -> String {
