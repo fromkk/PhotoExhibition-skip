@@ -85,7 +85,8 @@ protocol ProfileSetupStoreDelegate: AnyObject {
           var newIconPath = iconPath
           if let selectedIconURL = selectedIconURL {
             // 新しいファイルパスを生成
-            let fileExtension = selectedIconURL.pathExtension.isEmpty ? "jpg" : selectedIconURL.pathExtension
+            let fileExtension =
+              selectedIconURL.pathExtension.isEmpty ? "jpg" : selectedIconURL.pathExtension
             let path = "members/\(member.id)/icon.\(fileExtension)"
 
             // 画像をアップロード

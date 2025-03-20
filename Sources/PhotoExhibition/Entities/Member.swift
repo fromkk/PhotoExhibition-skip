@@ -8,7 +8,10 @@ import Foundation
 
 // 主催者情報
 struct Member: Hashable, Sendable, Identifiable, Codable {
-  init(id: String, name: String? = nil, icon: String? = nil, icon_256x256: String? = nil, icon_512x512: String? = nil, icon_1024x1024: String? = nil, createdAt: Date, updatedAt: Date) {
+  init(
+    id: String, name: String? = nil, icon: String? = nil, icon_256x256: String? = nil,
+    icon_512x512: String? = nil, icon_1024x1024: String? = nil, createdAt: Date, updatedAt: Date
+  ) {
     self.id = id
     self.name = name
     self.icon = icon
@@ -48,5 +51,5 @@ struct Member: Hashable, Sendable, Identifiable, Codable {
 
   var iconPath: String? {
     return icon_1024x1024 ?? icon_512x512 ?? icon_256x256 ?? icon
-  } 
+  }
 }

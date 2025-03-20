@@ -37,6 +37,17 @@ final actor StorageImageCache: StorageImageCacheProtocol {
     // キャッシュになければStorageClientからダウンロードしてローカルに保存
     let storageURL = try await storageClient.url(path)
 
+    // ローカルにファイルが保存済みか確認
+    let cacheDirectory = try getCacheDirectory()
+    let fileName = path.replacingOccurrences(of: "/", with: "_")
+    let fileURL = cacheDirectory.appendingPathComponent(fileName)
+
+    if fileManager.fileExists(atPath: fileURL.path) {
+      // ファイルが存在する場合はそのURLをキャッシュに保存して返す
+      cache[path] = fileURL
+      return fileURL
+    }
+
     // ダウンロードして保存
     let localURL = try await downloadAndSaveImage(from: storageURL, for: path)
 

@@ -212,7 +212,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
         // 先に写真情報をFirestoreに保存（パスのみ）
         let initialPhoto = try await photoClient.addPhoto(
           exhibitionId: exhibition.id,
-          path: photoPath, 
+          path: photoPath,
           sort: photos.count
         )
 

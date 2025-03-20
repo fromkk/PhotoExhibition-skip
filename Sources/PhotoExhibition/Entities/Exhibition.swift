@@ -9,7 +9,8 @@ import Foundation
 struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   init(
     id: String, name: String, description: String? = nil, from: Date, to: Date,
-    organizer: Member, coverImagePath: String? = nil, cover_256x256: String? = nil, cover_512x512: String? = nil, cover_1024x1024: String? = nil, createdAt: Date, updatedAt: Date
+    organizer: Member, coverImagePath: String? = nil, cover_256x256: String? = nil,
+    cover_512x512: String? = nil, cover_1024x1024: String? = nil, createdAt: Date, updatedAt: Date
   ) {
     self.id = id
     self.name = name

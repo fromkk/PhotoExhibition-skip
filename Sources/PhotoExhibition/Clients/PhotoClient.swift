@@ -71,7 +71,7 @@ actor DefaultPhotoClient: PhotoClient {
       "path": path,
       "createdAt": Timestamp(date: Date()),
       "updatedAt": Timestamp(date: Date()),
-      "sort": sort
+      "sort": sort,
     ]
 
     let photoRef = try await firestore.collection("exhibitions")
@@ -125,12 +125,13 @@ actor DefaultPhotoClient: PhotoClient {
   }
 
   func updatePhotoSort(exhibitionId: String, photoId: String, sort: Int) async throws {
-    logger.info("updatePhotoSort for exhibition: \(exhibitionId), photoId: \(photoId), sort: \(sort)")
+    logger.info(
+      "updatePhotoSort for exhibition: \(exhibitionId), photoId: \(photoId), sort: \(sort)")
 
     let firestore = Firestore.firestore()
     let updateData: [String: Any] = [
       "sort": sort,
-      "updatedAt": Timestamp(date: Date())
+      "updatedAt": Timestamp(date: Date()),
     ]
 
     try await firestore.collection("exhibitions")
