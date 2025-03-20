@@ -422,6 +422,7 @@ struct ExhibitionDetailView: View {
                           isOrganizer: store.isOrganizer,
                           onTap: {}
                         )
+                        .frame(width: 100, height: 100)
                         .onAppear {
                           draggingItem = photo
                         }
@@ -712,35 +713,37 @@ struct PhotoGridItem: View {
       Button {
         onTap()
       } label: {
-        AsyncImage(url: imageURL) { phase in
-          switch phase {
-          case .empty:
-            ZStack {
-              Rectangle()
-                .fill(Color.gray.opacity(0.2))
+        Color.gray
+        .aspectRatio(1, contentMode: .fill)
+        .overlay {
+          AsyncImage(url: imageURL) { phase in
+            switch phase {
+            case .empty:
+              ZStack {
+                Rectangle()
+                  .fill(Color.gray.opacity(0.2))
 
-              if isLoading {
-                ProgressView()
+                if isLoading {
+                  ProgressView()
+                }
               }
-            }
-          case .success(let image):
-            image
-              .resizable()
-              .aspectRatio(contentMode: .fill)
-          case .failure:
-            ZStack {
-              Rectangle()
-                .fill(Color.gray.opacity(0.2))
+            case .success(let image):
+              image
+                .resizable()
+                .scaledToFill()
+            case .failure:
+              ZStack {
+                Rectangle()
+                  .fill(Color.gray.opacity(0.2))
 
-              Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
-                .foregroundStyle(.secondary)
+                Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
+                  .foregroundStyle(.secondary)
+              }
+            @unknown default:
+              EmptyView()
             }
-          @unknown default:
-            EmptyView()
           }
         }
-        .aspectRatio(1, contentMode: .fill)
-        .frame(minWidth: 100, minHeight: 100)
         .clipShape(RoundedRectangle(cornerRadius: 8))
       }
       .buttonStyle(.plain)
