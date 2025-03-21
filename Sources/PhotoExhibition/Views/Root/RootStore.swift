@@ -49,7 +49,8 @@ final class RootStore: Store {
       if let currentUser = currentUserClient.currentUser() {
         Task {
           do {
-            let members = try await membersClient.fetch([currentUser.uid])
+            let uids: [any Sendable] = [currentUser.uid]
+            let members = try await membersClient.fetch(uids)
             if let member = members.first {
               await MainActor.run {
                 self.send(.signedIn(member))
