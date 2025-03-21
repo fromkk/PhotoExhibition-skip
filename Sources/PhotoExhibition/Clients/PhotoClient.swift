@@ -12,7 +12,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 // 展示会の写真を管理するクライアント
 protocol PhotoClient: Sendable {
   func fetchPhotos(exhibitionId: String) async throws -> [Photo]
-  func addPhoto(exhibitionId: String, path: String, sort: Int) async throws -> Photo
+  func addPhoto(exhibitionId: String, photoId: String, path: String, sort: Int) async throws -> Photo
   func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?)
     async throws
   func deletePhoto(exhibitionId: String, photoId: String) async throws
@@ -63,7 +63,7 @@ actor DefaultPhotoClient: PhotoClient {
     return photos
   }
 
-  func addPhoto(exhibitionId: String, path: String, sort: Int) async throws -> Photo {
+  func addPhoto(exhibitionId: String, photoId: String, path: String, sort: Int) async throws -> Photo {
     logger.info("addPhoto for exhibition: \(exhibitionId), path: \(path), sort: \(sort)")
 
     let firestore = Firestore.firestore()
@@ -74,12 +74,13 @@ actor DefaultPhotoClient: PhotoClient {
       "sort": sort,
     ]
 
-    let photoRef = try await firestore.collection("exhibitions")
+    try await firestore.collection("exhibitions")
       .document(exhibitionId)
       .collection("photos")
-      .addDocument(data: photoData)
+      .document(photoId)
+      .setData(photoData)
 
-    guard let photo = Photo(documentID: photoRef.documentID, data: photoData) else {
+    guard let photo = Photo(documentID: photoId, data: photoData) else {
       throw NSError(
         domain: "PhotoClient", code: 1,
         userInfo: [NSLocalizedDescriptionKey: "Failed to create photo object"])

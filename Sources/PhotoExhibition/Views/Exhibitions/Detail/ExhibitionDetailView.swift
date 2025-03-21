@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import SkipKit
 import SwiftUI
 
@@ -10,6 +11,8 @@ import SwiftUI
 #if canImport(Observation)
   import Observation
 #endif
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionDetai")
 
 // 展示会の写真の最大枚数
 private let maxExhibitionPhotos = 30
@@ -212,6 +215,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
         // 先に写真情報をFirestoreに保存（パスのみ）
         let initialPhoto = try await photoClient.addPhoto(
           exhibitionId: exhibition.id,
+          photoId: photoId,
           path: photoPath,
           sort: photos.count
         )
@@ -657,15 +661,26 @@ struct ExhibitionDetailView: View {
           set: { item in
             if let item = item {
               Task {
-                if let data = try? await item.loadTransferable(type: Data.self),
-                  let image = UIImage(data: data)
-                {
-                  let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
-                    UUID().uuidString + ".jpg")
-                  if let imageData = image.jpegData(compressionQuality: 0.8) {
-                    try? imageData.write(to: tempURL)
+                do {
+                  if let data = try await item.loadTransferable(type: Data.self) {
+                    let ext: String
+                    switch data.imageFormat {
+                    case .gif:
+                      ext = "git"
+                    case .jpeg:
+                      ext = "jpg"
+                    case .png:
+                      ext = "png"
+                    default:
+                      throw ImageFormatError.unknownImageFormat
+                    }
+                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
+                      UUID().uuidString + ext)
+                    try data.write(to: tempURL)
                     store.send(.photoSelected(tempURL))
                   }
+                } catch {
+                  logger.error("error \(error.localizedDescription)")
                 }
               }
             }
