@@ -153,6 +153,10 @@ struct SettingsView: View {
               Text(member.name ?? "Not set")
                 .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            #if !SKIP
+            .contentShape(Rectangle())
+            #endif
           }
           .buttonStyle(.plain)
         }
@@ -173,6 +177,10 @@ struct SettingsView: View {
             Text("My Exhibitions")
               .padding(.leading, 8)
           }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          #if !SKIP
+          .contentShape(Rectangle())
+          #endif
         }
         .buttonStyle(.plain)
       }
@@ -197,6 +205,10 @@ struct SettingsView: View {
             Text("Terms of Service")
               .padding(.leading, 8)
           }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          #if !SKIP
+          .contentShape(Rectangle())
+          #endif
         }
         .buttonStyle(.plain)
 
@@ -220,6 +232,10 @@ struct SettingsView: View {
             Text("Privacy Policy")
               .padding(.leading, 8)
           }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          #if !SKIP
+          .contentShape(Rectangle())
+          #endif
         }
         .buttonStyle(.plain)
 
@@ -237,6 +253,10 @@ struct SettingsView: View {
             Text("Contact")
               .padding(.leading, 8)
           }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          #if !SKIP
+          .contentShape(Rectangle())
+          #endif
         }
         .buttonStyle(.plain)
       }
