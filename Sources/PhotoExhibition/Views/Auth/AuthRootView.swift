@@ -20,23 +20,8 @@ struct AuthRootView: View {
           .resizable()
           .aspectRatio(contentMode: .fit)
 
-        #if SKIP
-          VStack(spacing: 16) {
-            Button {
-              store.send(.signInButtonTapped)
-            } label: {
-              Text("Sign In")
-                .primaryButtonStyle()
-            }
-            Button {
-              store.send(.signUpButtonTapped)
-            } label: {
-              Text("Sign Up")
-                .secondaryButtonStyle()
-            }
-          }
-        #else
-          VStack(spacing: 16) {
+        VStack(spacing: 16) {
+          #if !SKIP
             SignInWithAppleButton(.signIn) { request in
               request.requestedScopes = [.fullName]
               request.nonce = store.prepareSignInWithApple()
@@ -44,8 +29,21 @@ struct AuthRootView: View {
               store.send(.signInWithAppleCompleted(result))
             }
             .frame(height: 44)
+          #endif
+
+          Button {
+            store.send(.signInButtonTapped)
+          } label: {
+            Text("Sign In")
+              .primaryButtonStyle()
           }
-        #endif
+          Button {
+            store.send(.signUpButtonTapped)
+          } label: {
+            Text("Sign Up")
+              .secondaryButtonStyle()
+          }
+        }
 
         HStack(spacing: 16) {
           Button {
