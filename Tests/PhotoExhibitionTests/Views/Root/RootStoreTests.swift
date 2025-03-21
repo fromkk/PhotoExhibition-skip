@@ -4,7 +4,7 @@ import XCTest
 @testable import PhotoExhibition
 
 @MainActor
-final class AppStoreTests: XCTestCase {
+final class RootStoreTests: XCTestCase {
   var mockCurrentUserClient: MockCurrentUserClient!
   var mockMembersClient: MockMembersClient!
 
@@ -20,7 +20,7 @@ final class AppStoreTests: XCTestCase {
 
   func testInit() {
     // Arrange & Act
-    let store = AppStore(
+    let store = RootStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
@@ -34,13 +34,13 @@ final class AppStoreTests: XCTestCase {
   func testTaskWithNoUser() async {
     // Arrange
     mockCurrentUserClient.mockUser = nil
-    let store = AppStore(
+    let store = RootStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
 
     // Act
-    store.send(AppStore.Action.task)
+    store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
     await Task.yield()
@@ -66,16 +66,20 @@ final class AppStoreTests: XCTestCase {
     mockCurrentUserClient.mockUser = User(uid: userID)
     mockMembersClient.addMockMember(testMember)
 
-    let store = AppStore(
+    let store = RootStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
 
     // Act
-    store.send(AppStore.Action.task)
+    store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
-    await Task.yield()
+    // より確実に待つために、複数回yieldを呼び出し、sleepも追加
+    for _ in 0..<3 {
+      await Task.yield()
+    }
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
 
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
@@ -100,16 +104,20 @@ final class AppStoreTests: XCTestCase {
     mockCurrentUserClient.mockUser = User(uid: userID)
     mockMembersClient.addMockMember(testMember)
 
-    let store = AppStore(
+    let store = RootStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
 
     // Act
-    store.send(AppStore.Action.task)
+    store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
-    await Task.yield()
+    // より確実に待つために、複数回yieldを呼び出し、sleepも追加
+    for _ in 0..<3 {
+      await Task.yield()
+    }
+    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
 
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
@@ -123,13 +131,13 @@ final class AppStoreTests: XCTestCase {
     mockCurrentUserClient.mockUser = User(uid: "test-uid")
     // メンバーは追加しない
 
-    let store = AppStore(
+    let store = RootStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
 
     // Act
-    store.send(AppStore.Action.task)
+    store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
     await Task.yield()
@@ -147,13 +155,13 @@ final class AppStoreTests: XCTestCase {
     mockMembersClient.shouldSucceed = false
     mockMembersClient.errorToThrow = NSError(domain: "TestError", code: 1, userInfo: nil)
 
-    let store = AppStore(
+    let store = RootStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
 
     // Act
-    store.send(AppStore.Action.task)
+    store.send(RootStore.Action.task)
 
     // 非同期処理が完了するのを待つ
     await Task.yield()
@@ -175,7 +183,7 @@ final class AppStoreTests: XCTestCase {
       updatedAt: Date()
     )
 
-    let store = AppStore(
+    let store = RootStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
@@ -200,7 +208,7 @@ final class AppStoreTests: XCTestCase {
       updatedAt: Date()
     )
 
-    let store = AppStore(
+    let store = RootStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )

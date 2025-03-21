@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
-  @Bindable var store = AppStore()
+  @Bindable var store = RootStore()
   var body: some View {
     Group {
       if store.isSignedIn {

@@ -5,7 +5,7 @@ import SwiftUI
 #endif
 
 @Observable
-final class AppStore: Store {
+final class RootStore: Store {
   private let currentUserClient: CurrentUserClient
   private let membersClient: MembersClient
 
@@ -81,7 +81,7 @@ final class AppStore: Store {
   }
 }
 
-extension AppStore: SettingsStoreDelegate {
+extension RootStore: SettingsStoreDelegate {
   func logoutCompleted() {
     send(.signedOut)
   }
@@ -91,14 +91,14 @@ extension AppStore: SettingsStoreDelegate {
   }
 }
 
-extension AppStore: ProfileSetupStoreDelegate {
+extension RootStore: ProfileSetupStoreDelegate {
   func didCompleteProfileSetup() {
     isProfileSetupShown = false
     profileSetupStore = nil
   }
 }
 
-extension AppStore: AuthRootStoreDelegate {
+extension RootStore: AuthRootStoreDelegate {
   func didSignInSuccessfully(with member: Member) {
     send(.signedIn(member))
   }
