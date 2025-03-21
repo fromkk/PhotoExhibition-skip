@@ -78,6 +78,9 @@ protocol SettingsStoreDelegate: AnyObject {
     case .profileEditCompleted:
       isProfileEditPresented = false
       profileSetupStore = nil
+      Task {
+        await fetchMember()
+      }
     case .myExhibitionsButtonTapped:
       myExhibitionsStore = MyExhibitionsStore()
       showMyExhibitions = true
@@ -103,9 +106,6 @@ protocol SettingsStoreDelegate: AnyObject {
 
   func didCompleteProfileSetup() {
     send(.profileEditCompleted)
-    Task {
-      await fetchMember()
-    }
   }
 
   private func fetchMember() async {
@@ -114,7 +114,8 @@ protocol SettingsStoreDelegate: AnyObject {
     }
 
     do {
-      let members = try await membersClient.fetch([user.uid])
+      let uids: [any Sendable] = [user.uid]
+      let members = try await membersClient.fetch(uids)
       if let fetchedMember = members.first {
         member = fetchedMember
       }

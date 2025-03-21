@@ -72,6 +72,9 @@ actor DefaultMemberUpdateClient: MemberUpdateClient {
       // アイコンを削除する場合（nilの場合）
       updateData["icon"] = FieldValue.delete()
     }
+    updateData["icon_256x256"] = FieldValue.delete()
+    updateData["icon_512x512"] = FieldValue.delete()
+    updateData["icon_1024x1024"] = FieldValue.delete()
 
     // Update Firestore document
     try await memberRef.updateData(updateData)
