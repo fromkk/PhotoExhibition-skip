@@ -61,6 +61,21 @@ struct MyExhibitionsView: View {
     .task {
       store.send(.task)
     }
+    .toolbar {
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          store.send(.addButtonTapped)
+        } label: {
+          Image(systemName: "plus")
+        }
+        .accessibilityLabel(Text("Add Exhibition"))
+      }
+    }
+    .sheet(isPresented: $store.isExhibitionEditShown) {
+      if let store = store.exhibitionEditStore {
+        ExhibitionEditView(store: store)
+      }
+    }
   }
 }
 

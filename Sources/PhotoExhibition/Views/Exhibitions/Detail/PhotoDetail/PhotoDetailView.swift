@@ -665,7 +665,7 @@ struct PhotoEditView: View {
             .frame(minHeight: 100)
         }
       }
-      .navigationTitle("Edit Photo")
+      .navigationTitle(Text("Edit Photo"))
       #if !SKIP && os(iOS)
         .navigationBarTitleDisplayMode(.inline)
       #endif

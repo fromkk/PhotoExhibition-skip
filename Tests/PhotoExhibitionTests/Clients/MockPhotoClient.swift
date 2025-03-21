@@ -17,6 +17,7 @@ final class MockPhotoClient: PhotoClient {
   // addPhoto()の呼び出し追跡
   var addPhotoWasCalled: Bool = false
   var addPhotoExhibitionId: String? = nil
+  var addPhotoId: String? = nil
   var addPhotoPath: String? = nil
   var addPhotoSort: Int? = nil
   var mockAddedPhoto: Photo? = nil
@@ -66,9 +67,12 @@ final class MockPhotoClient: PhotoClient {
     return mockPhotos
   }
 
-  func addPhoto(exhibitionId: String, path: String, sort: Int) async throws -> Photo {
+  func addPhoto(exhibitionId: String, photoId: String, path: String, sort: Int) async throws
+    -> Photo
+  {
     addPhotoWasCalled = true
     addPhotoExhibitionId = exhibitionId
+    addPhotoId = photoId
     addPhotoPath = path
     addPhotoSort = sort
 
@@ -149,6 +153,7 @@ final class MockPhotoClient: PhotoClient {
 
     addPhotoWasCalled = false
     addPhotoExhibitionId = nil
+    addPhotoId = nil
     addPhotoPath = nil
     addPhotoSort = nil
     addPhotoResult = nil

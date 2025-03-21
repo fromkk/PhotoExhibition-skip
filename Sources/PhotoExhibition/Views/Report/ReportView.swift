@@ -19,7 +19,7 @@ struct ReportView: View {
           Text("Please provide a reason for reporting this content.")
         }
       }
-      .navigationTitle("Report")
+      .navigationTitle(Text("Report"))
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel") {

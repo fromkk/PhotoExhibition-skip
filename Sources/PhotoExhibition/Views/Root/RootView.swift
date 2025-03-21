@@ -9,7 +9,7 @@ struct RootView: View {
           // Display profile setup screen
           NavigationStack {
             ProfileSetupView(store: profileSetupStore)
-              .navigationTitle("Profile Setup")
+              .navigationTitle(Text("Profile Setup"))
               .navigationBarBackButtonHidden(true)
           }
         } else {

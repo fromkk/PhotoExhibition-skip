@@ -45,6 +45,8 @@ final class ExhibitionEditStore: Store {
   var from: Date = Date()
   var to: Date = Date().addingTimeInterval(60 * 60 * 24 * 7)  // 1週間後
 
+  var status: ExhibitionStatus = .draft
+
   var isLoading: Bool = false
   var error: ExhibitionEditError? = nil
   var showError: Bool = false
@@ -90,6 +92,7 @@ final class ExhibitionEditStore: Store {
       self.from = exhibition.from
       self.to = exhibition.to
       self.coverImagePath = exhibition.coverImagePath
+      self.status = exhibition.status
 
       // カバー画像の読み込み
       if let coverImagePath = exhibition.coverPath {
@@ -160,6 +163,7 @@ final class ExhibitionEditStore: Store {
       "to": Timestamp(date: to),
       "organizer": user.uid,
       "updatedAt": FieldValue.serverTimestamp(),
+      "status": status.rawValue
     ]
 
     // 作成モードの場合はcreatedAtを設定
@@ -193,6 +197,7 @@ final class ExhibitionEditStore: Store {
         let updateData: [String: any Sendable] = [
           "coverImagePath": storagePath,
           "updatedAt": FieldValue.serverTimestamp(),
+          "status": status.rawValue
         ]
 
         try await exhibitionsClient.update(id: exhibitionId, data: updateData)
@@ -320,16 +325,37 @@ struct ExhibitionEditView: View {
               Text("Exhibition Name")
                 .fontWeight(.semibold)
               TextField("Exhibition Name", text: $store.name)
+              #if !SKIP
+                .padding(8)
+                .overlay {
+                  RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray, style: StrokeStyle(lineWidth: 1))
+                }
+              #endif
             }
 
             VStack(alignment: .leading, spacing: 8) {
               Text("Description")
                 .fontWeight(.semibold)
               TextEditor(text: $store.description)
+                .padding(8)
                 .lineLimit(5)
                 .multilineTextAlignment(.leading)
+                .overlay {
+                  RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray, style: StrokeStyle(lineWidth: 1))
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+              Picker("Status", selection: $store.status) {
+                ForEach(ExhibitionStatus.allCases) { status in
+                  Text(status.localizedKey).tag(status)
+                }
+              }
             }
           }
+          .padding()
         }
 
         Section("Period") {
@@ -350,7 +376,7 @@ struct ExhibitionEditView: View {
           .datePickerStyle(.compact)
         }
       }
-      .navigationTitle(store.name.isEmpty ? "New Exhibition" : store.name)
+      .navigationTitle(store.name.isEmpty ? Text("New Exhibition") : Text(store.name))
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel") {

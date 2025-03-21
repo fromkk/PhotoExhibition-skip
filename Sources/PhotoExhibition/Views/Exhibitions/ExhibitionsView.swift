@@ -51,7 +51,7 @@ struct ExhibitionsView: View {
           }
         }
       }
-      .navigationTitle("Exhibitions")
+      .navigationTitle(Text("Exhibitions"))
       .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
         if let detailStore = store.exhibitionDetailStore {
           ExhibitionDetailView(store: detailStore)
@@ -115,7 +115,6 @@ struct ExhibitionRow: View {
             }
           }
         } else if exhibition.coverImagePath != nil {
-          // 画像パスが存在する場合はローディングを表示
           ProgressView()
         }
       }
@@ -147,6 +146,9 @@ struct ExhibitionRow: View {
       }
     }
     .padding(.vertical, 4)
+    #if !SKIP
+      .contentShape(Rectangle())  // This makes the entire area tappable
+    #endif
     .task {
       await loadCoverImage()
     }

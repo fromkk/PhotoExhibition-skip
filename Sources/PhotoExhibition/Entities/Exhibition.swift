@@ -6,10 +6,18 @@ import Foundation
   import FirebaseFirestore
 #endif
 
+import SwiftUI
+
 // 展示状態
-enum ExhibitionStatus: String, Hashable, Sendable, Codable {
+enum ExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable {
   case draft
   case published
+
+  var id: String { rawValue }
+
+  var localizedKey: LocalizedStringKey {
+    LocalizedStringKey(rawValue)
+  }
 }
 
 // 写真展情報
@@ -53,6 +61,7 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     guard let name = data["name"] as? String,
       let fromTimestamp = data["from"] as? Timestamp,
       let toTimestamp = data["to"] as? Timestamp,
+      let statusString = data["status"] as? String,
       let createdAtTimestamp = data["createdAt"] as? Timestamp,
       let updatedAtTimestamp = data["updatedAt"] as? Timestamp
     else {
@@ -69,14 +78,7 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     self.cover_256x256 = data["cover_256x256"] as? String
     self.cover_512x512 = data["cover_512x512"] as? String
     self.cover_1024x1024 = data["cover_1024x1024"] as? String
-    // statusがない場合はpublishedと見なす（既存データとの互換性のため）
-    if let statusString = data["status"] as? String,
-      let status = ExhibitionStatus(rawValue: statusString)
-    {
-      self.status = status
-    } else {
-      self.status = .published
-    }
+    self.status = ExhibitionStatus(rawValue: statusString) ?? .published
     self.createdAt = createdAtTimestamp.dateValue()
     self.updatedAt = updatedAtTimestamp.dateValue()
   }

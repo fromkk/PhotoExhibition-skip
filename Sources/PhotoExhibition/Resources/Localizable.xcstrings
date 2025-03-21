@@ -27,6 +27,9 @@
         }
       }
     },
+    "Add Exhibition" : {
+
+    },
     "Are you sure you want to delete this exhibition? This action cannot be undone." : {
       "localizations" : {
         "ja" : {
@@ -183,6 +186,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "説明"
+          }
+        }
+      }
+    },
+    "draft" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下書き"
           }
         }
       }
@@ -487,6 +501,17 @@
         }
       }
     },
+    "published" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公開"
+          }
+        }
+      }
+    },
     "Reason" : {
       "localizations" : {
         "ja" : {
@@ -633,6 +658,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始日"
+          }
+        }
+      }
+    },
+    "Status" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "状態"
           }
         }
       }

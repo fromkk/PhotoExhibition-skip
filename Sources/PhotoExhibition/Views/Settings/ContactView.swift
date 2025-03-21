@@ -22,7 +22,7 @@ struct ContactView: View {
             }
         }
       }
-      .navigationTitle("Contact")
+      .navigationTitle(Text("Contact"))
       .toolbar {
         ToolbarItem(placement: .confirmationAction) {
           Button("Send") {

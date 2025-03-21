@@ -5,11 +5,12 @@ import SwiftUI
 #endif
 
 @Observable
-final class MyExhibitionsStore: Store {
+final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   enum Action {
     case task
     case refresh
     case loadMore
+    case addButtonTapped
     case exhibitionSelected(Exhibition)
   }
 
@@ -25,6 +26,9 @@ final class MyExhibitionsStore: Store {
   var isExhibitionShown: Bool = false
   // 選択された展示会の詳細画面用のストアを保持
   private(set) var exhibitionDetailStore: ExhibitionDetailStore?
+
+  var isExhibitionEditShown: Bool = false
+  private(set) var exhibitionEditStore: ExhibitionEditStore?
 
   init(
     exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
@@ -45,6 +49,9 @@ final class MyExhibitionsStore: Store {
     case let .exhibitionSelected(exhibition):
       exhibitionDetailStore = createExhibitionDetailStore(for: exhibition)
       isExhibitionShown = true
+    case .addButtonTapped:
+      exhibitionEditStore = ExhibitionEditStore(mode: .create, delegate: self)
+      isExhibitionEditShown = true
     }
   }
 
@@ -96,5 +103,13 @@ final class MyExhibitionsStore: Store {
 
       isLoading = false
     }
+  }
+
+  func didSaveExhibition() {
+    fetchMyExhibitions()
+  }
+
+  func didCancelExhibition() {
+    // nop
   }
 }
