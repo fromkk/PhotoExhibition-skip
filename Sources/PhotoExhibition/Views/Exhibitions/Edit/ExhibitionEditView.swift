@@ -262,7 +262,7 @@ struct ExhibitionEditView: View {
     NavigationStack {
       Form {
         Section("Basic Information") {
-          VStack(alignment: .leading) {
+          VStack(alignment: .leading, spacing: 16) {
             if store.coverImageURL != nil || store.pickedImageURL != nil {
               AsyncImage(
                 url: store.coverImageURL ?? store.pickedImageURL,
@@ -316,11 +316,19 @@ struct ExhibitionEditView: View {
                 ))
             #endif
 
-            TextField("Exhibition Name", text: $store.name)
+            VStack(alignment: .leading, spacing: 8) {
+              Text("Exhibition Name")
+                .fontWeight(.semibold)
+              TextField("Exhibition Name", text: $store.name)
+            }
 
-            TextField("Description", text: $store.description)
-              .lineLimit(5)
-              .multilineTextAlignment(.leading)
+            VStack(alignment: .leading, spacing: 8) {
+              Text("Description")
+                .fontWeight(.semibold)
+              TextEditor(text: $store.description)
+                .lineLimit(5)
+                .multilineTextAlignment(.leading)
+            }
           }
         }
 
