@@ -123,9 +123,6 @@ final class AuthRootStore: Store {
         switch result {
         case .success(let authorization):
           guard
-            let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
-            let identityToken = appleIDCredential.identityToken,
-            let idTokenString = String(data: identityToken, encoding: .utf8),
             let nonce = currentNonce
           else {
             error = NSError(

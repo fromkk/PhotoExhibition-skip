@@ -26,6 +26,7 @@ final class PhotoDetailStore: Store {
     case showNextPhoto
     case showPreviousPhoto
     case reportButtonTapped
+    case toggleUIVisible
   }
 
   let exhibitionId: String
@@ -42,6 +43,7 @@ final class PhotoDetailStore: Store {
   var error: Error? = nil
   var isDeleted: Bool = false
   var shouldResetZoom: Bool = false
+  var isUIVisible: Bool = true
 
   // 複数写真の管理用
   var photos: [Photo] = []
@@ -121,6 +123,8 @@ final class PhotoDetailStore: Store {
     case .reportButtonTapped:
       reportStore = ReportStore(type: .photo, id: photo.id)
       showReport = true
+    case .toggleUIVisible:
+      isUIVisible = !isUIVisible
     }
   }
 
@@ -407,6 +411,11 @@ struct PhotoDetailView: View {
                       }
                     }
                 )
+                .onTapGesture {
+                  withAnimation {
+                    store.send(.toggleUIVisible)
+                  }
+                }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .failure:
               Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
@@ -435,46 +444,50 @@ struct PhotoDetailView: View {
         }
 
         // オーバーレイコントロール
-        VStack {
-          Spacer()
+        if store.isUIVisible {
+          VStack {
+            Spacer()
 
-          VStack(alignment: .leading, spacing: 8) {
-            if store.photos.count > 1 {
-              Text("\(store.currentPhotoIndex + 1) / \(store.photos.count)")
-                .font(.subheadline)
-                .foregroundStyle(.white)
-                .padding(8)
-                .background(Color.black.opacity(0.5))
-                .clipShape(Capsule())
-                .padding(.bottom, 8)
-            }
+            VStack(alignment: .leading, spacing: 8) {
+              if store.photos.count > 1 {
+                Text("\(store.currentPhotoIndex + 1) / \(store.photos.count)")
+                  .font(.subheadline)
+                  .foregroundStyle(.white)
+                  .padding(8)
+                  .background(Color.black.opacity(0.5))
+                  .clipShape(Capsule())
+                  .padding(.bottom, 8)
+              }
 
-            // 下部のタイトルと説明
-            if let title = store.photos.isEmpty
-              ? store.photo.title : store.photos[store.currentPhotoIndex].title
-            {
-              Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.white)
-            }
+              // 下部のタイトルと説明
+              if let title = store.photos.isEmpty
+                ? store.photo.title : store.photos[store.currentPhotoIndex].title
+              {
+                Text(title)
+                  .font(.subheadline)
+                  .foregroundStyle(.white)
+              }
 
-            if let description = store.photos.isEmpty
-              ? store.photo.description : store.photos[store.currentPhotoIndex].description
-            {
-              Text(description)
-                .font(.body)
-                .foregroundStyle(.white)
+              if let description = store.photos.isEmpty
+                ? store.photo.description : store.photos[store.currentPhotoIndex].description
+              {
+                Text(description)
+                  .font(.body)
+                  .foregroundStyle(.white)
+              }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(
+              Rectangle()
+                .fill(Color.black.opacity(0.6))
+                .ignoresSafeArea(edges: .bottom)
+            )
           }
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding()
-          .background(
-            Rectangle()
-              .fill(Color.black.opacity(0.6))
-              .ignoresSafeArea(edges: .bottom)
-          )
         }
       }
+      .toolbar(store.isUIVisible ? .visible : .hidden, for: .navigationBar)
+      .toolbar(store.isUIVisible ? .visible : .hidden, for: .bottomBar)
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
           Button {

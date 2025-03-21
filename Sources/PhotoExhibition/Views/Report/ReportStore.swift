@@ -42,13 +42,8 @@ import SwiftUI
 
   private func sendReport() async {
     isLoading = true
-    do {
-      try await reportClient.report(type: type, id: id, reason: reason)
-      shouldDismiss = true
-    } catch {
-      self.error = error
-      isErrorAlertPresented = true
-    }
+    await reportClient.report(type: type, id: id, reason: reason)
+    shouldDismiss = true
     isLoading = false
   }
 }
