@@ -87,7 +87,8 @@ protocol ProfileSetupStoreDelegate: AnyObject {
             // 新しいファイルパスを生成
             let fileExtension =
               selectedIconURL.pathExtension.isEmpty ? "jpg" : selectedIconURL.pathExtension
-            let path = "members/\(member.id)/icon_\(Int(Date().timeIntervalSince1970)).\(fileExtension)"
+            let path =
+              "members/\(member.id)/icon_\(Int(Date().timeIntervalSince1970)).\(fileExtension)"
 
             // 画像をアップロード
             _ = try await storageClient.upload(from: selectedIconURL, to: path)

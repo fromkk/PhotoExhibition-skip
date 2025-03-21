@@ -33,6 +33,7 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
     var query = firestore.collection("exhibitions")
       .whereField("from", isLessThanOrEqualTo: Timestamp(date: now))
       .whereField("to", isGreaterThanOrEqualTo: Timestamp(date: now))
+      .whereField("status", isEqualTo: ExhibitionStatus.published.rawValue)
       .order(by: "to", descending: true)
       #if SKIP
         .limit(to: Int64(pageSize))
