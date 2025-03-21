@@ -4,9 +4,14 @@ import SwiftUI
   import AuthenticationServices
 #endif
 
-struct TopView: View {
-  @Bindable var store: RootStore
+struct AuthRootView: View {
+  @Bindable var store: AuthRootStore
   @Environment(\.openURL) private var openURL
+
+  init(delegate: any AuthRootStoreDelegate) {
+    self.store = AuthRootStore()
+    self.store.delegate = delegate
+  }
 
   var body: some View {
     NavigationStack {
@@ -62,14 +67,14 @@ struct TopView: View {
         .padding(.top, 8)
       }
       .padding(16)
-      .navigationDestination(isPresented: $store.isSignInScreenShown) {
-        if let store = self.store.authStore {
-          AuthView(store: store)
+      .navigationDestination(isPresented: $store.showSignIn) {
+        if let authStore = store.authStore {
+          AuthView(store: authStore)
         }
       }
-      .navigationDestination(isPresented: $store.isSignUpScreenShown) {
-        if let store = self.store.authStore {
-          AuthView(store: store)
+      .navigationDestination(isPresented: $store.showSignUp) {
+        if let authStore = store.authStore {
+          AuthView(store: authStore)
         }
       }
       .alert(
@@ -88,5 +93,17 @@ struct TopView: View {
         }
       }
     }
+  }
+}
+
+#Preview {
+  NavigationStack {
+    AuthRootView(delegate: PreviewAuthRootStoreDelegate())
+  }
+}
+
+private final class PreviewAuthRootStoreDelegate: AuthRootStoreDelegate {
+  func didSignInSuccessfully(with member: Member) {
+    print("didSignInSuccessfully: \(member)")
   }
 }

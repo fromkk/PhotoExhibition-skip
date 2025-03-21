@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
-  @Bindable var store = RootStore()
+  @Bindable var store = AppStore()
   var body: some View {
     Group {
       if store.isSignedIn {
@@ -40,7 +40,7 @@ struct RootView: View {
           }
         }
       } else {
-        TopView(store: store)
+        AuthRootView(delegate: store)
       }
     }
     .background(Color("background", bundle: .module))
