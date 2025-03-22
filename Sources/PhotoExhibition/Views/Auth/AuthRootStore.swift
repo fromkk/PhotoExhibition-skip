@@ -145,6 +145,7 @@ final class AuthRootStore: Store {
             do {
               let member = try await authClient.signInWithApple(
                 authorization: authorization, nonce: nonce)
+              await analyticsClient.send(.signIn, parameters: [:])
               delegate?.didSignInSuccessfully(with: member)
             } catch {
               self.error = error

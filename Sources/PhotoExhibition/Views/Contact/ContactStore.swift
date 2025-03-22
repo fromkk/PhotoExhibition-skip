@@ -49,6 +49,7 @@ import SwiftUI
 
   private func sendContact() async {
     await contactClient.send(title: title, content: content)
+    await analyticsClient.send(.contact, parameters: [:])
     shouldDismiss = true
   }
 }

@@ -105,6 +105,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       checkIfUserIsOrganizer()
       Task {
         await analyticsClient.analyticsScreen(name: "ExhibitionDetailView")
+        await analyticsClient.send(
+          AnalyticsEvents.exhibitionViewed, parameters: ["exhibition_id": exhibition.id])
       }
     case .editExhibition:
       if isOrganizer {
@@ -232,6 +234,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
           // 新しい写真を追加
           photos.append(initialPhoto)
+
+          // アナリティクスイベントを記録
+          await analyticsClient.send(.photoUploaded, parameters: [:])
 
           // アップロードした写真を選択して編集シートを表示
           uploadedPhoto = initialPhoto

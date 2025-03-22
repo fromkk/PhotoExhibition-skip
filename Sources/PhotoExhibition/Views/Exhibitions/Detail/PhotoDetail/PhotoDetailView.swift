@@ -81,6 +81,12 @@ final class PhotoDetailStore: Store {
     Task {
       try await loadImage()
       await analyticsClient.analyticsScreen(name: "PhotoDetailView")
+      await analyticsClient.send(
+        AnalyticsEvents.photoViewed,
+        parameters: [
+          "photo_id": photo.id,
+          "exhibition_id": exhibitionId,
+        ])
     }
   }
 
@@ -219,6 +225,13 @@ final class PhotoDetailStore: Store {
         isLoading = true
         do {
           imageURL = try await imageCache.getImageURL(for: path)
+          // 写真閲覧イベントを送信
+          await analyticsClient.send(
+            AnalyticsEvents.photoViewed,
+            parameters: [
+              "photo_id": photos[nextIndex].id,
+              "exhibition_id": exhibitionId,
+            ])
         } catch {
           print("Failed to load next image: \(error.localizedDescription)")
           self.error = error
@@ -240,6 +253,13 @@ final class PhotoDetailStore: Store {
         isLoading = true
         do {
           imageURL = try await imageCache.getImageURL(for: path)
+          // 写真閲覧イベントを送信
+          await analyticsClient.send(
+            AnalyticsEvents.photoViewed,
+            parameters: [
+              "photo_id": photos[previousIndex].id,
+              "exhibition_id": exhibitionId,
+            ])
         } catch {
           print("Failed to load previous image: \(error.localizedDescription)")
           self.error = error

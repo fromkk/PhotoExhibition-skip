@@ -61,6 +61,7 @@ protocol AuthStoreDelegate: AnyObject {
         do {
           let member = try await signInClient.signIn(email: email, password: password)
           print("サインイン成功: \(String(describing: member.id))")
+          await analyticsClient.send(.signIn, parameters: [:])
           delegate?.didSignInSuccessfully(with: member)
         } catch {
           self.error = error
@@ -79,6 +80,7 @@ protocol AuthStoreDelegate: AnyObject {
         do {
           let member = try await signUpClient.signUp(email: email, password: password)
           print("サインアップ成功: \(String(describing: member.id))")
+          await analyticsClient.send(.signUp, parameters: [:])
           delegate?.didSignInSuccessfully(with: member)
         } catch {
           self.error = error

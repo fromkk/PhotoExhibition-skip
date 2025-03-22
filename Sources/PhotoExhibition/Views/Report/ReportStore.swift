@@ -55,6 +55,7 @@ import SwiftUI
   private func sendReport() async {
     isLoading = true
     await reportClient.report(type: type, id: id, reason: reason)
+    await analyticsClient.send(AnalyticsEvents.report, parameters: ["report_type": type.rawValue])
     shouldDismiss = true
     isLoading = false
   }

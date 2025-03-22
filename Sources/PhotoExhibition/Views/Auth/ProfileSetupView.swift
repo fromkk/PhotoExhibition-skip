@@ -111,6 +111,8 @@ protocol ProfileSetupStoreDelegate: AnyObject {
             memberID: member.id, name: name, iconPath: newIconPath)
           print("Profile update success: \(updatedMember.id)")
 
+          await analyticsClient.send(.profileEdit, parameters: [:])
+
           // アイコンパスが変更された場合、キャッシュをクリアする
           if newIconPath != member.icon {
             await imageCache.clearCache()

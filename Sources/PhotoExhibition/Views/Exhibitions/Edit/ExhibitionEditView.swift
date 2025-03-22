@@ -215,6 +215,14 @@ final class ExhibitionEditStore: Store {
       }
     }
 
+    // アナリティクスイベントを記録
+    switch mode {
+    case .create:
+      await analyticsClient.send(.exhibitionCreated, parameters: [:])
+    case .edit:
+      await analyticsClient.send(.exhibitionEdited, parameters: [:])
+    }
+
     // 保存が完了したらデリゲートに通知
     delegate?.didSaveExhibition()
   }
