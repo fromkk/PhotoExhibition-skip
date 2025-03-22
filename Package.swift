@@ -28,7 +28,9 @@ let package = Package(
       dependencies: [
         .product(name: "SkipUI", package: "skip-ui"),
         .product(name: "SkipKit", package: "skip-kit"),
+        .product(name: "SkipFirebaseAnalytics", package: "skip-firebase"),
         .product(name: "SkipFirebaseAuth", package: "skip-firebase"),
+        .product(name: "SkipFirebaseCrashlytics", package: "skip-firebase"),
         .product(name: "SkipFirebaseFirestore", package: "skip-firebase"),
         .product(name: "SkipFirebaseFunctions", package: "skip-firebase"),
         .product(name: "SkipFirebaseStorage", package: "skip-firebase"),

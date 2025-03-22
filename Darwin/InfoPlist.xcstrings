@@ -7,13 +7,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EXHIVISION"
+            "value" : "exhivision"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EXHIVISION"
+            "value" : "exhivision"
           }
         }
       }
@@ -25,6 +25,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "PhotoExhibition"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "PhotoExhibition"
           }
         }
