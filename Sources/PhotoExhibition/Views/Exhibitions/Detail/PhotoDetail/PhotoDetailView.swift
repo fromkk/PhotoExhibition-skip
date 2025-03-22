@@ -50,8 +50,9 @@ final class PhotoDetailStore: Store {
   var currentPhotoIndex: Int = 0
   var isLoadingPhotos: Bool = false
 
-  private let imageCache: StorageImageCacheProtocol
-  private let photoClient: PhotoClient
+  private let imageCache: any StorageImageCacheProtocol
+  private let photoClient: any PhotoClient
+  private let analyticsClient: any AnalyticsClient
 
   var showReport: Bool = false
   private(set) var reportStore: ReportStore?
@@ -62,8 +63,9 @@ final class PhotoDetailStore: Store {
     isOrganizer: Bool,
     photos: [Photo],
     delegate: (any PhotoDetailStoreDelegate)? = nil,
-    imageCache: StorageImageCacheProtocol = StorageImageCache.shared,
-    photoClient: PhotoClient = DefaultPhotoClient()
+    imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
+    photoClient: any PhotoClient = DefaultPhotoClient(),
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.exhibitionId = exhibitionId
     self.photo = photo
@@ -71,12 +73,14 @@ final class PhotoDetailStore: Store {
     self.delegate = delegate
     self.imageCache = imageCache
     self.photoClient = photoClient
+    self.analyticsClient = analyticsClient
     self.photos = photos
     self.currentPhotoIndex = photos.firstIndex(where: { $0.id == photo.id }) ?? 0
 
     // 初期化時に画像の読み込みを開始
     Task {
       try await loadImage()
+      await analyticsClient.analyticsScreen(name: "PhotoDetailView")
     }
   }
 

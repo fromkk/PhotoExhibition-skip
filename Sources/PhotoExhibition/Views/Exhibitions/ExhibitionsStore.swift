@@ -32,29 +32,37 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   // 展示会編集画面用のストアを保持
   private(set) var exhibitionEditStore: ExhibitionEditStore?
 
-  private let exhibitionsClient: ExhibitionsClient
-  private let currentUserClient: CurrentUserClient
-  private let storageClient: StorageClient
-  private let imageCache: StorageImageCacheProtocol
-  private let photoClient: PhotoClient
+  private let exhibitionsClient: any ExhibitionsClient
+  private let currentUserClient: any CurrentUserClient
+  private let storageClient: any StorageClient
+  private let imageCache: any StorageImageCacheProtocol
+  private let photoClient: any PhotoClient
+  private let analyticsClient: any AnalyticsClient
 
   init(
-    exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
-    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-    storageClient: StorageClient = DefaultStorageClient(),
-    imageCache: StorageImageCacheProtocol = StorageImageCache.shared,
-    photoClient: PhotoClient = DefaultPhotoClient()
+    exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
+    currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+    storageClient: any StorageClient = DefaultStorageClient(),
+    imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
+    photoClient: any PhotoClient = DefaultPhotoClient(),
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.exhibitionsClient = exhibitionsClient
     self.currentUserClient = currentUserClient
     self.storageClient = storageClient
     self.imageCache = imageCache
     self.photoClient = photoClient
+    self.analyticsClient = analyticsClient
   }
 
   func send(_ action: Action) {
     switch action {
-    case .task, .refresh:
+    case .task:
+      fetchExhibitions()
+      Task {
+        await analyticsClient.analyticsScreen(name: "ExhibitionsView")
+      }
+    case .refresh:
       fetchExhibitions()
     case .createExhibition:
       exhibitionEditStore = ExhibitionEditStore(

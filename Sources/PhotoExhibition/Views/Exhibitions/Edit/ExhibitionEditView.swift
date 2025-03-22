@@ -32,6 +32,7 @@ final class ExhibitionEditStore: Store {
   }
 
   enum Action {
+    case task
     case saveButtonTapped
     case cancelButtonTapped
     case changeCoverImageButtonTapped
@@ -66,18 +67,20 @@ final class ExhibitionEditStore: Store {
 
   private let mode: Mode
   weak var delegate: (any ExhibitionEditStoreDelegate)?
-  private let currentUserClient: CurrentUserClient
-  private let exhibitionsClient: ExhibitionsClient
-  private let storageClient: StorageClient
-  private let imageCache: StorageImageCacheProtocol
+  private let currentUserClient: any CurrentUserClient
+  private let exhibitionsClient: any ExhibitionsClient
+  private let storageClient: any StorageClient
+  private let imageCache: any StorageImageCacheProtocol
+  private let analyticsClient: any AnalyticsClient
 
   init(
     mode: Mode,
     delegate: (any ExhibitionEditStoreDelegate)? = nil,
-    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-    exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
-    storageClient: StorageClient = DefaultStorageClient(),
-    imageCache: StorageImageCacheProtocol = StorageImageCache.shared
+    currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+    exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
+    storageClient: any StorageClient = DefaultStorageClient(),
+    imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.mode = mode
     self.delegate = delegate
@@ -85,6 +88,7 @@ final class ExhibitionEditStore: Store {
     self.exhibitionsClient = exhibitionsClient
     self.storageClient = storageClient
     self.imageCache = imageCache
+    self.analyticsClient = analyticsClient
 
     if case .edit(let exhibition) = mode {
       self.name = exhibition.name
@@ -104,6 +108,10 @@ final class ExhibitionEditStore: Store {
   func send(_ action: Action) {
     logger.info("action \(String(describing: action))")
     switch action {
+    case .task:
+      Task {
+        await analyticsClient.analyticsScreen(name: "ExhibitionEditView")
+      }
     case .saveButtonTapped:
       guard !name.isEmpty else {
         error = .emptyName
@@ -420,6 +428,9 @@ struct ExhibitionEditView: View {
         if shouldDismiss {
           dismiss()
         }
+      }
+      .task {
+        store.send(.task)
       }
     }
   }

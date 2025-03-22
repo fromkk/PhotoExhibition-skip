@@ -90,6 +90,9 @@ struct AuthRootView: View {
           Text(error.localizedDescription)
         }
       }
+      .task {
+        store.send(.task)
+      }
     }
   }
 }

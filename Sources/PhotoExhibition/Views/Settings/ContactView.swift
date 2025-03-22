@@ -43,6 +43,9 @@ struct ContactView: View {
           dismiss()
         }
       }
+      .task {
+        store.send(.task)
+      }
     }
   }
 }

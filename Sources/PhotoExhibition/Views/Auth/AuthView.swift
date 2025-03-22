@@ -11,6 +11,7 @@ protocol AuthStoreDelegate: AnyObject {
 
 @Observable final class AuthStore: Store {
   enum Action {
+    case task
     case signInButtonTapped
     case signUpButtonTapped
     case dismissError
@@ -27,6 +28,7 @@ protocol AuthStoreDelegate: AnyObject {
 
   private let signInClient: any SignInClient
   private let signUpClient: any SignUpClient
+  private let analyticsClient: any AnalyticsClient
 
   // ユーザー認証状態を管理するプロパティ
   var isLoading: Bool = false
@@ -35,16 +37,22 @@ protocol AuthStoreDelegate: AnyObject {
 
   init(
     authMode: AuthMode,
-    signIngClient: SignInClient = DefaultSignInClient(),
-    signUpClient: SignUpClient = DefaultSignUpClient()
+    signIngClient: any SignInClient = DefaultSignInClient(),
+    signUpClient: any SignUpClient = DefaultSignUpClient(),
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.authMode = authMode
     self.signInClient = signIngClient
     self.signUpClient = signUpClient
+    self.analyticsClient = analyticsClient
   }
 
   func send(_ action: Action) {
     switch action {
+    case .task:
+      Task {
+        await analyticsClient.analyticsScreen(name: "AuthView")
+      }
     case .signInButtonTapped:
       isLoading = true
       error = nil
@@ -153,6 +161,9 @@ struct AuthView: View {
         Text(store.error?.localizedDescription ?? "An unknown error occurred")
       }
     )
+    .task {
+      store.send(.task)
+    }
   }
 }
 

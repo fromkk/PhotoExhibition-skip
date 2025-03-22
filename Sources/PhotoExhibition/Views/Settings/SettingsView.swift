@@ -13,8 +13,9 @@ protocol SettingsStoreDelegate: AnyObject {
 @Observable final class SettingsStore: Store, ProfileSetupStoreDelegate {
   weak var delegate: (any SettingsStoreDelegate)?
 
-  private let currentUserClient: CurrentUserClient
-  private let membersClient: MembersClient
+  private let currentUserClient: any CurrentUserClient
+  private let membersClient: any MembersClient
+  private let analyticsClient: any AnalyticsClient
 
   var member: Member?
   var isProfileEditPresented: Bool = false
@@ -29,11 +30,13 @@ protocol SettingsStoreDelegate: AnyObject {
   private(set) var contactStore: ContactStore?
 
   init(
-    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-    membersClient: MembersClient = DefaultMembersClient()
+    currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+    membersClient: any MembersClient = DefaultMembersClient(),
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.currentUserClient = currentUserClient
     self.membersClient = membersClient
+    self.analyticsClient = analyticsClient
   }
 
   enum Action {
@@ -58,6 +61,7 @@ protocol SettingsStoreDelegate: AnyObject {
     case .task:
       Task {
         await fetchMember()
+        await analyticsClient.analyticsScreen(name: "SettingsView")
       }
     case .logoutButtonTapped:
       do {

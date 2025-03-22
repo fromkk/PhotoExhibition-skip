@@ -67,21 +67,23 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var showReport: Bool = false
   private(set) var reportStore: ReportStore?
 
-  private let exhibitionsClient: ExhibitionsClient
-  private let currentUserClient: CurrentUserClient
-  private let storageClient: StorageClient
-  let imageCache: StorageImageCacheProtocol
-  let photoClient: PhotoClient
+  private let exhibitionsClient: any ExhibitionsClient
+  private let currentUserClient: any CurrentUserClient
+  private let storageClient: any StorageClient
+  let imageCache: any StorageImageCacheProtocol
+  let photoClient: any PhotoClient
+  private let analyticsClient: any AnalyticsClient
 
   var exhibitionEditStore: ExhibitionEditStore?
 
   init(
     exhibition: Exhibition,
-    exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
-    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-    storageClient: StorageClient = DefaultStorageClient(),
-    imageCache: StorageImageCacheProtocol = StorageImageCache.shared,
-    photoClient: PhotoClient = DefaultPhotoClient()
+    exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
+    currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+    storageClient: any StorageClient = DefaultStorageClient(),
+    imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
+    photoClient: any PhotoClient = DefaultPhotoClient(),
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.exhibition = exhibition
     self.exhibitionsClient = exhibitionsClient
@@ -89,6 +91,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     self.storageClient = storageClient
     self.imageCache = imageCache
     self.photoClient = photoClient
+    self.analyticsClient = analyticsClient
 
     // Check if current user is the organizer
     if let currentUser = currentUserClient.currentUser() {
@@ -100,6 +103,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     switch action {
     case .checkPermissions:
       checkIfUserIsOrganizer()
+      Task {
+        await analyticsClient.analyticsScreen(name: "ExhibitionDetailView")
+      }
     case .editExhibition:
       if isOrganizer {
         exhibitionEditStore = ExhibitionEditStore(

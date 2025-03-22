@@ -6,6 +6,7 @@ import SwiftUI
 
 @Observable final class ReportStore: Store {
   enum Action {
+    case task
     case reasonChanged(String)
     case sendButtonTapped
     case dismissButtonTapped
@@ -17,18 +18,29 @@ import SwiftUI
   var isErrorAlertPresented: Bool = false
   var shouldDismiss: Bool = false
 
-  private let reportClient: ReportClient
+  private let reportClient: any ReportClient
   private let type: ReportType
   private let id: String
+  private let analyticsClient: any AnalyticsClient
 
-  init(type: ReportType, id: String, reportClient: ReportClient = DefaultReportClient()) {
+  init(
+    type: ReportType,
+    id: String,
+    reportClient: any ReportClient = DefaultReportClient(),
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
+  ) {
     self.type = type
     self.id = id
     self.reportClient = reportClient
+    self.analyticsClient = analyticsClient
   }
 
   func send(_ action: Action) {
     switch action {
+    case .task:
+      Task {
+        await analyticsClient.analyticsScreen(name: "ReportView")
+      }
     case .reasonChanged(let reason):
       self.reason = reason
     case .sendButtonTapped:

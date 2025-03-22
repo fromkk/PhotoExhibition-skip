@@ -16,8 +16,9 @@ protocol AuthRootStoreDelegate: AnyObject {
 
 @Observable
 final class AuthRootStore: Store {
-  private let currentUserClient: CurrentUserClient
-  private let membersClient: MembersClient
+  private let currentUserClient: any CurrentUserClient
+  private let membersClient: any MembersClient
+  private let analyticsClient: any AnalyticsClient
   #if !SKIP
     private let authClient: AuthClient
     private var currentNonce: String?
@@ -28,25 +29,30 @@ final class AuthRootStore: Store {
 
   #if !SKIP
     init(
-      currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-      membersClient: MembersClient = DefaultMembersClient(),
-      authClient: AuthClient = DefaultAuthClient()
+      currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+      membersClient: any MembersClient = DefaultMembersClient(),
+      authClient: any AuthClient = DefaultAuthClient(),
+      analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
     ) {
       self.currentUserClient = currentUserClient
       self.membersClient = membersClient
       self.authClient = authClient
+      self.analyticsClient = analyticsClient
     }
   #else
     init(
-      currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-      membersClient: MembersClient = DefaultMembersClient()
+      currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+      membersClient: any MembersClient = DefaultMembersClient(),
+      analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
     ) {
       self.currentUserClient = currentUserClient
       self.membersClient = membersClient
+      self.analyticsClient = analyticsClient
     }
   #endif
 
   enum Action: Sendable {
+    case task
     case signInButtonTapped
     case signUpButtonTapped
     #if !SKIP
@@ -110,6 +116,10 @@ final class AuthRootStore: Store {
 
   func send(_ action: Action) {
     switch action {
+    case .task:
+      Task {
+        await analyticsClient.analyticsScreen(name: "AuthRootView")
+      }
     case .signInButtonTapped:
       authStore = AuthStore(authMode: .signIn)
       authStore?.delegate = self

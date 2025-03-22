@@ -8,7 +8,7 @@
  - 画面表示
  */
 enum AnalyticsEvents: String, Sendable {
-  case screenView = "screen_View"
+  case screenView = "screen_view"
 }
 
 protocol AnalyticsClient: Sendable {
@@ -20,7 +20,8 @@ actor DefaultAnalyticsClient: AnalyticsClient {
     Analytics.logEvent(
       AnalyticsEvents.screenView.rawValue,
       parameters: [
-        "screen_name": name
+        "screen_name": name,
+        "firebase_screen_class": "View"
       ])
   }
 }

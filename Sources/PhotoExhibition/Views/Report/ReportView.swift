@@ -47,6 +47,9 @@ struct ReportView: View {
           dismiss()
         }
       }
+      .task {
+        store.send(.task)
+      }
     }
   }
 }

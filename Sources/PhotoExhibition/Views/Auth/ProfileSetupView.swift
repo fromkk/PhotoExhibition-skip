@@ -20,6 +20,7 @@ protocol ProfileSetupStoreDelegate: AnyObject {
 
 @Observable final class ProfileSetupStore: Store {
   enum Action {
+    case task
     case saveButtonTapped
     case dismissError
     case selectIconButtonTapped
@@ -43,19 +44,22 @@ protocol ProfileSetupStoreDelegate: AnyObject {
   var isErrorAlertPresented: Bool = false
 
   private let memberUpdateClient: any MemberUpdateClient
-  private let storageClient: StorageClient
+  private let storageClient: any StorageClient
   private let imageCache: any StorageImageCacheProtocol
+  private let analyticsClient: any AnalyticsClient
 
   init(
     member: Member,
-    memberUpdateClient: MemberUpdateClient = DefaultMemberUpdateClient(),
-    storageClient: StorageClient = DefaultStorageClient(),
-    imageCache: StorageImageCacheProtocol = StorageImageCache.shared
+    memberUpdateClient: any MemberUpdateClient = DefaultMemberUpdateClient(),
+    storageClient: any StorageClient = DefaultStorageClient(),
+    imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.member = member
     self.memberUpdateClient = memberUpdateClient
     self.storageClient = storageClient
     self.imageCache = imageCache
+    self.analyticsClient = analyticsClient
 
     // Set initial value if existing name is available
     if let existingName = member.name {
@@ -77,6 +81,10 @@ protocol ProfileSetupStoreDelegate: AnyObject {
 
   func send(_ action: Action) {
     switch action {
+    case .task:
+      Task {
+        await analyticsClient.analyticsScreen(name: "ProfileSetupView")
+      }
     case .saveButtonTapped:
       isLoading = true
       error = nil
@@ -271,6 +279,9 @@ struct ProfileSetupView: View {
         Text(store.error?.localizedDescription ?? "An unknown error occurred")
       }
     )
+    .task {
+      store.send(.task)
+    }
   }
 }
 
