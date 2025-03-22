@@ -19,7 +19,7 @@ private let maxExhibitionPhotos = 30
 
 @Observable
 final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
-  ExhibitionEditStoreDelegate
+  ExhibitionEditStoreDelegate, FootprintsListStoreDelegate
 {
   enum Action {
     case checkPermissions
@@ -43,6 +43,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case loadFootprints
     case loadMoreFootprints
     case toggleFootprint
+    case showFootprintsListTapped
   }
 
   var exhibition: Exhibition
@@ -69,11 +70,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var showPhotoEditSheet: Bool = false
 
   // 足跡関連
-  var footprints: [Footprint] = []
   var isLoadingFootprints: Bool = false
-  var footprintNextCursor: String? = nil
-  var hasMoreFootprints: Bool = true
-  var showFootprints: Bool = false
   var hasAddedFootprint: Bool = false
   var visitorCount: Int = 0
   var isTogglingFootprint: Bool = false
@@ -97,6 +94,10 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   private let footprintClient: any FootprintClient
 
   var exhibitionEditStore: ExhibitionEditStore?
+
+  // 足跡一覧画面
+  private(set) var footprintsListStore: FootprintsListStore?
+  var isShowFootprintsList: Bool = false
 
   init(
     exhibition: Exhibition,
@@ -205,6 +206,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       loadMoreFootprints()
     case .toggleFootprint:
       toggleFootprint()
+    case .showFootprintsListTapped:
+      showFootprintsList()
     }
   }
 
@@ -467,17 +470,11 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     guard isOrganizer else { return }
 
     isLoadingFootprints = true
-    footprints = []
-    footprintNextCursor = nil
-    hasMoreFootprints = true
 
     Task {
       do {
-        let result = try await footprintClient.fetchFootprints(
-          exhibitionId: exhibition.id, cursor: nil)
-        footprints = result.footprints
-        footprintNextCursor = result.nextCursor
-        hasMoreFootprints = result.nextCursor != nil
+        // 訪問者数を取得
+        visitorCount = try await footprintClient.getVisitorCount(exhibitionId: exhibition.id)
       } catch {
         logger.error("Failed to load footprints: \(error.localizedDescription)")
       }
@@ -487,24 +484,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   }
 
   private func loadMoreFootprints() {
-    guard isOrganizer, !isLoadingFootprints, hasMoreFootprints, let cursor = footprintNextCursor
-    else { return }
-
-    isLoadingFootprints = true
-
-    Task {
-      do {
-        let result = try await footprintClient.fetchFootprints(
-          exhibitionId: exhibition.id, cursor: cursor)
-        footprints.append(contentsOf: result.footprints)
-        footprintNextCursor = result.nextCursor
-        hasMoreFootprints = result.nextCursor != nil
-      } catch {
-        logger.error("Failed to load more footprints: \(error.localizedDescription)")
-      }
-
-      isLoadingFootprints = false
-    }
+    // 何もしない - この機能は FootprintsListStore に移動しました
   }
 
   private func toggleFootprint() {
@@ -532,6 +512,23 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
       isTogglingFootprint = false
     }
+  }
+
+  private func showFootprintsList() {
+    if isOrganizer {
+      footprintsListStore = FootprintsListStore(
+        exhibitionId: exhibition.id,
+        footprintClient: footprintClient,
+        delegate: self
+      )
+      isShowFootprintsList = true
+    }
+  }
+
+  // MARK: - FootprintsListStoreDelegate
+
+  func footprintsListDidClose() {
+    isShowFootprintsList = false
   }
 }
 
@@ -689,76 +686,34 @@ struct ExhibitionDetailView: View {
               Divider()
 
               VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                  Label(
-                    "Footprints",
-                    systemImage: SystemImageMapping.getIconName(from: "person.3")
-                  )
-                  .font(.headline)
+                Button {
+                  store.send(.showFootprintsListTapped)
+                } label: {
+                  HStack {
+                    HStack(spacing: 4) {
+                      #if SKIP
+                        Image("shoeprints.fill", bundle: .module)
+                      #else
+                        Image(systemName: "shoeprints.fill")
+                      #endif
+                      Text("Footprints")
+                    }
 
-                  Spacer()
+                    Spacer()
 
-                  Button {
-                    #if !SKIP
-                      store.showFootprints.toggle()
-                    #else
-                      store.showFootprints = !store.showFootprints
-                    #endif
-                  } label: {
-                    Image(
-                      systemName: SystemImageMapping.getIconName(
-                        from: store.showFootprints ? "chevron.up" : "chevron.down"))
-                  }
-                  .buttonStyle(.plain)
-                }
-
-                if store.showFootprints {
-                  if store.isLoadingFootprints && store.footprints.isEmpty {
-                    ProgressView()
-                      .frame(maxWidth: .infinity)
-                      .padding(.vertical, 8)
-                  } else if store.footprints.isEmpty {
-                    Text("No visitors yet")
+                    Text(store.visitorCount > 0 ? "\(store.visitorCount)" : "No visitors yet")
                       .font(.subheadline)
                       .foregroundStyle(.secondary)
-                      .frame(maxWidth: .infinity, alignment: .center)
-                      .padding(.vertical, 8)
-                  } else {
-                    VStack(spacing: 0) {
-                      Text("\(store.footprints.count) visitors")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 4)
 
-                      ForEach(store.footprints) { footprint in
-                        MemberRowView(userId: footprint.userId)
-
-                        if footprint.id != store.footprints.last?.id {
-                          Divider()
-                        }
-                      }
-
-                      if store.hasMoreFootprints {
-                        Button {
-                          store.send(.loadMoreFootprints)
-                        } label: {
-                          if store.isLoadingFootprints {
-                            ProgressView()
-                              .frame(maxWidth: .infinity)
-                              .padding(.vertical, 8)
-                          } else {
-                            Text("Load more")
-                              .frame(maxWidth: .infinity)
-                              .padding(.vertical, 8)
-                          }
-                        }
-                        .buttonStyle(.plain)
-                      }
-                    }
-                    .padding(.vertical, 4)
+                    Image(systemName: SystemImageMapping.getIconName(from: "chevron.right"))
+                      .font(.footnote)
+                      .foregroundStyle(.secondary)
                   }
+                  #if !SKIP
+                    .contentShape(Rectangle())
+                  #endif
                 }
+                .buttonStyle(.plain)
               }
             } else {
               // 一般ユーザー向けの足跡セクション
@@ -766,42 +721,49 @@ struct ExhibitionDetailView: View {
 
               VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                  Label(
-                    "Visitors",
-                    systemImage: SystemImageMapping.getIconName(from: "person.3")
-                  )
-                  .font(.headline)
+                  HStack(spacing: 4) {
+                    #if SKIP
+                      Image("shoeprints.fill", bundle: .module)
+                    #else
+                      Image(systemName: "shoeprints.fill")
+                    #endif
+                    Text("Footprints")
+                  }
 
                   Spacer()
 
-                  Text("\(store.visitorCount) visitors")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                }
+                  HStack(spacing: 8) {
+                    // 足跡の追加/削除ボタン
+                    Button {
+                      store.send(.toggleFootprint)
+                    } label: {
+                      HStack {
+                        if store.hasAddedFootprint {
+                          Text("Remove Footprint")
+                        } else {
+                          Text("Add Footprint")
+                        }
+                      }
+                      .padding(8)
+                      .foregroundStyle(store.hasAddedFootprint ? Color.gray : Color.accentColor)
+                      .clipShape(RoundedRectangle(cornerRadius: 8))
+                      .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                          .stroke(
+                            store.hasAddedFootprint ? Color.gray : Color.accentColor,
+                            style: StrokeStyle(lineWidth: 1))
+                      }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(store.isTogglingFootprint)
+                    .overlay {
+                      if store.isTogglingFootprint {
+                        ProgressView()
+                      }
+                    }
 
-                // 足跡の追加/削除ボタン
-                Button {
-                  store.send(.toggleFootprint)
-                } label: {
-                  HStack {
-                    Image(
-                      systemName: SystemImageMapping.getIconName(
-                        from: store.hasAddedFootprint ? "checkmark.circle.fill" : "plus.circle"))
-
-                    Text(store.hasAddedFootprint ? "Remove Footprint" : "Add Footprint")
+                    Text("\(store.visitorCount) visitors")
                       .font(.subheadline)
-                  }
-                  .frame(maxWidth: .infinity)
-                  .padding(.vertical, 8)
-                  .foregroundColor(store.hasAddedFootprint ? .accentColor : .primary)
-                  .background(Color.gray.opacity(0.1))
-                  .cornerRadius(8)
-                }
-                .buttonStyle(.plain)
-                .disabled(store.isTogglingFootprint)
-                .overlay {
-                  if store.isTogglingFootprint {
-                    ProgressView()
                   }
                 }
               }
@@ -1005,6 +967,11 @@ struct ExhibitionDetailView: View {
       }
     } message: {
       Text(store.error?.localizedDescription ?? "An error occurred")
+    }
+    .sheet(isPresented: $store.isShowFootprintsList) {
+      if let footprintsListStore = store.footprintsListStore {
+        FootprintsListView(store: footprintsListStore)
+      }
     }
   }
 
