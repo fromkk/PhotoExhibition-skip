@@ -9,56 +9,8 @@ struct OrganizerProfileView: View {
 
   var body: some View {
     ScrollView {
-      VStack(spacing: 24) {
-        // プロフィール情報
-        VStack(spacing: 16) {
-          // アイコン
-          Group {
-            if let iconURL = store.organizerIconURL {
-              AsyncImage(url: iconURL) { phase in
-                switch phase {
-                case .empty:
-                  ProgressView()
-                    .frame(width: 100, height: 100)
-                case .success(let image):
-                  image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 100, height: 100)
-                    .clipShape(Circle())
-                case .failure:
-                  Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 100, height: 100)
-                    .foregroundStyle(.gray)
-                @unknown default:
-                  EmptyView()
-                }
-              }
-            } else {
-              Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 100, height: 100)
-                .foregroundStyle(.gray)
-            }
-          }
-          .frame(width: 100, height: 100)
-
-          // 名前
-          Text(store.organizer.name ?? "No Name")
-            .font(.title)
-            .fontWeight(.bold)
-        }
-        .padding()
-
-        // 展示会一覧
-        VStack(alignment: .leading, spacing: 16) {
-          Text("Exhibitions")
-            .font(.headline)
-            .padding(.horizontal)
-
+      Section {
+        LazyVStack(spacing: 16) {
           if store.isLoading && store.exhibitions.isEmpty {
             ProgressView()
               .frame(maxWidth: .infinity, alignment: .center)
@@ -79,31 +31,81 @@ struct OrganizerProfileView: View {
               )
             #endif
           } else {
-            LazyVStack(spacing: 16) {
-              ForEach(store.exhibitions) { exhibition in
-                Button {
-                  store.send(.showExhibitionDetail(exhibition))
-                } label: {
-                  // ExhibitionRowの代わりにOrganizerExhibitionRowを使用
-                  OrganizerExhibitionRow(exhibition: exhibition)
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal)
+            ForEach(store.exhibitions) { exhibition in
+              Button {
+                store.send(.showExhibitionDetail(exhibition))
+              } label: {
+                // ExhibitionRowの代わりにOrganizerExhibitionRowを使用
+                OrganizerExhibitionRow(exhibition: exhibition)
               }
+              .buttonStyle(.plain)
+              .padding(.horizontal)
+            }
 
-              if store.hasMore {
-                ProgressView()
-                  .onAppear {
-                    store.send(.loadMoreExhibitions)
+            if store.hasMore {
+              ProgressView()
+                .onAppear {
+                  store.send(.loadMoreExhibitions)
+                }
+                .padding()
+            }
+          }
+        }
+      } header: {
+        VStack(spacing: 24) {
+          // プロフィール情報
+          VStack(spacing: 16) {
+            // アイコン
+            Group {
+              if let iconURL = store.organizerIconURL {
+                AsyncImage(url: iconURL) { phase in
+                  switch phase {
+                  case .empty:
+                    ProgressView()
+                      .frame(width: 100, height: 100)
+                  case .success(let image):
+                    image
+                      .resizable()
+                      .aspectRatio(contentMode: .fill)
+                      .frame(width: 100, height: 100)
+                      .clipShape(Circle())
+                  case .failure:
+                    Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
+                      .resizable()
+                      .aspectRatio(contentMode: .fit)
+                      .frame(width: 100, height: 100)
+                      .foregroundStyle(.gray)
+                  @unknown default:
+                    EmptyView()
                   }
-                  .padding()
+                }
+              } else {
+                Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(width: 100, height: 100)
+                  .foregroundStyle(.gray)
               }
             }
+            .frame(width: 100, height: 100)
+
+            // 名前
+            Text(store.organizer.name ?? "No Name")
+              .font(.title)
+              .fontWeight(.bold)
+          }
+          .padding()
+
+          // 展示会一覧
+          VStack(alignment: .leading, spacing: 16) {
+            Text("Exhibitions")
+              .font(.headline.bold())
+              .padding(.horizontal)
+              .frame(maxWidth: .infinity, alignment: .leading)
           }
         }
       }
     }
-    .background(Color("background", bundle: .module))
     .navigationTitle("Organizer Profile")
     .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
       if let detailStore = store.exhibitionDetailStore {
@@ -160,8 +162,13 @@ struct OrganizerExhibitionRow: View {
               if isLoadingImage {
                 ProgressView()
               } else {
-                Image(systemName: SystemImageMapping.getIconName(from: "photo"))
+                #if SKIP
+                  Image("photo", bundle: .module)
                   .foregroundStyle(.gray)
+                #else
+                Image(systemName: "photo")
+                  .foregroundStyle(.gray)
+                #endif
               }
             }
         }
@@ -174,11 +181,13 @@ struct OrganizerExhibitionRow: View {
       VStack(alignment: .leading, spacing: 8) {
         Text(exhibition.name)
           .font(.headline)
+          .frame(maxWidth: .infinity, alignment: .leading)
 
         if let description = exhibition.description {
           Text(description)
             .font(.subheadline)
             .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .lineLimit(2)
         }
 

@@ -399,7 +399,14 @@
       }
     },
     "Organizer Profile" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロフィール"
+          }
+        }
+      }
     },
     "Password" : {
       "localizations" : {
@@ -683,7 +690,14 @@
       }
     },
     "This organizer doesn't have any published exhibitions." : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ展示はありません。"
+          }
+        }
+      }
     },
     "Title" : {
       "localizations" : {

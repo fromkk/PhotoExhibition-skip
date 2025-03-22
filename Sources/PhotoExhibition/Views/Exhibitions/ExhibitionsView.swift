@@ -126,12 +126,14 @@ struct ExhibitionRow: View {
       VStack(alignment: .leading, spacing: 8) {
         Text(exhibition.name)
           .font(.headline)
+          .frame(maxWidth: .infinity, alignment: .leading)
 
         if let description = exhibition.description {
           Text(description)
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .lineLimit(2)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
 
         HStack {

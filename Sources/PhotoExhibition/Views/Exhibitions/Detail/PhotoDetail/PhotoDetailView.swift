@@ -462,10 +462,16 @@ struct PhotoDetailView: View {
           ProgressView()
         } else {
           // 画像がない場合のプレースホルダー
-          Image(systemName: SystemImageMapping.getIconName(from: "photo"))
+          #if SKIP
+            Image("photo", bundle: .module)
+            .foregroundStyle(.white.opacity(0.5))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+          #else
+          Image(systemName: "photo")
             .font(.system(size: 50))
             .foregroundStyle(.white.opacity(0.5))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+          #endif
         }
 
         // オーバーレイコントロール
