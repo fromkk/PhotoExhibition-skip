@@ -381,6 +381,7 @@ struct ExhibitionEditView: View {
                   Text(status.localizedKey).tag(status)
                 }
               }
+              .pickerStyle(.segmented)
             }
           }
           .padding()
