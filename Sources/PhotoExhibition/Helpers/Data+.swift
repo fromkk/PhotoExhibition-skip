@@ -9,6 +9,15 @@ import Foundation
     case unknownImageFormat
   }
 
+  extension ImageFormatError: LocalizedError {
+    var errorDescription: String? {
+      switch self {
+      case .unknownImageFormat:
+        return String(localized: "Unsupported image format. Please select a JPEG, PNG, or GIF image.")
+      }
+    }
+  }
+
   extension Data {
     var imageFormat: ImageFormat {
       var buffer = [UInt8](repeating: 0, count: 8)

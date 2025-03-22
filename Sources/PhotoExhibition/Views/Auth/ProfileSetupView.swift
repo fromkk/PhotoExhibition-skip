@@ -225,24 +225,34 @@ struct ProfileSetupView: View {
                 Task {
                   do {
                     if let data = try await item.loadTransferable(type: Data.self) {
+                      #if !SKIP
                       let ext: String
                       switch data.imageFormat {
                       case .gif:
-                        ext = "git"
+                        ext = "gif"
                       case .jpeg:
                         ext = "jpg"
                       case .png:
                         ext = "png"
                       default:
-                        throw ImageFormatError.unknownImageFormat
+                        // サポートされていない画像形式のエラーを表示
+                        store.error = ImageFormatError.unknownImageFormat
+                        store.isErrorAlertPresented = true
+                        return
                       }
+                      #else
+                      // Skip環境では対応しない（拡張子の処理はSkipKit内で行われる）
+                      let ext = "jpg"
+                      #endif
                       let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
-                        UUID().uuidString + ext)
+                        UUID().uuidString + "." + ext)
                       try data.write(to: tempURL)
                       store.send(.iconSelected(tempURL))
                     }
                   } catch {
                     logger.error("error \(error.localizedDescription)")
+                    store.error = error
+                    store.isErrorAlertPresented = true
                   }
                 }
               }

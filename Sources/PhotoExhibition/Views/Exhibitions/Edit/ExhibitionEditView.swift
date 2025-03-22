@@ -39,6 +39,8 @@ final class ExhibitionEditStore: Store {
     case updateFrom(Date)
     case updateTo(Date)
     case updateCoverImage(URL?)
+    case photoPicked(URL)
+    case dismissError
   }
 
   var name: String = ""
@@ -49,7 +51,7 @@ final class ExhibitionEditStore: Store {
   var status: ExhibitionStatus = .draft
 
   var isLoading: Bool = false
-  var error: ExhibitionEditError? = nil
+  var error: (any Error)? = nil
   var showError: Bool = false
   var shouldDismiss: Bool = false
 
@@ -114,13 +116,13 @@ final class ExhibitionEditStore: Store {
       }
     case .saveButtonTapped:
       guard !name.isEmpty else {
-        error = .emptyName
+        error = ExhibitionEditError.emptyName
         showError = true
         return
       }
 
       guard let user = currentUserClient.currentUser() else {
-        error = .userNotLoggedIn
+        error = ExhibitionEditError.userNotLoggedIn
         showError = true
         return
       }
@@ -131,7 +133,7 @@ final class ExhibitionEditStore: Store {
           try await saveExhibition(user: user)
           shouldDismiss = true
         } catch {
-          self.error = .saveFailed(error.localizedDescription)
+          self.error = error
           showError = true
         }
         isLoading = false
@@ -149,6 +151,11 @@ final class ExhibitionEditStore: Store {
       coverImageURL = url
     case .changeCoverImageButtonTapped:
       imagePickerPresented = true
+    case .photoPicked(let url):
+      pickedImageURL = url
+    case .dismissError:
+      error = nil
+      showError = false
     }
   }
 
@@ -326,22 +333,27 @@ struct ExhibitionEditView: View {
                             let ext: String
                             switch data.imageFormat {
                             case .gif:
-                              ext = "git"
+                              ext = "gif"
                             case .jpeg:
                               ext = "jpg"
                             case .png:
                               ext = "png"
                             default:
-                              throw ImageFormatError.unknownImageFormat
+                              // サポートされていない画像形式のエラーを表示
+                              store.error = ImageFormatError.unknownImageFormat
+                              store.showError = true
+                              return
                             }
                             let tempURL = FileManager.default.temporaryDirectory
                               .appendingPathComponent(
-                                UUID().uuidString + ext)
+                                UUID().uuidString + "." + ext)
                             try data.write(to: tempURL)
                             store.pickedImageURL = tempURL
                           }
                         } catch {
                           logger.error("error \(error.localizedDescription)")
+                          store.error = error
+                          store.showError = true
                         }
                       }
                     }
@@ -427,7 +439,9 @@ struct ExhibitionEditView: View {
         }
       }
       .alert("Error", isPresented: $store.showError) {
-        Button("OK") {}
+        Button("OK") {
+          store.send(.dismissError)
+        }
       } message: {
         if let errorMessage = store.error?.localizedDescription {
           Text(errorMessage)

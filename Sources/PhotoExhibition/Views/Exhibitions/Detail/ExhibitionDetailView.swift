@@ -38,6 +38,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case reportButtonTapped
     case moveCompleted
     case showOrganizerProfile
+    case dismissError
   }
 
   var exhibition: Exhibition
@@ -49,6 +50,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var isOrganizer: Bool = false
   var coverImageURL: URL? = nil
   var isLoadingCoverImage: Bool = false
+  var isErrorAlertPresented: Bool = false
 
   // 写真関連
   var photos: [Photo] = []
@@ -172,6 +174,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       movePhoto()
     case .showOrganizerProfile:
       showOrganizerProfile()
+    case .dismissError:
+      error = nil
+      isErrorAlertPresented = false
     }
   }
 
@@ -704,24 +709,34 @@ struct ExhibitionDetailView: View {
               Task {
                 do {
                   if let data = try await item.loadTransferable(type: Data.self) {
+                    #if !SKIP
                     let ext: String
                     switch data.imageFormat {
                     case .gif:
-                      ext = "git"
+                      ext = "gif"
                     case .jpeg:
                       ext = "jpg"
                     case .png:
                       ext = "png"
                     default:
-                      throw ImageFormatError.unknownImageFormat
+                      // サポートされていない画像形式のエラーを表示
+                      store.error = ImageFormatError.unknownImageFormat
+                      store.isErrorAlertPresented = true
+                      return
                     }
+                    #else
+                    // Skip環境では対応しない（拡張子の処理はSkipKit内で行われる）
+                    let ext = "jpg"
+                    #endif
                     let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
-                      UUID().uuidString + ext)
+                      UUID().uuidString + "." + ext)
                     try data.write(to: tempURL)
                     store.send(.photoSelected(tempURL))
                   }
                 } catch {
                   logger.error("error \(error.localizedDescription)")
+                  store.error = error
+                  store.isErrorAlertPresented = true
                 }
               }
             }
@@ -732,6 +747,13 @@ struct ExhibitionDetailView: View {
       if let reportStore = store.reportStore {
         ReportView(store: reportStore)
       }
+    }
+    .alert("Error", isPresented: $store.isErrorAlertPresented) {
+      Button("OK", role: .cancel) {
+        store.send(.dismissError)
+      }
+    } message: {
+      Text(store.error?.localizedDescription ?? "An error occurred")
     }
   }
 
