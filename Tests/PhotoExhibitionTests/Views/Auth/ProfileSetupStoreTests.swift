@@ -198,7 +198,8 @@ final class ProfileSetupStoreTests: XCTestCase {
     XCTAssertEqual(mockStorageClient.uploadFromURL, iconURL)
     XCTAssertTrue(
       mockStorageClient.uploadToPath?.starts(with: "members/\(testMember.id)/icon_") ?? false,
-      "Path should start with members/{member.id}/icon_ but was \(mockStorageClient.uploadToPath ?? "nil")")
+      "Path should start with members/{member.id}/icon_ but was \(mockStorageClient.uploadToPath ?? "nil")"
+    )
 
     XCTAssertTrue(mockMemberUpdateClient.updateProfileWasCalled)
     XCTAssertEqual(mockMemberUpdateClient.updatedProfileMemberID, testMember.id)

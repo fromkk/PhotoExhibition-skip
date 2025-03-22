@@ -155,7 +155,7 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             #if !SKIP
-            .contentShape(Rectangle())
+              .contentShape(Rectangle())
             #endif
           }
           .buttonStyle(.plain)
@@ -179,7 +179,7 @@ struct SettingsView: View {
           }
           .frame(maxWidth: .infinity, alignment: .leading)
           #if !SKIP
-          .contentShape(Rectangle())
+            .contentShape(Rectangle())
           #endif
         }
         .buttonStyle(.plain)
@@ -207,7 +207,7 @@ struct SettingsView: View {
           }
           .frame(maxWidth: .infinity, alignment: .leading)
           #if !SKIP
-          .contentShape(Rectangle())
+            .contentShape(Rectangle())
           #endif
         }
         .buttonStyle(.plain)
@@ -234,7 +234,7 @@ struct SettingsView: View {
           }
           .frame(maxWidth: .infinity, alignment: .leading)
           #if !SKIP
-          .contentShape(Rectangle())
+            .contentShape(Rectangle())
           #endif
         }
         .buttonStyle(.plain)
@@ -255,7 +255,7 @@ struct SettingsView: View {
           }
           .frame(maxWidth: .infinity, alignment: .leading)
           #if !SKIP
-          .contentShape(Rectangle())
+            .contentShape(Rectangle())
           #endif
         }
         .buttonStyle(.plain)

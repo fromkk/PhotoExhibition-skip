@@ -6,15 +6,18 @@ import SwiftUI
 
 @Observable
 final class RootStore: Store {
-  private let currentUserClient: CurrentUserClient
-  private let membersClient: MembersClient
+  private let currentUserClient: any CurrentUserClient
+  private let membersClient: any MembersClient
+  private let analyticsClient: any AnalyticsClient
 
   init(
-    currentUserClient: CurrentUserClient = DefaultCurrentUserClient(),
-    membersClient: MembersClient = DefaultMembersClient()
+    currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+    membersClient: any MembersClient = DefaultMembersClient(),
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.currentUserClient = currentUserClient
     self.membersClient = membersClient
+    self.analyticsClient = analyticsClient
   }
 
   enum Action: Sendable {
@@ -60,6 +63,7 @@ final class RootStore: Store {
             print("Failed to fetch member: \(error.localizedDescription)")
             isSignedIn = false
           }
+          await analyticsClient.analyticsScreen(name: "RootView")
         }
       } else {
         isSignedIn = false

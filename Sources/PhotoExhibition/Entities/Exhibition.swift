@@ -1,12 +1,11 @@
 import Foundation
+import SwiftUI
 
 #if SKIP
   import SkipFirebaseFirestore
 #else
   import FirebaseFirestore
 #endif
-
-import SwiftUI
 
 // 展示状態
 enum ExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable {

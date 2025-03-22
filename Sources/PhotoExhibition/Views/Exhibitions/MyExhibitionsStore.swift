@@ -20,8 +20,9 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   private var nextCursor: String? = nil
   var hasMore: Bool = true
 
-  private let exhibitionsClient: ExhibitionsClient
-  private let currentUserClient: CurrentUserClient
+  private let exhibitionsClient: any ExhibitionsClient
+  private let currentUserClient: any CurrentUserClient
+  private let analyticsClient: any AnalyticsClient
 
   var isExhibitionShown: Bool = false
   // 選択された展示会の詳細画面用のストアを保持
@@ -31,16 +32,23 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   private(set) var exhibitionEditStore: ExhibitionEditStore?
 
   init(
-    exhibitionsClient: ExhibitionsClient = DefaultExhibitionsClient(),
-    currentUserClient: CurrentUserClient = DefaultCurrentUserClient()
+    exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
+    currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.exhibitionsClient = exhibitionsClient
     self.currentUserClient = currentUserClient
+    self.analyticsClient = analyticsClient
   }
 
   func send(_ action: Action) {
     switch action {
-    case .task, .refresh:
+    case .task:
+      fetchMyExhibitions()
+      Task {
+        await analyticsClient.analyticsScreen(name: "MyExhibitionsView")
+      }
+    case .refresh:
       fetchMyExhibitions()
     case .loadMore:
       if !isLoading && hasMore {

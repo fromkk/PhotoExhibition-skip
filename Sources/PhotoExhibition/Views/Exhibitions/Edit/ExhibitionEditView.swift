@@ -163,7 +163,7 @@ final class ExhibitionEditStore: Store {
       "to": Timestamp(date: to),
       "organizer": user.uid,
       "updatedAt": FieldValue.serverTimestamp(),
-      "status": status.rawValue
+      "status": status.rawValue,
     ]
 
     // 作成モードの場合はcreatedAtを設定
@@ -197,7 +197,7 @@ final class ExhibitionEditStore: Store {
         let updateData: [String: any Sendable] = [
           "coverImagePath": storagePath,
           "updatedAt": FieldValue.serverTimestamp(),
-          "status": status.rawValue
+          "status": status.rawValue,
         ]
 
         try await exhibitionsClient.update(id: exhibitionId, data: updateData)
@@ -318,8 +318,9 @@ struct ExhibitionEditView: View {
                             default:
                               throw ImageFormatError.unknownImageFormat
                             }
-                            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
-                              UUID().uuidString + ext)
+                            let tempURL = FileManager.default.temporaryDirectory
+                              .appendingPathComponent(
+                                UUID().uuidString + ext)
                             try data.write(to: tempURL)
                             store.pickedImageURL = tempURL
                           }
@@ -336,13 +337,13 @@ struct ExhibitionEditView: View {
               Text("Exhibition Name")
                 .fontWeight(.semibold)
               TextField("Exhibition Name", text: $store.name)
-              #if !SKIP
-                .padding(8)
-                .overlay {
-                  RoundedRectangle(cornerRadius: 8)
+                #if !SKIP
+                  .padding(8)
+                  .overlay {
+                    RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray, style: StrokeStyle(lineWidth: 1))
-                }
-              #endif
+                  }
+                #endif
             }
 
             VStack(alignment: .leading, spacing: 8) {
