@@ -16,6 +16,7 @@ protocol PhotoDetailStoreDelegate: AnyObject {
 @MainActor
 final class PhotoDetailStore: Store {
   enum Action {
+    case task
     case closeButtonTapped
     case loadImage
     case editButtonTapped
@@ -76,22 +77,22 @@ final class PhotoDetailStore: Store {
     self.analyticsClient = analyticsClient
     self.photos = photos
     self.currentPhotoIndex = photos.firstIndex(where: { $0.id == photo.id }) ?? 0
-
-    // 初期化時に画像の読み込みを開始
-    Task {
-      try await loadImage()
-      await analyticsClient.analyticsScreen(name: "PhotoDetailView")
-      await analyticsClient.send(
-        AnalyticsEvents.photoViewed,
-        parameters: [
-          "photo_id": photo.id,
-          "exhibition_id": exhibitionId,
-        ])
-    }
   }
 
   func send(_ action: Action) {
     switch action {
+    case .task:
+      // 初期化時に画像の読み込みを開始
+      Task {
+        try await loadImage()
+        await analyticsClient.analyticsScreen(name: "PhotoDetailView")
+        await analyticsClient.send(
+          AnalyticsEvents.photoViewed,
+          parameters: [
+            "photo_id": photo.id,
+            "exhibition_id": exhibitionId,
+          ])
+      }
     case .closeButtonTapped:
       // 閉じるアクションはViewで処理
       break
@@ -642,9 +643,8 @@ struct PhotoDetailView: View {
       // 写真が切り替わったらズームをリセット
       resetZoom()
     }
-    .onAppear {
-      // 画面表示時に画像を読み込む
-      store.send(.loadImage)
+    .task {
+      store.send(.task)
     }
     .sheet(isPresented: $store.showReport) {
       if let reportStore = store.reportStore {

@@ -13,15 +13,18 @@ import XCTest
 final class SettingsStoreTests: XCTestCase {
   var mockCurrentUserClient: MockCurrentUserClient!
   var mockMembersClient: MockMembersClient!
+  var mockAnalyticsClient: MockAnalyticsClient!
 
   override func setUp() async throws {
     mockCurrentUserClient = MockCurrentUserClient()
     mockMembersClient = MockMembersClient()
+    mockAnalyticsClient = MockAnalyticsClient()
   }
 
   override func tearDown() async throws {
     mockCurrentUserClient = nil
     mockMembersClient = nil
+    mockAnalyticsClient = nil
   }
 
   func testInit() {

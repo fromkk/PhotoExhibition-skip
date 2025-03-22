@@ -242,7 +242,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
 
   // MARK: - 削除機能のテスト
 
-  func testConfirmDeleteCallsDeleteOnExhibitionsClient() async {
+  func testConfirmDeleteCallsDeleteOnExhibitionsClient() async throws {
     // 現在のユーザーを主催者に設定
     mockCurrentUserClient.mockUser = User(uid: "organizer-id")
 
@@ -260,7 +260,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.confirmDelete)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 削除メソッドが呼ばれたことを確認
     XCTAssertTrue(mockExhibitionsClient.deleteWasCalled, "Delete method should be called")
@@ -269,7 +269,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       "Correct exhibition ID should be passed to delete method")
   }
 
-  func testConfirmDeleteDoesNotCallDeleteWhenNotOrganizer() async {
+  func testConfirmDeleteDoesNotCallDeleteWhenNotOrganizer() async throws {
     // 現在のユーザーを主催者以外に設定
     mockCurrentUserClient.mockUser = User(uid: "different-user-id")
 
@@ -287,7 +287,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.confirmDelete)
 
     // 少し待機
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 削除メソッドが呼ばれないことを確認
     XCTAssertFalse(
@@ -295,7 +295,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       "Delete method should not be called when user is not organizer")
   }
 
-  func testSuccessfulDeleteSetsShouldDismissToTrue() async {
+  func testSuccessfulDeleteSetsShouldDismissToTrue() async throws {
     // FirebaseStorageの問題によりテストをスキップ
     try? XCTSkipIf(true, "FirebaseStorageの問題によりテストをスキップします")
 
@@ -333,14 +333,14 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.confirmDelete)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // shouldDismissがtrueになることを確認
     XCTAssertTrue(
       store.shouldDismiss, "shouldDismiss should be set to true after successful deletion")
   }
 
-  func testFailedDeleteSetsErrorAndDoesNotSetShouldDismiss() async {
+  func testFailedDeleteSetsErrorAndDoesNotSetShouldDismiss() async throws {
     // 現在のユーザーを主催者に設定
     mockCurrentUserClient.mockUser = User(uid: "organizer-id")
 
@@ -363,7 +363,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.confirmDelete)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // エラーが設定されることを確認
     XCTAssertNotNil(store.error, "Error should be set after failed deletion")
@@ -374,7 +374,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
 
   // MARK: - 画像読み込みのテスト
 
-  func testLoadCoverImageCallsStorageClient() async {
+  func testLoadCoverImageCallsStorageClient() async throws {
     // 現在のユーザーを設定
     mockCurrentUserClient.mockUser = User(uid: "user-id")
 
@@ -392,7 +392,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.loadCoverImage)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // StorageImageCacheのgetImageURLメソッドが呼ばれたことを確認
     XCTAssertTrue(mockStorageImageCache.getImageURLWasCalled, "getImageURL method should be called")
@@ -440,7 +440,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       "getImageURL method should not be called when there is no cover image path")
   }
 
-  func testLoadCoverImageHandlesError() async {
+  func testLoadCoverImageHandlesError() async throws {
     // エラーを投げるように設定
     mockStorageImageCache.shouldThrowError = true
 
@@ -458,7 +458,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.loadCoverImage)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // エラーが処理されることを確認
     XCTAssertTrue(
@@ -468,7 +468,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
 
   // MARK: - 写真関連のテスト
 
-  func testLoadPhotosCallsPhotoClient() async {
+  func testLoadPhotosCallsPhotoClient() async throws {
     // ストアの作成
     let store = ExhibitionDetailStore(
       exhibition: testExhibition,
@@ -483,7 +483,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.loadPhotos)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // PhotoClientのfetchPhotosメソッドが呼ばれたことを確認
     XCTAssertTrue(mockPhotoClient.fetchPhotosWasCalled, "fetchPhotos method should be called")
@@ -492,7 +492,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       "Correct exhibition ID should be passed to fetchPhotos method")
   }
 
-  func testLoadPhotosHandlesError() async {
+  func testLoadPhotosHandlesError() async throws {
     // エラーを投げるように設定
     mockPhotoClient.shouldThrowError = true
     mockPhotoClient.fetchPhotosError = NSError(
@@ -512,14 +512,14 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.loadPhotos)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // エラーが処理されることを確認
     XCTAssertFalse(store.isLoadingPhotos, "isLoadingPhotos should be false after error")
     XCTAssertNotNil(store.error, "error should be set after failed loading")
   }
 
-  func testUploadPhotoCallsStorageClientAndPhotoClient() async {
+  func testUploadPhotoCallsStorageClientAndPhotoClient() async throws {
     // 現在のユーザーを主催者に設定
     mockCurrentUserClient.mockUser = User(uid: "organizer-id")
 
@@ -553,7 +553,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.photoSelected(testURL))
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // PhotoClientのaddPhotoメソッドが先に呼ばれたことを確認
     XCTAssertTrue(mockPhotoClient.addPhotoWasCalled, "addPhoto method should be called first")
@@ -582,7 +582,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     XCTAssertNotNil(store.uploadedPhoto, "Uploaded photo should be set")
   }
 
-  func testUploadPhotoDoesNothingWhenNotOrganizer() async {
+  func testUploadPhotoDoesNothingWhenNotOrganizer() async throws  {
     // 現在のユーザーを主催者以外に設定
     mockCurrentUserClient.mockUser = User(uid: "different-user-id")
 
@@ -603,7 +603,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.photoSelected(testURL))
 
     // 少し待機
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // StorageClientのuploadメソッドが呼ばれないことを確認
     XCTAssertFalse(
@@ -616,7 +616,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       "addPhoto method should not be called when user is not organizer")
   }
 
-  func testUploadPhotoAddsPhotoToPhotosArrayWhenSuccessful() async {
+  func testUploadPhotoAddsPhotoToPhotosArrayWhenSuccessful() async throws {
     // 現在のユーザーを主催者に設定
     mockCurrentUserClient.mockUser = User(uid: "organizer-id")
 
@@ -644,7 +644,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.photoSelected(testURL))
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // PhotoClientのaddPhotoメソッドが先に呼ばれたことを確認
     XCTAssertTrue(mockPhotoClient.addPhotoWasCalled, "addPhoto method should be called first")
@@ -673,7 +673,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     XCTAssertNotNil(store.uploadedPhoto, "Uploaded photo should be set")
   }
 
-  func testCancelPhotoEditResetsUploadedPhotoAndHidesSheet() async {
+  func testCancelPhotoEditResetsUploadedPhotoAndHidesSheet() async throws {
     // 現在のユーザーを主催者に設定
     mockCurrentUserClient.mockUser = User(uid: "organizer-id")
 
@@ -700,7 +700,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.send(ExhibitionDetailStore.Action.photoSelected(URL(string: "file:///test/photo.jpg")!))
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // アップロードされた写真とシートの表示を確認
     XCTAssertNotNil(store.uploadedPhoto)
@@ -715,7 +715,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     XCTAssertFalse(store.showPhotoEditSheet)
   }
 
-  func testDidSaveExhibitionReloadsExhibition() async {
+  func testDidSaveExhibitionReloadsExhibition() async throws {
     // モックの設定
     let updatedExhibition = Exhibition(
       id: "test-exhibition-id",
@@ -745,7 +745,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     store.didSaveExhibition()
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 検証
     XCTAssertTrue(mockExhibitionsClient.getWasCalled)

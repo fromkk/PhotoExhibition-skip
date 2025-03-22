@@ -52,7 +52,7 @@ final class RootStoreTests: XCTestCase {
     XCTAssertFalse(mockMembersClient.fetchWasCalled)
   }
 
-  func testTaskWithUserAndMember() async {
+  func testTaskWithUserAndMember() async throws {
     // Arrange
     let userID = "test-uid"
     let testMember = Member(
@@ -79,7 +79,7 @@ final class RootStoreTests: XCTestCase {
     for _ in 0..<3 {
       await Task.yield()
     }
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
 
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
@@ -90,7 +90,7 @@ final class RootStoreTests: XCTestCase {
     XCTAssertFalse(store.isProfileSetupShown)
   }
 
-  func testTaskWithUserAndMemberWithoutName() async {
+  func testTaskWithUserAndMemberWithoutName() async throws {
     // Arrange
     let userID = "test-uid"
     let testMember = Member(
@@ -117,7 +117,7 @@ final class RootStoreTests: XCTestCase {
     for _ in 0..<3 {
       await Task.yield()
     }
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
 
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)

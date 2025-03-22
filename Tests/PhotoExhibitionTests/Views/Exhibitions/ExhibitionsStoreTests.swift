@@ -11,6 +11,7 @@ final class ExhibitionsStoreTests: XCTestCase {
   private var mockStorageClient: MockStorageClient!
   private var mockStorageImageCache: MockStorageImageCache!
   private var mockPhotoClient: MockPhotoClient!
+  private var mockAnalyticsClient: MockAnalyticsClient!
 
   override func setUp() async throws {
     // テスト用の展示会データを作成
@@ -62,6 +63,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     mockStorageClient = MockStorageClient()
     mockStorageImageCache = MockStorageImageCache()
     mockPhotoClient = MockPhotoClient()
+    mockAnalyticsClient = MockAnalyticsClient()
   }
 
   override func tearDown() async throws {
@@ -71,6 +73,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     mockStorageClient = nil
     mockStorageImageCache = nil
     mockPhotoClient = nil
+    mockAnalyticsClient = nil
   }
 
   // MARK: - 初期化のテスト
@@ -82,7 +85,8 @@ final class ExhibitionsStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // 初期値を確認
@@ -97,14 +101,15 @@ final class ExhibitionsStoreTests: XCTestCase {
 
   // MARK: - アクションのテスト
 
-  func testTaskActionFetchesExhibitions() async {
+  func testTaskActionFetchesExhibitionsAndTracksScreen() async throws {
     // ストアの作成
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // 初期状態を確認
@@ -118,7 +123,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertTrue(store.isLoading)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 展示会データが取得されることを確認
     XCTAssertEqual(store.exhibitions.count, 2)
@@ -127,21 +132,26 @@ final class ExhibitionsStoreTests: XCTestCase {
 
     // isLoadingがfalseに戻ることを確認
     XCTAssertFalse(store.isLoading)
+
+    // スクリーントラッキングが呼ばれることを確認
+    XCTAssertEqual(mockAnalyticsClient.screenCalls.count, 1)
+    XCTAssertEqual(mockAnalyticsClient.screenCalls.first?.name, "ExhibitionsView")
   }
 
-  func testLoadMoreActionFetchesMoreExhibitions() async {
+  func testLoadMoreActionFetchesMoreExhibitions() async throws {
     // ストアの作成
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // 初期データを取得
     store.send(ExhibitionsStore.Action.task)
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 次のページのデータを設定
     let nextPageExhibitions = [
@@ -170,7 +180,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertTrue(store.isLoading)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 展示会データが追加されることを確認
     XCTAssertEqual(store.exhibitions.count, 3)
@@ -183,19 +193,20 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertFalse(store.hasMore)
   }
 
-  func testLoadMoreActionDoesNotFetchWhenNoMoreData() async {
+  func testLoadMoreActionDoesNotFetchWhenNoMoreData() async throws {
     // ストアの作成
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // 初期データを取得
     store.send(ExhibitionsStore.Action.task)
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 次のページのデータがないことを設定
     mockExhibitionsClient.mockNextCursor = nil
@@ -205,7 +216,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     store.send(ExhibitionsStore.Action.loadMore)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // isLoadingがfalseのままであることを確認
     XCTAssertFalse(store.isLoading)
@@ -214,14 +225,15 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertEqual(store.exhibitions.count, 2)
   }
 
-  func testRefreshActionFetchesExhibitions() async {
+  func testRefreshActionFetchesExhibitions() async throws {
     // ストアの作成
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // refreshアクションを送信
@@ -231,7 +243,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertTrue(store.isLoading)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // 展示会データが取得されることを確認
     XCTAssertEqual(store.exhibitions.count, 2)
@@ -247,7 +259,8 @@ final class ExhibitionsStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // createExhibitionアクションを送信
@@ -264,7 +277,8 @@ final class ExhibitionsStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // 編集する展示会
@@ -284,7 +298,8 @@ final class ExhibitionsStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // 詳細表示する展示会
@@ -303,7 +318,7 @@ final class ExhibitionsStoreTests: XCTestCase {
 
   // MARK: - エラー処理のテスト
 
-  func testFetchExhibitionsHandlesError() async {
+  func testFetchExhibitionsHandlesError() async throws {
     // エラーを設定
     mockExhibitionsClient.shouldSucceed = false
     mockExhibitionsClient.errorToThrow = NSError(
@@ -315,14 +330,15 @@ final class ExhibitionsStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
     )
 
     // taskアクションを送信
     store.send(ExhibitionsStore.Action.task)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // エラーが設定されることを確認
     XCTAssertNotNil(store.error)

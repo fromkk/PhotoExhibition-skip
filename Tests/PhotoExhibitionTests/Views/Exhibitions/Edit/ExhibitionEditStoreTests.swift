@@ -16,6 +16,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
   private var mockCurrentUserClient: MockCurrentUserClient!
   private var mockStorageClient: MockStorageClient!
   private var mockStorageImageCache: MockStorageImageCache!
+  private var mockAnalyticsClient: MockAnalyticsClient!
 
   override func setUp() async throws {
     // テスト用の展示会データを作成
@@ -42,6 +43,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     mockCurrentUserClient = MockCurrentUserClient()
     mockStorageClient = MockStorageClient()
     mockStorageImageCache = MockStorageImageCache()
+    mockAnalyticsClient = MockAnalyticsClient()
   }
 
   override func tearDown() async throws {
@@ -50,6 +52,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     mockCurrentUserClient = nil
     mockStorageClient = nil
     mockStorageImageCache = nil
+    mockAnalyticsClient = nil
   }
 
   // MARK: - 初期化のテスト
@@ -568,7 +571,8 @@ final class ExhibitionEditStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       exhibitionsClient: mockExhibitionsClient,
       storageClient: mockStorageClient,
-      imageCache: mockStorageImageCache
+      imageCache: mockStorageImageCache,
+      analyticsClient: mockAnalyticsClient
     )
 
     // 実行

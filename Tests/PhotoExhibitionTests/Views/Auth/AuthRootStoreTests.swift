@@ -11,20 +11,26 @@ import XCTest
 final class AuthRootStoreTests: XCTestCase {
   var mockAuthClient: MockAuthClient!
   var mockDelegate: MockAuthRootStoreDelegate!
+  var mockAnalyticsClient: MockAnalyticsClient!
 
   override func setUp() async throws {
     mockAuthClient = MockAuthClient()
     mockDelegate = MockAuthRootStoreDelegate()
+    mockAnalyticsClient = MockAnalyticsClient()
   }
 
   override func tearDown() async throws {
     mockAuthClient = nil
     mockDelegate = nil
+    mockAnalyticsClient = nil
   }
 
   func testInit() {
     // Arrange & Act
-    let store = AuthRootStore(authClient: mockAuthClient)
+    let store = AuthRootStore(
+      authClient: mockAuthClient,
+      analyticsClient: mockAnalyticsClient
+    )
 
     // Assert
     XCTAssertNil(store.authStore)
@@ -34,7 +40,10 @@ final class AuthRootStoreTests: XCTestCase {
 
   func testSignInButtonTapped() {
     // Arrange
-    let store = AuthRootStore(authClient: mockAuthClient)
+    let store = AuthRootStore(
+      authClient: mockAuthClient,
+      analyticsClient: mockAnalyticsClient
+    )
     store.delegate = mockDelegate
 
     // Act
@@ -49,7 +58,10 @@ final class AuthRootStoreTests: XCTestCase {
 
   func testSignUpButtonTapped() {
     // Arrange
-    let store = AuthRootStore(authClient: mockAuthClient)
+    let store = AuthRootStore(
+      authClient: mockAuthClient,
+      analyticsClient: mockAnalyticsClient
+    )
     store.delegate = mockDelegate
 
     // Act
@@ -62,10 +74,31 @@ final class AuthRootStoreTests: XCTestCase {
     XCTAssertTrue(store.showSignUp)
   }
 
+  func testTask() async throws {
+    // Arrange
+    let store = AuthRootStore(
+      authClient: mockAuthClient,
+      analyticsClient: mockAnalyticsClient
+    )
+
+    // Act
+    store.send(AuthRootStore.Action.task)
+
+    // Wait for the analytics screen to be called
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    // Assert
+    XCTAssertEqual(mockAnalyticsClient.screenCalls.count, 1)
+    XCTAssertEqual(mockAnalyticsClient.screenCalls.first?.name, "AuthRootView")
+  }
+
   #if !SKIP
-    func testSignInWithAppleCompletedSuccess() {
+    func testSignInWithAppleCompletedSuccess() async throws {
       // Arrange
-      let store = AuthRootStore(authClient: mockAuthClient)
+      let store = AuthRootStore(
+        authClient: mockAuthClient,
+        analyticsClient: mockAnalyticsClient
+      )
       store.delegate = mockDelegate
       let testMember = Member(
         id: "test-id",
@@ -92,7 +125,7 @@ final class AuthRootStoreTests: XCTestCase {
       }
 
       // Wait for the async operation to complete
-      RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+      try await Task.sleep(nanoseconds: 100_000_000)
 
       // Assert
       XCTAssertTrue(mockAuthClient.signInWithAppleWasCalled)
@@ -100,9 +133,12 @@ final class AuthRootStoreTests: XCTestCase {
       XCTAssertEqual(mockDelegate.lastSignedInMember?.id, testMember.id)
     }
 
-    func testSignInWithAppleCompletedError() {
+    func testSignInWithAppleCompletedError() async throws {
       // Arrange
-      let store = AuthRootStore(authClient: mockAuthClient)
+      let store = AuthRootStore(
+        authClient: mockAuthClient,
+        analyticsClient: mockAnalyticsClient
+      )
       store.delegate = mockDelegate
       let testError = NSError(domain: "test", code: 0, userInfo: nil)
       mockAuthClient.shouldSucceed = false
@@ -123,7 +159,7 @@ final class AuthRootStoreTests: XCTestCase {
       }
 
       // Wait for the async operation to complete
-      RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+      try await Task.sleep(nanoseconds: 100_000_000)
 
       // Assert
       XCTAssertTrue(mockAuthClient.signInWithAppleWasCalled)
@@ -134,7 +170,10 @@ final class AuthRootStoreTests: XCTestCase {
 
   func testDidSignInSuccessfully() {
     // Arrange
-    let store = AuthRootStore(authClient: mockAuthClient)
+    let store = AuthRootStore(
+      authClient: mockAuthClient,
+      analyticsClient: mockAnalyticsClient
+    )
     store.delegate = mockDelegate
     store.showSignIn = true
     store.showSignUp = true

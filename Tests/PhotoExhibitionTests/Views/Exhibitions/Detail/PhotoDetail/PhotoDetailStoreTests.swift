@@ -62,6 +62,7 @@ final class PhotoDetailStoreTests: XCTestCase {
       updatedAt: Date()
     )
   ]
+  private var mockAnalyticsClient: MockAnalyticsClient!
 
   override func setUp() async throws {
     mockPhotoClient = MockPhotoClient()
@@ -76,6 +77,7 @@ final class PhotoDetailStoreTests: XCTestCase {
       imageCache: mockImageCache,
       photoClient: mockPhotoClient
     )
+    mockAnalyticsClient = MockAnalyticsClient()
   }
 
   func testLoadImage() async throws {
