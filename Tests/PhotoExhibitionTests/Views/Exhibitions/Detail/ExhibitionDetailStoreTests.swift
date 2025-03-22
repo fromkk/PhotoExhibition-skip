@@ -30,6 +30,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
   private var mockStorageClient: MockStorageClient!
   private var mockStorageImageCache: MockStorageImageCache!
   private var mockPhotoClient: MockPhotoClient!
+  private var mockFootprintClient: MockFootprintClient!
 
   override func setUp() async throws {
     // テスト用の展示会データを作成
@@ -57,6 +58,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     mockStorageClient = MockStorageClient()
     mockStorageImageCache = MockStorageImageCache()
     mockPhotoClient = MockPhotoClient()
+    mockFootprintClient = MockFootprintClient()
   }
 
   override func tearDown() async throws {
@@ -66,6 +68,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     mockStorageClient = nil
     mockStorageImageCache = nil
     mockPhotoClient = nil
+    mockFootprintClient = nil
   }
 
   // MARK: - 権限チェックのテスト
@@ -81,7 +84,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 主催者であることを確認
@@ -99,7 +103,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 主催者でないことを確認
@@ -117,7 +122,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 主催者でないことを確認
@@ -135,7 +141,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 主催者でないことを確認
@@ -164,7 +171,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 編集アクションを送信
@@ -185,7 +193,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 編集アクションを送信
@@ -206,7 +215,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 削除アクションを送信
@@ -228,7 +238,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 削除アクションを送信
@@ -253,7 +264,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 削除確認アクションを送信
@@ -280,7 +292,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 削除確認アクションを送信
@@ -326,7 +339,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 削除確認アクションを送信
@@ -356,7 +370,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 削除確認アクションを送信
@@ -385,7 +400,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 画像読み込みアクションを送信
@@ -428,7 +444,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 画像読み込みアクションを送信
@@ -451,7 +468,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 画像読み込みアクションを送信
@@ -476,7 +494,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 写真読み込みアクションを送信
@@ -505,7 +524,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 写真読み込みアクションを送信
@@ -546,7 +566,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 写真選択アクションを送信
@@ -596,7 +617,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 写真選択アクションを送信
@@ -637,7 +659,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 写真選択アクションを送信
@@ -693,7 +716,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 写真アップロードを実行
@@ -738,7 +762,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 実行
@@ -762,7 +787,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 実行
@@ -800,7 +826,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 写真を事前に読み込む
@@ -859,7 +886,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       currentUserClient: mockCurrentUserClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
     )
 
     // 写真を事前に読み込む
@@ -889,5 +917,136 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     XCTAssertEqual(mockPhotoClient.fetchPhotosCallCount, 1)
     XCTAssertEqual(store.photos.count, 1)
     XCTAssertEqual(store.photos.first?.id, testPhoto2.id)
+  }
+
+  // MARK: - 足跡機能のテスト
+
+  func testGetVisitorCountSuccessfully() async throws {
+    // 訪問者数を設定
+    mockFootprintClient.getVisitorCountResult = 10
+
+    // ストアの作成
+    let store = createStore(isOrganizer: true)
+
+    // 足跡データを読み込む
+    store.send(ExhibitionDetailStore.Action.loadFootprints)
+
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // 訪問者数が正しく設定されているか確認
+    XCTAssertEqual(store.visitorCount, 10, "訪問者数が正しく設定されているはずです")
+    XCTAssertTrue(mockFootprintClient.getVisitorCountWasCalled, "getVisitorCountが呼ばれているはずです")
+    XCTAssertEqual(
+      mockFootprintClient.getVisitorCountExhibitionId, "test-exhibition-id", "正しい展示会IDが渡されているはずです")
+  }
+
+  func testGetVisitorCountHandlesError() async throws {
+    // エラーを設定
+    mockFootprintClient.getVisitorCountError = NSError(
+      domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Visitor count error"])
+
+    // ストアの作成
+    let store = createStore(isOrganizer: true)
+
+    // 足跡データを読み込む
+    store.send(ExhibitionDetailStore.Action.loadFootprints)
+
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // エラーが設定されていることを確認
+    XCTAssertNotNil(store.error, "エラーが設定されているはずです")
+    XCTAssertTrue(mockFootprintClient.getVisitorCountWasCalled, "getVisitorCountが呼ばれているはずです")
+    if let error = store.error {
+      XCTAssertTrue(
+        error.localizedDescription.contains("Visitor count error"), "エラーメッセージが正しく設定されているはずです")
+    }
+    // 訪問者数がデフォルト値のままであることを確認
+    XCTAssertEqual(store.visitorCount, 0, "エラー時は訪問者数がデフォルト値のままであるはずです")
+  }
+
+  func testToggleFootprintSuccessfully() async throws {
+    // 現在のユーザーを設定
+    mockCurrentUserClient.mockUser = User(uid: "test-user-id")
+
+    // toggleFootprintの結果を設定（足跡追加成功）
+    mockFootprintClient.toggleFootprintResult = true
+
+    // ストアの作成
+    let store = createStore(withUserID: "test-user-id")
+
+    // 足跡をトグルする
+    store.send(ExhibitionDetailStore.Action.toggleFootprint)
+
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // メソッドが呼ばれたことを確認
+    XCTAssertTrue(mockFootprintClient.toggleFootprintWasCalled, "toggleFootprintが呼ばれているはずです")
+    XCTAssertEqual(
+      mockFootprintClient.toggleFootprintExhibitionId, "test-exhibition-id", "正しい展示会IDが渡されているはずです")
+    XCTAssertEqual(
+      mockFootprintClient.toggleFootprintUserId, "test-user-id", "正しいユーザーIDが渡されているはずです")
+
+    // 足跡の状態が更新されていることを確認
+    XCTAssertTrue(store.hasAddedFootprint, "足跡の状態が更新されているはずです")
+    XCTAssertFalse(store.isTogglingFootprint, "トグル処理が完了しているはずです")
+  }
+
+  func testToggleFootprintHandlesError() async throws {
+    // 現在のユーザーを設定
+    mockCurrentUserClient.mockUser = User(uid: "test-user-id")
+
+    // エラーを設定
+    mockFootprintClient.toggleFootprintError = NSError(
+      domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Toggle footprint error"])
+
+    // ストアの作成
+    let store = createStore()
+
+    // 足跡をトグルする
+    store.send(ExhibitionDetailStore.Action.toggleFootprint)
+
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+
+    // メソッドが呼ばれたことを確認
+    XCTAssertTrue(mockFootprintClient.toggleFootprintWasCalled, "toggleFootprintが呼ばれているはずです")
+
+    // エラーが設定されていることを確認
+    XCTAssertNotNil(store.error, "エラーが設定されているはずです")
+    if let error = store.error {
+      XCTAssertTrue(
+        error.localizedDescription.contains("Toggle footprint error"), "エラーメッセージが正しく設定されているはずです")
+    }
+
+    // トグル処理が完了していることを確認
+    XCTAssertFalse(store.isTogglingFootprint, "トグル処理が完了しているはずです")
+  }
+
+  // MARK: - テスト簡略化のためのヘルパーメソッド
+
+  // テストの簡略化のために使用するヘルパーメソッド
+  private func createStore(isOrganizer: Bool = false, withUserID userID: String? = nil)
+    -> ExhibitionDetailStore
+  {
+    if isOrganizer {
+      mockCurrentUserClient.mockUser = User(uid: "organizer-id")
+    } else if let userID = userID {
+      mockCurrentUserClient.mockUser = User(uid: userID)
+    } else {
+      mockCurrentUserClient.mockUser = User(uid: "different-user-id")
+    }
+
+    return ExhibitionDetailStore(
+      exhibition: testExhibition,
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient,
+      footprintClient: mockFootprintClient
+    )
   }
 }

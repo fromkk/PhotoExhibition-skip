@@ -32,8 +32,10 @@ final class MockPhotoClient: PhotoClient {
 
   // deletePhoto()の呼び出し追跡
   var deletePhotoWasCalled: Bool = false
+  var isDeletePhotoCalled: Bool { deletePhotoWasCalled }
   var deletePhotoExhibitionId: String? = nil
   var deletePhotoId: String? = nil
+  var shouldFailDelete: Bool = false
 
   // updatePhotoSort()の呼び出し追跡
   var updatePhotoSortWasCalled: Bool = false
@@ -123,7 +125,7 @@ final class MockPhotoClient: PhotoClient {
     // 非同期処理をシミュレート
     await Task.yield()
 
-    if !shouldSucceed || shouldThrowError, let error = errorToThrow {
+    if shouldFailDelete || !shouldSucceed || shouldThrowError, let error = errorToThrow {
       throw error
     }
   }

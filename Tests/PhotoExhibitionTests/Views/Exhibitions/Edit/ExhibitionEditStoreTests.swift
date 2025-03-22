@@ -278,8 +278,9 @@ final class ExhibitionEditStoreTests: XCTestCase {
 
   // MARK: - 保存機能のテスト
 
-  func testSaveActionWithEmptyNameShowsError() async {
-    // ストアの作成
+  func testSaveActionWithEmptyNameShowsError() async throws {
+    // Arrange
+    let mockUser = User(uid: "test-user-id")
     let store = ExhibitionEditStore(
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
@@ -287,24 +288,27 @@ final class ExhibitionEditStoreTests: XCTestCase {
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache
     )
-
-    // 名前を空に設定
+    mockCurrentUserClient.mockUser = mockUser
     store.name = ""
 
-    // 保存アクションを送信
+    // Act
     store.send(ExhibitionEditStore.Action.saveButtonTapped)
 
-    // エラーが表示されることを確認
-    XCTAssertEqual(store.error, ExhibitionEditError.emptyName)
-    XCTAssertTrue(store.showError)
-    XCTAssertFalse(store.shouldDismiss)
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    // Assert
+    XCTAssertNotNil(store.error, "エラーが設定されるべきです")
+    if let error = store.error {
+      XCTAssertTrue(
+        error.localizedDescription.contains("Please enter exhibition name"), "エラーメッセージが正しくありません")
+    }
+    XCTAssertTrue(store.showError, "エラーが表示されるべきです")
+    XCTAssertFalse(store.shouldDismiss, "エラー時に画面が閉じられるべきではありません")
   }
 
-  func testSaveActionWithNoUserShowsError() async {
-    // 現在のユーザーをnilに設定
-    mockCurrentUserClient.mockUser = nil
-
-    // ストアの作成
+  func testSaveActionWithNoUserShowsError() async throws {
+    // Arrange
     let store = ExhibitionEditStore(
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
@@ -312,17 +316,22 @@ final class ExhibitionEditStoreTests: XCTestCase {
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache
     )
+    mockCurrentUserClient.mockUser = nil
+    store.name = "Exhibition"
 
-    // 名前を設定
-    store.name = "Test Exhibition"
-
-    // 保存アクションを送信
+    // Act
     store.send(ExhibitionEditStore.Action.saveButtonTapped)
 
-    // エラーが表示されることを確認
-    XCTAssertEqual(store.error, ExhibitionEditError.userNotLoggedIn)
-    XCTAssertTrue(store.showError)
-    XCTAssertFalse(store.shouldDismiss)
+    // 非同期処理の完了を待つ
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    // Assert
+    XCTAssertNotNil(store.error, "エラーが設定されるべきです")
+    if let error = store.error {
+      XCTAssertTrue(error.localizedDescription.contains("Please login"), "エラーメッセージが正しくありません")
+    }
+    XCTAssertTrue(store.showError, "エラーが表示されるべきです")
+    XCTAssertFalse(store.shouldDismiss, "エラー時に画面が閉じられるべきではありません")
   }
 
   func testSaveActionInCreateModeCallsCreateOnExhibitionsClient() async {
@@ -495,16 +504,14 @@ final class ExhibitionEditStoreTests: XCTestCase {
     XCTAssertTrue(store.shouldDismiss)
   }
 
-  func testSaveActionHandlesError() async {
-    // 現在のユーザーを設定
-    mockCurrentUserClient.mockUser = User(uid: "test-user-id")
-
-    // 保存失敗を設定
+  func testSaveActionHandlesError() async throws {
+    // Arrange
+    let mockUser = User(uid: "test-user-id")
+    mockCurrentUserClient.mockUser = mockUser
     mockExhibitionsClient.shouldSucceed = false
     mockExhibitionsClient.errorToThrow = NSError(
-      domain: "test", code: 123, userInfo: [NSLocalizedDescriptionKey: "Save error"])
+      domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Save error"])
 
-    // ストアの作成
     let store = ExhibitionEditStore(
       mode: ExhibitionEditStore.Mode.create,
       currentUserClient: mockCurrentUserClient,
@@ -512,28 +519,21 @@ final class ExhibitionEditStoreTests: XCTestCase {
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache
     )
+    store.name = "Test Exhibition"
 
-    // 展示会情報を設定
-    store.name = "New Exhibition"
-
-    // 保存アクションを送信
+    // Act
     store.send(ExhibitionEditStore.Action.saveButtonTapped)
 
     // 非同期処理の完了を待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)
+    try await Task.sleep(nanoseconds: 100_000_000)
 
-    // エラーが設定されることを確認
-    XCTAssertNotNil(store.error)
-    if let error = store.error, case ExhibitionEditError.saveFailed(let message) = error {
-      XCTAssertEqual(message, "Save error")
-    } else {
-      XCTFail("Expected saveFailed error")
+    // Assert
+    XCTAssertNotNil(store.error, "エラーが設定されるべきです")
+    if let error = store.error {
+      XCTAssertTrue(error.localizedDescription.contains("Save error"), "エラーメッセージが正しくありません")
     }
-
-    XCTAssertTrue(store.showError)
-
-    // エラー時はshouldDismissがfalseのままであることを確認
-    XCTAssertFalse(store.shouldDismiss)
+    XCTAssertTrue(store.showError, "エラーが表示されるべきです")
+    XCTAssertFalse(store.shouldDismiss, "エラー時に画面が閉じられるべきではありません")
   }
 
   func testSaveButtonTappedCallsDelegate() async throws {

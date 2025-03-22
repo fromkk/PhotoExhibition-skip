@@ -141,20 +141,26 @@ final class PhotoDetailStoreTests: XCTestCase {
 
   func testDeletePhotoFailure() async throws {
     // 準備
-    mockPhotoClient.shouldSucceed = false
-    mockPhotoClient.errorToThrow = NSError(domain: "test", code: 1, userInfo: nil)
+    mockPhotoClient.shouldFailDelete = true
+    mockPhotoClient.errorToThrow = NSError(
+      domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Delete error"])
 
     // 実行
     store.send(PhotoDetailStore.Action.deleteButtonTapped)
+    XCTAssertTrue(store.showDeleteConfirmation)
+
     store.send(PhotoDetailStore.Action.confirmDeletePhoto)
 
     // 非同期処理の完了を待つ
     try await Task.sleep(nanoseconds: 100_000_000)
 
     // 検証
-    XCTAssertTrue(mockPhotoClient.deletePhotoWasCalled)
-    XCTAssertNotNil(store.error)
-    XCTAssertFalse(store.isDeleted)
+    XCTAssertTrue(mockPhotoClient.deletePhotoWasCalled, "削除処理が呼ばれるべきです")
+    XCTAssertNotNil(store.error, "エラーが設定されるべきです")
+    if let error = store.error {
+      XCTAssertTrue(error.localizedDescription.contains("Delete error"), "エラーメッセージが正しくありません")
+    }
+    XCTAssertFalse(store.isDeleted, "削除失敗時はisDeletedがfalseのままであるべきです")
   }
 
   func testUpdatePhotoCallsDelegate() async throws {

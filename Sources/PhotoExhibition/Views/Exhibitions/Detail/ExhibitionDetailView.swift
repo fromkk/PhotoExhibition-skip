@@ -477,6 +477,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
         visitorCount = try await footprintClient.getVisitorCount(exhibitionId: exhibition.id)
       } catch {
         logger.error("Failed to load footprints: \(error.localizedDescription)")
+        self.error = error
       }
 
       isLoadingFootprints = false
@@ -508,6 +509,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
         }
       } catch {
         logger.error("Failed to toggle footprint: \(error.localizedDescription)")
+        self.error = error
       }
 
       isTogglingFootprint = false
