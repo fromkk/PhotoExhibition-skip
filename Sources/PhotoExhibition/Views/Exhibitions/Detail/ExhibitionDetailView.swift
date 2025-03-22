@@ -37,6 +37,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case reloadExhibition
     case reportButtonTapped
     case moveCompleted
+    case showOrganizerProfile
   }
 
   var exhibition: Exhibition
@@ -63,6 +64,10 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
   // PhotoDetailStoreを保持
   private(set) var photoDetailStore: PhotoDetailStore?
+
+  // 主催者プロフィール
+  private(set) var organizerProfileStore: OrganizerProfileStore?
+  var isOrganizerProfileShown: Bool = false
 
   var showReport: Bool = false
   private(set) var reportStore: ReportStore?
@@ -165,6 +170,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       showReport = true
     case .moveCompleted:
       movePhoto()
+    case .showOrganizerProfile:
+      showOrganizerProfile()
     }
   }
 
@@ -383,6 +390,19 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       }
     }
   }
+
+  private func showOrganizerProfile() {
+    organizerProfileStore = OrganizerProfileStore(
+      organizer: exhibition.organizer,
+      exhibitionsClient: exhibitionsClient,
+      imageCache: imageCache,
+      analyticsClient: analyticsClient,
+      photoClient: photoClient,
+      currentUserClient: currentUserClient,
+      storageClient: storageClient
+    )
+    isOrganizerProfileShown = true
+  }
 }
 
 #if !SKIP
@@ -521,12 +541,17 @@ struct ExhibitionDetailView: View {
             // Organizer information
             if let name = store.exhibition.organizer.name {
               Divider()
-              VStack(alignment: .leading, spacing: 8) {
-                Label("Organizer", systemImage: SystemImageMapping.getIconName(from: "person"))
-                  .font(.headline)
-                Text(name)
-                  .font(.subheadline)
+              Button {
+                store.send(.showOrganizerProfile)
+              } label: {
+                VStack(alignment: .leading, spacing: 8) {
+                  Label("Organizer", systemImage: SystemImageMapping.getIconName(from: "person"))
+                    .font(.headline)
+                  Text(name)
+                    .font(.subheadline)
+                }
               }
+              .buttonStyle(.plain)
             }
 
             // Photos section
@@ -648,6 +673,11 @@ struct ExhibitionDetailView: View {
     .onChange(of: store.shouldDismiss) { _, shouldDismiss in
       if shouldDismiss {
         dismiss()
+      }
+    }
+    .navigationDestination(isPresented: $store.isOrganizerProfileShown) {
+      if let organizerProfileStore = store.organizerProfileStore {
+        OrganizerProfileView(store: organizerProfileStore)
       }
     }
     .task {

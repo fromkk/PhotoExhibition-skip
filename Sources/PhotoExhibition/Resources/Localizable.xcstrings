@@ -398,6 +398,9 @@
         }
       }
     },
+    "Organizer Profile" : {
+
+    },
     "Password" : {
       "localizations" : {
         "ja" : {
@@ -678,6 +681,9 @@
           }
         }
       }
+    },
+    "This organizer doesn't have any published exhibitions." : {
+
     },
     "Title" : {
       "localizations" : {

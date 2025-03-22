@@ -582,7 +582,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     XCTAssertNotNil(store.uploadedPhoto, "Uploaded photo should be set")
   }
 
-  func testUploadPhotoDoesNothingWhenNotOrganizer() async throws  {
+  func testUploadPhotoDoesNothingWhenNotOrganizer() async throws {
     // 現在のユーザーを主催者以外に設定
     mockCurrentUserClient.mockUser = User(uid: "different-user-id")
 
