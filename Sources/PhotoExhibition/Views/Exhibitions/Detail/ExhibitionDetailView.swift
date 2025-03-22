@@ -39,6 +39,10 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case moveCompleted
     case showOrganizerProfile
     case dismissError
+    case recordFootprint
+    case loadFootprints
+    case loadMoreFootprints
+    case toggleFootprint
   }
 
   var exhibition: Exhibition
@@ -64,6 +68,16 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var uploadedPhoto: Photo? = nil
   var showPhotoEditSheet: Bool = false
 
+  // 足跡関連
+  var footprints: [Footprint] = []
+  var isLoadingFootprints: Bool = false
+  var footprintNextCursor: String? = nil
+  var hasMoreFootprints: Bool = true
+  var showFootprints: Bool = false
+  var hasAddedFootprint: Bool = false
+  var visitorCount: Int = 0
+  var isTogglingFootprint: Bool = false
+
   // PhotoDetailStoreを保持
   private(set) var photoDetailStore: PhotoDetailStore?
 
@@ -80,6 +94,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   let imageCache: any StorageImageCacheProtocol
   let photoClient: any PhotoClient
   private let analyticsClient: any AnalyticsClient
+  private let footprintClient: any FootprintClient
 
   var exhibitionEditStore: ExhibitionEditStore?
 
@@ -90,7 +105,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     storageClient: any StorageClient = DefaultStorageClient(),
     imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
     photoClient: any PhotoClient = DefaultPhotoClient(),
-    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient(),
+    footprintClient: any FootprintClient = DefaultFootprintClient()
   ) {
     self.exhibition = exhibition
     self.exhibitionsClient = exhibitionsClient
@@ -99,10 +115,14 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     self.imageCache = imageCache
     self.photoClient = photoClient
     self.analyticsClient = analyticsClient
+    self.footprintClient = footprintClient
 
     // Check if current user is the organizer
     if let currentUser = currentUserClient.currentUser() {
       self.isOrganizer = currentUser.uid == exhibition.organizer.id
+
+      // 足跡の状態を確認
+      checkFootprintStatus()
     }
   }
 
@@ -177,14 +197,44 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case .dismissError:
       error = nil
       isErrorAlertPresented = false
+    case .recordFootprint:
+      recordFootprint()
+    case .loadFootprints:
+      loadFootprints()
+    case .loadMoreFootprints:
+      loadMoreFootprints()
+    case .toggleFootprint:
+      toggleFootprint()
     }
   }
 
   private func checkIfUserIsOrganizer() {
     if let currentUser = currentUserClient.currentUser() {
       isOrganizer = currentUser.uid == exhibition.organizer.id
+
+      // 足跡の状態を確認
+      checkFootprintStatus()
     } else {
       isOrganizer = false
+    }
+  }
+
+  private func checkFootprintStatus() {
+    Task {
+      do {
+        // 訪問者数を取得
+        visitorCount = try await footprintClient.getVisitorCount(exhibitionId: exhibition.id)
+
+        // 現在のユーザーが足跡を残しているか確認
+        if let currentUser = currentUserClient.currentUser() {
+          hasAddedFootprint = try await footprintClient.hasAddedFootprint(
+            exhibitionId: exhibition.id,
+            userId: currentUser.uid
+          )
+        }
+      } catch {
+        logger.error("Failed to check footprint status: \(error.localizedDescription)")
+      }
     }
   }
 
@@ -408,6 +458,81 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     )
     isOrganizerProfileShown = true
   }
+
+  private func recordFootprint() {
+    // 自動的に足跡を記録する機能は使わないため、空のメソッドにします
+  }
+
+  private func loadFootprints() {
+    guard isOrganizer else { return }
+
+    isLoadingFootprints = true
+    footprints = []
+    footprintNextCursor = nil
+    hasMoreFootprints = true
+
+    Task {
+      do {
+        let result = try await footprintClient.fetchFootprints(
+          exhibitionId: exhibition.id, cursor: nil)
+        footprints = result.footprints
+        footprintNextCursor = result.nextCursor
+        hasMoreFootprints = result.nextCursor != nil
+      } catch {
+        logger.error("Failed to load footprints: \(error.localizedDescription)")
+      }
+
+      isLoadingFootprints = false
+    }
+  }
+
+  private func loadMoreFootprints() {
+    guard isOrganizer, !isLoadingFootprints, hasMoreFootprints, let cursor = footprintNextCursor
+    else { return }
+
+    isLoadingFootprints = true
+
+    Task {
+      do {
+        let result = try await footprintClient.fetchFootprints(
+          exhibitionId: exhibition.id, cursor: cursor)
+        footprints.append(contentsOf: result.footprints)
+        footprintNextCursor = result.nextCursor
+        hasMoreFootprints = result.nextCursor != nil
+      } catch {
+        logger.error("Failed to load more footprints: \(error.localizedDescription)")
+      }
+
+      isLoadingFootprints = false
+    }
+  }
+
+  private func toggleFootprint() {
+    guard let currentUser = currentUserClient.currentUser() else { return }
+
+    isTogglingFootprint = true
+
+    Task {
+      do {
+        hasAddedFootprint = try await footprintClient.toggleFootprint(
+          exhibitionId: exhibition.id,
+          userId: currentUser.uid
+        )
+
+        // 足跡の状態が変わったので、訪問者数を更新
+        visitorCount = try await footprintClient.getVisitorCount(exhibitionId: exhibition.id)
+
+        // 主催者の場合は足跡リストも更新
+        if isOrganizer {
+          loadFootprints()
+        }
+      } catch {
+        logger.error("Failed to toggle footprint: \(error.localizedDescription)")
+      }
+
+      isTogglingFootprint = false
+    }
+  }
 }
 
 #if !SKIP
@@ -559,6 +684,129 @@ struct ExhibitionDetailView: View {
               .buttonStyle(.plain)
             }
 
+            // Footprints section (for organizer only)
+            if store.isOrganizer {
+              Divider()
+
+              VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                  Label(
+                    "Footprints",
+                    systemImage: SystemImageMapping.getIconName(from: "person.3")
+                  )
+                  .font(.headline)
+
+                  Spacer()
+
+                  Button {
+                    #if !SKIP
+                      store.showFootprints.toggle()
+                    #else
+                      store.showFootprints = !store.showFootprints
+                    #endif
+                  } label: {
+                    Image(
+                      systemName: SystemImageMapping.getIconName(
+                        from: store.showFootprints ? "chevron.up" : "chevron.down"))
+                  }
+                  .buttonStyle(.plain)
+                }
+
+                if store.showFootprints {
+                  if store.isLoadingFootprints && store.footprints.isEmpty {
+                    ProgressView()
+                      .frame(maxWidth: .infinity)
+                      .padding(.vertical, 8)
+                  } else if store.footprints.isEmpty {
+                    Text("No visitors yet")
+                      .font(.subheadline)
+                      .foregroundStyle(.secondary)
+                      .frame(maxWidth: .infinity, alignment: .center)
+                      .padding(.vertical, 8)
+                  } else {
+                    VStack(spacing: 0) {
+                      Text("\(store.footprints.count) visitors")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 4)
+
+                      ForEach(store.footprints) { footprint in
+                        FootprintView(footprint: footprint, imageCache: store.imageCache)
+
+                        if footprint.id != store.footprints.last?.id {
+                          Divider()
+                        }
+                      }
+
+                      if store.hasMoreFootprints {
+                        Button {
+                          store.send(.loadMoreFootprints)
+                        } label: {
+                          if store.isLoadingFootprints {
+                            ProgressView()
+                              .frame(maxWidth: .infinity)
+                              .padding(.vertical, 8)
+                          } else {
+                            Text("Load more")
+                              .frame(maxWidth: .infinity)
+                              .padding(.vertical, 8)
+                          }
+                        }
+                        .buttonStyle(.plain)
+                      }
+                    }
+                    .padding(.vertical, 4)
+                  }
+                }
+              }
+            } else {
+              // 一般ユーザー向けの足跡セクション
+              Divider()
+
+              VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                  Label(
+                    "Visitors",
+                    systemImage: SystemImageMapping.getIconName(from: "person.3")
+                  )
+                  .font(.headline)
+
+                  Spacer()
+
+                  Text("\(store.visitorCount) visitors")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                }
+
+                // 足跡の追加/削除ボタン
+                Button {
+                  store.send(.toggleFootprint)
+                } label: {
+                  HStack {
+                    Image(
+                      systemName: SystemImageMapping.getIconName(
+                        from: store.hasAddedFootprint ? "checkmark.circle.fill" : "plus.circle"))
+
+                    Text(store.hasAddedFootprint ? "Remove Footprint" : "Add Footprint")
+                      .font(.subheadline)
+                  }
+                  .frame(maxWidth: .infinity)
+                  .padding(.vertical, 8)
+                  .foregroundColor(store.hasAddedFootprint ? .accentColor : .primary)
+                  .background(Color.gray.opacity(0.1))
+                  .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                .disabled(store.isTogglingFootprint)
+                .overlay {
+                  if store.isTogglingFootprint {
+                    ProgressView()
+                  }
+                }
+              }
+            }
+
             // Photos section
             Divider()
             VStack(alignment: .leading, spacing: 12) {
@@ -689,6 +937,9 @@ struct ExhibitionDetailView: View {
       store.send(.checkPermissions)
       store.send(.loadCoverImage)
       store.send(.loadPhotos)
+      if store.isOrganizer {
+        store.send(.loadFootprints)
+      }
     }
     #if SKIP
       .withMediaPicker(
@@ -710,23 +961,23 @@ struct ExhibitionDetailView: View {
                 do {
                   if let data = try await item.loadTransferable(type: Data.self) {
                     #if !SKIP
-                    let ext: String
-                    switch data.imageFormat {
-                    case .gif:
-                      ext = "gif"
-                    case .jpeg:
-                      ext = "jpg"
-                    case .png:
-                      ext = "png"
-                    default:
-                      // サポートされていない画像形式のエラーを表示
-                      store.error = ImageFormatError.unknownImageFormat
-                      store.isErrorAlertPresented = true
-                      return
-                    }
+                      let ext: String
+                      switch data.imageFormat {
+                      case .gif:
+                        ext = "gif"
+                      case .jpeg:
+                        ext = "jpg"
+                      case .png:
+                        ext = "png"
+                      default:
+                        // サポートされていない画像形式のエラーを表示
+                        store.error = ImageFormatError.unknownImageFormat
+                        store.isErrorAlertPresented = true
+                        return
+                      }
                     #else
-                    // Skip環境では対応しない（拡張子の処理はSkipKit内で行われる）
-                    let ext = "jpg"
+                      // Skip環境では対応しない（拡張子の処理はSkipKit内で行われる）
+                      let ext = "jpg"
                     #endif
                     let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
                       UUID().uuidString + "." + ext)

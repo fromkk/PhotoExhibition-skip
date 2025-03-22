@@ -225,7 +225,6 @@ struct ProfileSetupView: View {
                 Task {
                   do {
                     if let data = try await item.loadTransferable(type: Data.self) {
-                      #if !SKIP
                       let ext: String
                       switch data.imageFormat {
                       case .gif:
@@ -240,10 +239,6 @@ struct ProfileSetupView: View {
                         store.isErrorAlertPresented = true
                         return
                       }
-                      #else
-                      // Skip環境では対応しない（拡張子の処理はSkipKit内で行われる）
-                      let ext = "jpg"
-                      #endif
                       let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
                         UUID().uuidString + "." + ext)
                       try data.write(to: tempURL)

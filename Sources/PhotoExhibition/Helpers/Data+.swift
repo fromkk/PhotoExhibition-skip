@@ -13,7 +13,8 @@ import Foundation
     var errorDescription: String? {
       switch self {
       case .unknownImageFormat:
-        return String(localized: "Unsupported image format. Please select a JPEG, PNG, or GIF image.")
+        return String(
+          localized: "Unsupported image format. Please select a JPEG, PNG, or GIF image.")
       }
     }
   }

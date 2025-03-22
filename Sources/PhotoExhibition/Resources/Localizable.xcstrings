@@ -17,6 +17,9 @@
         }
       }
     },
+    "%lld visitors" : {
+
+    },
     "Add" : {
       "localizations" : {
         "ja" : {
@@ -36,6 +39,9 @@
           }
         }
       }
+    },
+    "Add Footprint" : {
+
     },
     "Are you sure you want to delete this exhibition? This action cannot be undone." : {
       "localizations" : {
@@ -298,6 +304,12 @@
         }
       }
     },
+    "Footprints" : {
+
+    },
+    "Load more" : {
+
+    },
     "Logout" : {
       "localizations" : {
         "ja" : {
@@ -367,6 +379,9 @@
           }
         }
       }
+    },
+    "No visitors yet" : {
+
     },
     "Not set" : {
       "localizations" : {
@@ -528,6 +543,9 @@
           }
         }
       }
+    },
+    "Remove Footprint" : {
+
     },
     "Remove Icon" : {
       "localizations" : {
@@ -709,6 +727,9 @@
         }
       }
     },
+    "Unknown User" : {
+
+    },
     "Unsupported image format. Please select a JPEG, PNG, or GIF image." : {
       "localizations" : {
         "ja" : {
@@ -728,6 +749,9 @@
           }
         }
       }
+    },
+    "Visitors" : {
+
     },
     "Yes" : {
       "localizations" : {

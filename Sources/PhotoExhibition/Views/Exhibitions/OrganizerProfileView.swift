@@ -70,11 +70,13 @@ struct OrganizerProfileView: View {
                       .frame(width: 100, height: 100)
                       .clipShape(Circle())
                   case .failure:
-                    Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
-                      .resizable()
-                      .aspectRatio(contentMode: .fit)
-                      .frame(width: 100, height: 100)
-                      .foregroundStyle(.gray)
+                    Image(
+                      systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill")
+                    )
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 100, height: 100)
+                    .foregroundStyle(.gray)
                   @unknown default:
                     EmptyView()
                   }
@@ -164,10 +166,10 @@ struct OrganizerExhibitionRow: View {
               } else {
                 #if SKIP
                   Image("photo", bundle: .module)
-                  .foregroundStyle(.gray)
+                    .foregroundStyle(.gray)
                 #else
-                Image(systemName: "photo")
-                  .foregroundStyle(.gray)
+                  Image(systemName: "photo")
+                    .foregroundStyle(.gray)
                 #endif
               }
             }
