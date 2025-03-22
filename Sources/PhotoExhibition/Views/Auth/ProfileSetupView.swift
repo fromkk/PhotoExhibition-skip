@@ -1,3 +1,4 @@
+import OSLog
 import SkipKit
 import SwiftUI
 
@@ -9,6 +10,8 @@ import SwiftUI
 #if canImport(Observation)
   import Observation
 #endif
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ProfileSetupStore")
 
 @MainActor
 protocol ProfileSetupStoreDelegate: AnyObject {
@@ -138,10 +141,6 @@ struct ProfileSetupView: View {
 
   var body: some View {
     VStack(spacing: 32) {
-      Text("Set Up Profile")
-        .font(.title)
-        .padding(.bottom, 8)
-
       Text("Please set a username and icon to continue using the app")
         .font(.subheadline)
         .multilineTextAlignment(.center)
@@ -191,8 +190,9 @@ struct ProfileSetupView: View {
             Button(role: .destructive) {
               store.send(.removeIcon)
             } label: {
-              Text("Remove Icon")
+              Image(systemName: SystemImageMapping.getIconName(from: "trash"))
             }
+            .accessibilityLabel(Text("Remove Icon"))
           }
         }
       }
@@ -213,15 +213,26 @@ struct ProfileSetupView: View {
             set: { item in
               if let item = item {
                 Task {
-                  if let data = try? await item.loadTransferable(type: Data.self),
-                    let image = UIImage(data: data)
-                  {
-                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
-                      UUID().uuidString + ".jpg")
-                    if let imageData = image.jpegData(compressionQuality: 0.8) {
-                      try? imageData.write(to: tempURL)
+                  do {
+                    if let data = try await item.loadTransferable(type: Data.self) {
+                      let ext: String
+                      switch data.imageFormat {
+                      case .gif:
+                        ext = "git"
+                      case .jpeg:
+                        ext = "jpg"
+                      case .png:
+                        ext = "png"
+                      default:
+                        throw ImageFormatError.unknownImageFormat
+                      }
+                      let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
+                        UUID().uuidString + ext)
+                      try data.write(to: tempURL)
                       store.send(.iconSelected(tempURL))
                     }
+                  } catch {
+                    logger.error("error \(error.localizedDescription)")
                   }
                 }
               }

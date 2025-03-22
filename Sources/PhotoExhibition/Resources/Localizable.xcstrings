@@ -28,14 +28,21 @@
       }
     },
     "Add Exhibition" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示を追加"
+          }
+        }
+      }
     },
     "Are you sure you want to delete this exhibition? This action cannot be undone." : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この展示会を削除してもよろしいですか？この操作は元に戻せません。"
+            "value" : "この展示を削除してもよろしいですか？この操作は元に戻せません。"
           }
         }
       }
@@ -115,17 +122,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新しい展示会を作成"
-          }
-        }
-      }
-    },
-    "Create new exhibition" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新しい展示会を作成"
+            "value" : "新しい展示を作成"
           }
         }
       }
@@ -155,7 +152,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "展示会を削除"
+            "value" : "展示を削除"
           }
         }
       }
@@ -276,7 +273,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "展示会名"
+            "value" : "展示名"
           }
         }
       }
@@ -286,7 +283,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "展示会場"
+            "value" : "展示一覧"
           }
         }
       }
@@ -326,7 +323,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "自分の展示会"
+            "value" : "自分の展示"
           }
         }
       }
@@ -336,7 +333,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新規展示会"
+            "value" : "新規作成"
           }
         }
       }
@@ -356,7 +353,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "展示会がありません"
+            "value" : "展示がありません"
           }
         }
       }
@@ -436,7 +433,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "展示会名を入力してください"
+            "value" : "展示名を入力してください"
           }
         }
       }
@@ -547,7 +544,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "展示会を報告"
+            "value" : "展示を報告"
           }
         }
       }
@@ -608,16 +605,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信"
-          }
-        }
-      }
-    },
-    "Set Up Profile" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プロフィールを設定"
           }
         }
       }
@@ -727,7 +714,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まだ展示会を作成していません"
+            "value" : "まだ展示を作成していません"
           }
         }
       }

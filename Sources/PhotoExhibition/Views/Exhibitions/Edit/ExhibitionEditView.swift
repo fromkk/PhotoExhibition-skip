@@ -305,15 +305,26 @@ struct ExhibitionEditView: View {
                   set: { item in
                     if let item = item {
                       Task {
-                        if let data = try? await item.loadTransferable(type: Data.self),
-                          let image = UIImage(data: data)
-                        {
-                          let tempURL = FileManager.default.temporaryDirectory
-                            .appendingPathComponent(UUID().uuidString + ".jpg")
-                          if let imageData = image.jpegData(compressionQuality: 0.8) {
-                            try? imageData.write(to: tempURL)
+                        do {
+                          if let data = try await item.loadTransferable(type: Data.self) {
+                            let ext: String
+                            switch data.imageFormat {
+                            case .gif:
+                              ext = "git"
+                            case .jpeg:
+                              ext = "jpg"
+                            case .png:
+                              ext = "png"
+                            default:
+                              throw ImageFormatError.unknownImageFormat
+                            }
+                            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
+                              UUID().uuidString + ext)
+                            try data.write(to: tempURL)
                             store.pickedImageURL = tempURL
                           }
+                        } catch {
+                          logger.error("error \(error.localizedDescription)")
                         }
                       }
                     }
