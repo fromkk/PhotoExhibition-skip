@@ -18,7 +18,14 @@
       }
     },
     "%lld visitors" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 人の訪問者"
+          }
+        }
+      }
     },
     "Add" : {
       "localizations" : {
@@ -41,7 +48,14 @@
       }
     },
     "Add Footprint" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "足跡を追加"
+          }
+        }
+      }
     },
     "Are you sure you want to delete this exhibition? This action cannot be undone." : {
       "localizations" : {
@@ -305,10 +319,24 @@
       }
     },
     "Footprints" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "足跡"
+          }
+        }
+      }
     },
     "Load more" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "もっと読み込む"
+          }
+        }
+      }
     },
     "Logout" : {
       "localizations" : {
@@ -381,7 +409,14 @@
       }
     },
     "No visitors yet" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ訪問者がいません"
+          }
+        }
+      }
     },
     "Not set" : {
       "localizations" : {
@@ -545,7 +580,14 @@
       }
     },
     "Remove Footprint" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "足跡を削除"
+          }
+        }
+      }
     },
     "Remove Icon" : {
       "localizations" : {
@@ -728,7 +770,14 @@
       }
     },
     "Unknown User" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明なユーザー"
+          }
+        }
+      }
     },
     "Unsupported image format. Please select a JPEG, PNG, or GIF image." : {
       "localizations" : {
@@ -751,7 +800,14 @@
       }
     },
     "Visitors" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訪問者"
+          }
+        }
+      }
     },
     "Yes" : {
       "localizations" : {

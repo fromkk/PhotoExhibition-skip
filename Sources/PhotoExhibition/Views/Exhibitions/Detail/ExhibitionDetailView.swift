@@ -732,7 +732,7 @@ struct ExhibitionDetailView: View {
                         .padding(.vertical, 4)
 
                       ForEach(store.footprints) { footprint in
-                        FootprintView(footprint: footprint, imageCache: store.imageCache)
+                        MemberRowView(userId: footprint.userId)
 
                         if footprint.id != store.footprints.last?.id {
                           Divider()
