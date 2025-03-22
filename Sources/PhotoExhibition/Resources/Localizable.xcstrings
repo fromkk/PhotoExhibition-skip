@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld" : {
+
+    },
     "%lld / %lld" : {
       "localizations" : {
         "en" : {
@@ -13,6 +16,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "%lld visitors" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 人の訪問者"
           }
         }
       }
@@ -33,6 +46,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "展示を追加"
+          }
+        }
+      }
+    },
+    "Add Footprint" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "足跡を追加"
           }
         }
       }
@@ -298,6 +321,26 @@
         }
       }
     },
+    "Footprints" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "足跡"
+          }
+        }
+      }
+    },
+    "Load more" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "もっと読み込む"
+          }
+        }
+      }
+    },
     "Logout" : {
       "localizations" : {
         "ja" : {
@@ -364,6 +407,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "写真がまだありません"
+          }
+        }
+      }
+    },
+    "No visitors yet" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ訪問者がいません"
           }
         }
       }
@@ -525,6 +578,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "理由"
+          }
+        }
+      }
+    },
+    "Remove Footprint" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "足跡を削除"
           }
         }
       }
@@ -709,6 +772,16 @@
         }
       }
     },
+    "Unknown User" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明なユーザー"
+          }
+        }
+      }
+    },
     "Unsupported image format. Please select a JPEG, PNG, or GIF image." : {
       "localizations" : {
         "ja" : {
@@ -725,6 +798,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ユーザー名"
+          }
+        }
+      }
+    },
+    "Visitors" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訪問者"
           }
         }
       }

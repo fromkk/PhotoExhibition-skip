@@ -464,13 +464,13 @@ struct PhotoDetailView: View {
           // 画像がない場合のプレースホルダー
           #if SKIP
             Image("photo", bundle: .module)
-            .foregroundStyle(.white.opacity(0.5))
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .foregroundStyle(.white.opacity(0.5))
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
           #else
-          Image(systemName: "photo")
-            .font(.system(size: 50))
-            .foregroundStyle(.white.opacity(0.5))
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Image(systemName: "photo")
+              .font(.system(size: 50))
+              .foregroundStyle(.white.opacity(0.5))
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
           #endif
         }
 
