@@ -219,11 +219,12 @@ final class PhotoDetailStore: Store {
 
     let nextIndex = (currentPhotoIndex + 1) % photos.count
     currentPhotoIndex = nextIndex
+    imageURL = nil
 
     // 次の写真の画像を読み込む
+    isLoading = true
     Task {
       if let path = photos[nextIndex].imagePath {
-        isLoading = true
         do {
           imageURL = try await imageCache.getImageURL(for: path)
           // 写真閲覧イベントを送信
@@ -247,11 +248,12 @@ final class PhotoDetailStore: Store {
 
     let previousIndex = (currentPhotoIndex - 1 + photos.count) % photos.count
     currentPhotoIndex = previousIndex
+    imageURL = nil
+    isLoading = true
 
     // 前の写真の画像を読み込む
     Task {
       if let path = photos[previousIndex].imagePath {
-        isLoading = true
         do {
           imageURL = try await imageCache.getImageURL(for: path)
           // 写真閲覧イベントを送信
@@ -448,12 +450,8 @@ struct PhotoDetailView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-              if store.isLoading {
-                ProgressView()
-                  .frame(maxWidth: .infinity, maxHeight: .infinity)
-              } else {
-                Color.clear
-              }
+              ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             @unknown default:
               Color.clear
             }
