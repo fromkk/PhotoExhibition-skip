@@ -197,14 +197,14 @@ struct ProfileSetupView: View {
                 Image(systemName: SystemImageMapping.getIconName(from: "camera.circle.fill"))
                   .resizable()
                   .frame(width: 30, height: 30)
-                  .foregroundStyle(.blue)
-                  .background(Circle().fill(.white))
+                  .background(Circle().fill(Color("background", bundle: .module)))
                   .offset(x: 5, y: 5)
               }
             }
             .frame(width: 120, height: 120)
           }
         }
+        .buttonStyle(.plain)
         .accessibilityLabel(Text("Select Icon"))
 
         // アイコンが設定されているか選択されている場合のみ削除ボタンを表示
