@@ -158,51 +158,62 @@ struct ProfileSetupView: View {
 
       // アイコン表示とアイコン選択ボタン
       VStack(spacing: 16) {
-        ZStack {
-          Circle()
-            .fill(Color.gray.opacity(0.2))
-            .frame(width: 120, height: 120)
+        Button {
+          store.send(.selectIconButtonTapped)
+        } label: {
+          ZStack {
+            Circle()
+              .fill(Color.gray.opacity(0.2))
+              .frame(width: 120, height: 120)
 
-          if let iconURL = store.selectedIconURL ?? store.iconImageURL {
-            AsyncImage(url: iconURL) { image in
-              image
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 120, height: 120)
-                .clipShape(Circle())
-            } placeholder: {
+            if let iconURL = store.selectedIconURL ?? store.iconImageURL {
+              AsyncImage(url: iconURL) { image in
+                image
+                  .resizable()
+                  .aspectRatio(contentMode: .fill)
+                  .frame(width: 120, height: 120)
+                  .clipShape(Circle())
+              } placeholder: {
+                ProgressView()
+                  .frame(width: 120, height: 120)
+              }
+            } else if store.iconPath != nil {
+              // iconPathが存在するがURLがまだ取得できていない場合はローディングを表示
               ProgressView()
                 .frame(width: 120, height: 120)
+            } else {
+              Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 80, height: 80)
+                .foregroundStyle(Color.gray)
             }
-          } else if store.iconPath != nil {
-            // iconPathが存在するがURLがまだ取得できていない場合はローディングを表示
-            ProgressView()
-              .frame(width: 120, height: 120)
-          } else {
-            Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(width: 80, height: 80)
-              .foregroundStyle(Color.gray)
+
+            // カメラアイコンを右下に表示してタップ可能であることを明示
+            VStack {
+              Spacer()
+              HStack {
+                Spacer()
+                Image(systemName: SystemImageMapping.getIconName(from: "camera.circle.fill"))
+                  .resizable()
+                  .frame(width: 30, height: 30)
+                  .foregroundStyle(.blue)
+                  .background(Circle().fill(.white))
+                  .offset(x: 5, y: 5)
+              }
+            }
+            .frame(width: 120, height: 120)
           }
         }
+        .accessibilityLabel(Text("Select Icon"))
 
-        HStack(spacing: 20) {
-          Button {
-            store.send(.selectIconButtonTapped)
+        // アイコンが設定されているか選択されている場合のみ削除ボタンを表示
+        if store.selectedIconURL != nil || store.iconImageURL != nil {
+          Button(role: .destructive) {
+            store.send(.removeIcon)
           } label: {
-            Text("Select Icon")
-              .foregroundStyle(.blue)
-          }
-
-          // アイコンが設定されているか選択されている場合のみ削除ボタンを表示
-          if store.selectedIconURL != nil || store.iconImageURL != nil {
-            Button(role: .destructive) {
-              store.send(.removeIcon)
-            } label: {
-              Image(systemName: SystemImageMapping.getIconName(from: "trash"))
-            }
-            .accessibilityLabel(Text("Remove Icon"))
+            Label("Remove Icon", systemImage: SystemImageMapping.getIconName(from: "trash"))
+              .foregroundStyle(.red)
           }
         }
       }
