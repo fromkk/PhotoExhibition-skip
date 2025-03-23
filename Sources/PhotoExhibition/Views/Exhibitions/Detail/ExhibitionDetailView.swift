@@ -678,6 +678,7 @@ struct ExhibitionDetailView: View {
                     .font(.headline)
                   Text(name)
                     .font(.subheadline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
               }
               .buttonStyle(.plain)
