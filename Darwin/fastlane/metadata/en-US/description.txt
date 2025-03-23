@@ -1,1 +1,6 @@
-A great new app built with Skip!
+Exhivision is an “online exhibition space” designed especially for people who love taking and viewing photographs.
+
+Unlike social media, Exhivision allows you to purely focus on “photographs,” free from distractions and noise.
+If you’ve ever dreamed of holding your own photo exhibition, Exhivision makes it easy to create and host your personal exhibition.
+
+Even without physically visiting a gallery, anyone can easily participate in exhibitions from home or anywhere else, enjoying beautiful photographic works at their convenience.

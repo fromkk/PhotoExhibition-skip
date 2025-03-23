@@ -6,3 +6,15 @@ Dotenv.load '../../Skip.env'
 #app_identifier(ENV['PRODUCT_BUNDLE_IDENTIFIER'])
 
 # apple_id("my@email")
+
+# アプリのバンドルID
+app_identifier "me.fromkk.PhotoExhibition"
+
+# Apple ID 
+apple_id "iueokakkun@gmail.com"
+
+# Apple Developer PortalのチームID
+team_id "K84E4S7G4C"
+
+# App Store ConnectのチームID
+itc_team_id "606555"

@@ -80,6 +80,7 @@ Carthage/Build/
 **/fastlane/screenshots/**/*.png
 **/fastlane/metadata/android/*/images/**/*.png
 **/fastlane/test_output
+review_information/
 
 GoogleService-Info.plist
 google-services.json
