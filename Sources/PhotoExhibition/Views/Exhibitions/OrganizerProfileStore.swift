@@ -107,11 +107,10 @@ final class OrganizerProfileStore: Store {
 
     Task {
       do {
-        let result = try await exhibitionsClient.fetchMyExhibitions(
-          organizerID: organizer.id, cursor: nil)
+        let result = try await exhibitionsClient.fetchPublishedActiveExhibitions(
+          organizerID: organizer.id, now: Date(), cursor: nil)
 
-        // 公開済みの展示会のみをフィルター
-        exhibitions = result.exhibitions.filter { $0.status == .published }
+        exhibitions = result.exhibitions
         nextCursor = result.nextCursor
         hasMore = result.nextCursor != nil
       } catch {
@@ -129,12 +128,10 @@ final class OrganizerProfileStore: Store {
 
     Task {
       do {
-        let result = try await exhibitionsClient.fetchMyExhibitions(
-          organizerID: organizer.id, cursor: cursor)
+        let result = try await exhibitionsClient.fetchPublishedActiveExhibitions(
+          organizerID: organizer.id, now: Date(), cursor: cursor)
 
-        // 公開済みの展示会のみをフィルター
-        let published = result.exhibitions.filter { $0.status == .published }
-        exhibitions.append(contentsOf: published)
+        exhibitions.append(contentsOf: result.exhibitions)
         nextCursor = result.nextCursor
         hasMore = result.nextCursor != nil
       } catch {
