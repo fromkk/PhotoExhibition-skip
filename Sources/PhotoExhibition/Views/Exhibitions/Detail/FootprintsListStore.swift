@@ -20,10 +20,13 @@ final class FootprintsListStore: Store {
     case loadFootprints
     case loadMoreFootprints
     case closeButtonTapped
+    case userTapped(userId: String)
   }
 
   private let exhibitionId: String
   private let footprintClient: any FootprintClient
+  private let membersClient: any MembersClient
+  private let imageCache: any StorageImageCacheProtocol
 
   // 足跡関連
   var footprints: [Footprint] = []
@@ -32,15 +35,23 @@ final class FootprintsListStore: Store {
   var hasMoreFootprints: Bool = true
   var shouldDismiss: Bool = false
 
+  // 訪問者プロフィール表示関連
+  private(set) var memberProfileStore: OrganizerProfileStore?
+  var showMemberProfile: Bool = false
+
   weak var delegate: FootprintsListStoreDelegate?
 
   init(
     exhibitionId: String,
     footprintClient: any FootprintClient = DefaultFootprintClient(),
+    membersClient: any MembersClient = DefaultMembersClient(),
+    imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
     delegate: FootprintsListStoreDelegate? = nil
   ) {
     self.exhibitionId = exhibitionId
     self.footprintClient = footprintClient
+    self.membersClient = membersClient
+    self.imageCache = imageCache
     self.delegate = delegate
   }
 
@@ -53,6 +64,23 @@ final class FootprintsListStore: Store {
     case .closeButtonTapped:
       shouldDismiss = true
       delegate?.footprintsListDidClose()
+    case .userTapped(let userId):
+      showUserProfile(userId: userId)
+    }
+  }
+
+  private func showUserProfile(userId: String) {
+    Task {
+      do {
+        let userIds: [any Sendable] = [userId]
+        let members = try await membersClient.fetch(userIds)
+        if let member = members.first {
+          self.memberProfileStore = OrganizerProfileStore(organizer: member)
+          self.showMemberProfile = true
+        }
+      } catch {
+        logger.error("Failed to fetch member: \(error.localizedDescription)")
+      }
     }
   }
 

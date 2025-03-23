@@ -704,9 +704,15 @@ struct ExhibitionDetailView: View {
 
                     Spacer()
 
-                    Text(store.visitorCount > 0 ? "\(store.visitorCount)" : "No visitors yet")
-                      .font(.subheadline)
-                      .foregroundStyle(.secondary)
+                    if store.visitorCount > 0 {
+                      Text("\(store.visitorCount) visitors")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    } else {
+                      Text("No visitors yet")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    }
 
                     Image(systemName: SystemImageMapping.getIconName(from: "chevron.right"))
                       .font(.footnote)
@@ -971,7 +977,7 @@ struct ExhibitionDetailView: View {
     } message: {
       Text(store.error?.localizedDescription ?? "An error occurred")
     }
-    .sheet(isPresented: $store.isShowFootprintsList) {
+    .navigationDestination(isPresented: $store.isShowFootprintsList) {
       if let footprintsListStore = store.footprintsListStore {
         FootprintsListView(store: footprintsListStore)
       }
