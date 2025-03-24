@@ -4,6 +4,10 @@ import SwiftUI
   import Observation
 #endif
 
+#if !os(Android)
+import GoogleMobileAds
+#endif
+
 struct ExhibitionsView: View {
   @Bindable private var store: ExhibitionsStore
   init(store: ExhibitionsStore) {
@@ -12,7 +16,7 @@ struct ExhibitionsView: View {
 
   var body: some View {
     NavigationStack {
-      Group {
+      VStack(spacing: 8) {
         if store.isLoading && store.exhibitions.isEmpty {
           ProgressView()
         } else if store.exhibitions.isEmpty {
@@ -50,6 +54,10 @@ struct ExhibitionsView: View {
             store.send(.refresh)
           }
         }
+
+        #if !os(Android)
+        BannerContentView(adUnitId: Constants.adMobHomeFooterUnitID)
+        #endif
       }
       .navigationTitle(Text("Exhibitions"))
       .navigationDestination(isPresented: $store.isExhibitionDetailShown) {

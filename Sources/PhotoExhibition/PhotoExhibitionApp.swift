@@ -1,3 +1,6 @@
+#if !os(Android)
+import GoogleMobileAds
+#endif
 import Foundation
 import OSLog
 import SwiftUI
@@ -17,6 +20,9 @@ public struct PhotoExhibitionRootView: View {
   @ObservedObject var appDelegate = PhotoExhibitionAppDelegate.shared
 
   public init() {
+    #if !os(Android)
+    MobileAds.shared.start(completionHandler: nil)
+    #endif
   }
 
   public var body: some View {
