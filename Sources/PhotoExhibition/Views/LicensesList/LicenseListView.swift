@@ -43,6 +43,7 @@
       .task {
         store.send(.task)
       }
+      .navigationTitle(Text("Licenses"))
       .navigationDestination(isPresented: $store.isShowLicenseDetail) {
         if let store = store.detailStore {
           LicenseDetailView(store: store)
