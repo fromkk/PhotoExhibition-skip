@@ -21,7 +21,9 @@ let package = Package(
     .package(url: "https://source.skip.tools/skip-ui.git", from: "1.26.7"),
     .package(url: "https://source.skip.tools/skip-kit.git", from: "0.3.1"),
     .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.7.3"),
-    .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "12.2.0"),
+    .package(
+      url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+      from: "12.2.0"),
   ],
   targets: [
     .target(

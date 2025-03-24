@@ -5,7 +5,7 @@ import SwiftUI
 #endif
 
 #if !os(Android)
-import GoogleMobileAds
+  import GoogleMobileAds
 #endif
 
 struct ExhibitionsView: View {
@@ -56,7 +56,7 @@ struct ExhibitionsView: View {
         }
 
         #if !os(Android)
-        BannerContentView(adUnitId: Constants.adMobHomeFooterUnitID)
+          BannerContentView(adUnitId: Constants.adMobHomeFooterUnitID)
         #endif
       }
       .navigationTitle(Text("Exhibitions"))

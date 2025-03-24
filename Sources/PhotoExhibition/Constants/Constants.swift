@@ -9,8 +9,8 @@ enum Constants {
   static let hashTag: String = "#exhivision_app"
 
   #if DEBUG
-  static let adMobHomeFooterUnitID: String = "ca-app-pub-3940256099942544/2435281174"
+    static let adMobHomeFooterUnitID: String = "ca-app-pub-3940256099942544/2435281174"
   #else
-  static let adMobHomeFooterUnitID: String = "ca-app-pub-4938162641824294/4034601435"
+    static let adMobHomeFooterUnitID: String = "ca-app-pub-4938162641824294/4034601435"
   #endif
 }

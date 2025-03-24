@@ -14,7 +14,7 @@ struct RootView: View {
           }
         } else {
           // Display main screen (tab view)
-          TabView {
+          TabView(selection: $store.selectedTab) {
             if let exhibitionsStore = store.exhibitionsStore {
               NavigationStack {
                 ExhibitionsView(store: exhibitionsStore)
@@ -27,6 +27,7 @@ struct RootView: View {
                   Label("Exhibitions", systemImage: "photo")
                 #endif
               }
+              .tag(Tab.exhibitions)
             }
 
             if let settingsStore = store.settingsStore {
@@ -36,6 +37,7 @@ struct RootView: View {
               .tabItem {
                 Label("Settings", systemImage: SystemImageMapping.getIconName(from: "gear"))
               }
+              .tag(Tab.settings)
             }
           }
         }
@@ -46,6 +48,9 @@ struct RootView: View {
     .background(Color("background", bundle: .module))
     .task {
       store.send(.task)
+    }
+    .onOpenURL { url in
+      store.send(.handleUniversalLink(url))
     }
   }
 }

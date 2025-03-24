@@ -24,6 +24,7 @@ final class RootStore: Store {
     case task
     case signedIn(Member)
     case signedOut
+    case handleUniversalLink(URL)
   }
 
   private(set) var isSignedIn: Bool = false {
@@ -41,6 +42,7 @@ final class RootStore: Store {
   }
 
   var isProfileSetupShown: Bool = false
+  var selectedTab: Tab = .exhibitions
 
   private(set) var exhibitionsStore: ExhibitionsStore?
   private(set) var settingsStore: SettingsStore?
@@ -75,7 +77,26 @@ final class RootStore: Store {
       }
     case .signedOut:
       isSignedIn = false
+    case .handleUniversalLink(let url):
+      handleUniversalLink(url)
     }
+  }
+
+  private func handleUniversalLink(_ url: URL) {
+    guard isSignedIn else { return }
+
+    // URLのパスを解析
+    let pathComponents = url.pathComponents
+    guard pathComponents.count == 3 && pathComponents[1] == "exhibition" else { return }
+
+    // exhibitionIdを取得
+    let exhibitionId = pathComponents[2]
+
+    // 展示タブを選択
+    selectedTab = .exhibitions
+
+    // ExhibitionsStoreに展示会の表示を要求
+    exhibitionsStore?.showExhibitionDetail(exhibitionId: exhibitionId)
   }
 
   private func showProfileSetup(for member: Member) {
@@ -107,4 +128,9 @@ extension RootStore: AuthRootStoreDelegate {
   func didSignInSuccessfully(with member: Member) {
     send(.signedIn(member))
   }
+}
+
+enum Tab {
+  case exhibitions
+  case settings
 }

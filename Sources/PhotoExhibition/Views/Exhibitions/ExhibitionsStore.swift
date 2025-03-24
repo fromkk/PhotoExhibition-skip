@@ -159,4 +159,41 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       isLoading = false
     }
   }
+
+  func showExhibitionDetail(exhibitionId: String) {
+    Task {
+      do {
+        // 展示会の詳細を取得
+        let exhibition = try await exhibitionsClient.get(id: exhibitionId)
+
+        // 展示が非公開の場合は何もしない
+        guard exhibition.status == .published else {
+          print("Exhibition is not published: \(exhibitionId)")
+          return
+        }
+
+        // 展示の期間外の場合は何もしない
+        let now = Date()
+        guard exhibition.from <= now && now <= exhibition.to else {
+          print("Exhibition is not active: \(exhibitionId)")
+          return
+        }
+
+        // メインスレッドで展示会の詳細画面を表示
+        await MainActor.run {
+          exhibitionDetailStore = ExhibitionDetailStore(
+            exhibition: exhibition,
+            exhibitionsClient: exhibitionsClient,
+            currentUserClient: currentUserClient,
+            storageClient: storageClient,
+            imageCache: imageCache,
+            photoClient: photoClient
+          )
+          isExhibitionDetailShown = true
+        }
+      } catch {
+        print("Failed to fetch exhibition: \(error.localizedDescription)")
+      }
+    }
+  }
 }

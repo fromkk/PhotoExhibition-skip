@@ -1,9 +1,10 @@
-#if !os(Android)
-import GoogleMobileAds
-#endif
 import Foundation
 import OSLog
 import SwiftUI
+
+#if !os(Android)
+  import GoogleMobileAds
+#endif
 
 private let logger: Logger = Logger(
   subsystem: "me.fromkk.PhotoExhibition", category: "PhotoExhibition")
@@ -21,7 +22,7 @@ public struct PhotoExhibitionRootView: View {
 
   public init() {
     #if !os(Android)
-    MobileAds.shared.start(completionHandler: nil)
+      MobileAds.shared.start(completionHandler: nil)
     #endif
   }
 
