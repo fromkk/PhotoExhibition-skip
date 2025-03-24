@@ -99,6 +99,10 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   private(set) var footprintsListStore: FootprintsListStore?
   var isShowFootprintsList: Bool = false
 
+  var shareURL: URL {
+    URL(string: "https://photoexhibition-86595.web.app/exhibition/\(exhibition.id)")!
+  }
+
   init(
     exhibition: Exhibition,
     exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
@@ -851,6 +855,12 @@ struct ExhibitionDetailView: View {
               .accessibilityLabel("Report exhibition")
           }
         }
+      }
+
+      ToolbarItem(placement: .primaryAction) {
+        ShareLink(item: store.shareURL, label: {
+          Image(systemName: "square.and.arrow.up")
+        })
       }
     }
     .sheet(isPresented: $store.showEditSheet) {
