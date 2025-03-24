@@ -11,10 +11,15 @@ struct BannerContentView: View {
   }
 
   var body: some View {
-    if isAdLoaded {
-      BannerContainerView(AdSizeBanner, adUnitId: adUnitId, isAdLoaded: $isAdLoaded)
-        .frame(height: 63)
+    HStack {
+      if isAdLoaded {
+        Spacer()
+        BannerContainerView(AdSizeBanner, adUnitId: adUnitId, isAdLoaded: $isAdLoaded)
+          .frame(width: AdSizeBanner.size.width, height: AdSizeBanner.size.height)
+        Spacer()
+      }
     }
+    .frame(maxWidth: .infinity)
   }
 }
 
