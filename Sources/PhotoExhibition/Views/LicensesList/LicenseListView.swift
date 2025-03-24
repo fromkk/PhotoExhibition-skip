@@ -37,6 +37,7 @@
           store.send(.licenseTapped(license))
         } label: {
           Text(license.name)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
       }
