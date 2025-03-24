@@ -47,6 +47,7 @@ final class RootStore: Store {
   private(set) var exhibitionsStore: ExhibitionsStore?
   private(set) var settingsStore: SettingsStore?
   private(set) var profileSetupStore: ProfileSetupStore?
+  private var pendingUniversalLink: URL?
 
   func send(_ action: Action) {
     switch action {
@@ -74,11 +75,19 @@ final class RootStore: Store {
       isSignedIn = true
       if member.name == nil {
         showProfileSetup(for: member)
+      } else if let url = pendingUniversalLink {
+        handleUniversalLink(url)
+        pendingUniversalLink = nil
       }
     case .signedOut:
       isSignedIn = false
+      pendingUniversalLink = nil
     case .handleUniversalLink(let url):
-      handleUniversalLink(url)
+      if isSignedIn {
+        handleUniversalLink(url)
+      } else {
+        pendingUniversalLink = url
+      }
     }
   }
 
