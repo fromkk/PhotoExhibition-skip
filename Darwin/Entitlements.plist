@@ -6,5 +6,9 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:photoexhibition-86595.web.app</string>
+	</array>
 </dict>
 </plist>
