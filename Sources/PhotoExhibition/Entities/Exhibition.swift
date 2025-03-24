@@ -7,12 +7,15 @@ import SwiftUI
   import FirebaseFirestore
 #endif
 
-// 展示状態
+// 展示状態（draft: 下書き, published: 公開, banned: 管理者によるBAN）
 enum ExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable {
   case draft
   case published
+  case banned
 
   var id: String { rawValue }
+
+  static let editableCases: [Self] = [.draft, .published]
 
   var localizedKey: LocalizedStringKey {
     LocalizedStringKey(rawValue)

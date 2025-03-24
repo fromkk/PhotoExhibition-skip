@@ -97,6 +97,23 @@
         }
       }
     },
+    "banned" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banned"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "非公開"
+          }
+        }
+      }
+    },
     "Basic Information" : {
       "localizations" : {
         "ja" : {
@@ -133,6 +150,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "お問い合わせ"
+          }
+        }
+      }
+    },
+    "Cover Image" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カバー画像"
           }
         }
       }
@@ -210,6 +237,12 @@
     "draft" : {
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -561,6 +594,12 @@
     "published" : {
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Published"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
