@@ -24,6 +24,7 @@ let package = Package(
     .package(
       url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
       from: "12.2.0"),
+    .package(url: "https://github.com/maiyama18/LicensesPlugin.git", from: "0.2.0"),
   ],
   targets: [
     .target(
@@ -39,7 +40,11 @@ let package = Package(
         .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
       ],
       resources: [.process("Resources")],
-      plugins: [.plugin(name: "skipstone", package: "skip")]),
+      plugins: [
+        .plugin(name: "skipstone", package: "skip"),
+        .plugin(name: "LicensesPlugin", package: "LicensesPlugin"),
+      ]
+    ),
     .testTarget(
       name: "PhotoExhibitionTests",
       dependencies: [

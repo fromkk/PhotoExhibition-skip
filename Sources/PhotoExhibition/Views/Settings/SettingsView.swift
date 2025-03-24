@@ -21,6 +21,9 @@ protocol SettingsStoreDelegate: AnyObject {
   var isProfileEditPresented: Bool = false
   var showMyExhibitions: Bool = false
   var showContact: Bool = false
+  #if !SKIP
+    var showLicenseList: Bool = false
+  #endif
 
   // プロフィール編集画面用のストア
   private(set) var profileSetupStore: ProfileSetupStore?
@@ -28,6 +31,10 @@ protocol SettingsStoreDelegate: AnyObject {
   private(set) var myExhibitionsStore: MyExhibitionsStore?
   // 問い合わせ画面用のストア
   private(set) var contactStore: ContactStore?
+  #if !SKIP
+    // ライセンス画面のストア
+    private(set) var licenseStore: LicenseListStore?
+  #endif
 
   init(
     currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
@@ -49,6 +56,9 @@ protocol SettingsStoreDelegate: AnyObject {
     case deleteAccountButtonTapped
     case presentDeleteAccountConfirmation
     case contactButtonTapped
+    #if !SKIP
+      case licenseButtonTapped
+    #endif
   }
 
   var isErrorAlertPresented: Bool = false
@@ -103,6 +113,11 @@ protocol SettingsStoreDelegate: AnyObject {
     case .contactButtonTapped:
       contactStore = ContactStore()
       showContact = true
+    #if !SKIP
+      case .licenseButtonTapped:
+        licenseStore = LicenseListStore()
+        showLicenseList = true
+    #endif
     }
   }
 
@@ -191,21 +206,23 @@ struct SettingsView: View {
 
       Section {
         Button {
+          store.send(.contactButtonTapped)
+        } label: {
+          HStack {
+            Text("Contact")
+              .padding(.leading, 8)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          #if !SKIP
+            .contentShape(Rectangle())
+          #endif
+        }
+        .buttonStyle(.plain)
+
+        Button {
           openURL(Constants.termsOfServiceURL)
         } label: {
           HStack {
-            #if SKIP
-              Image("text.document", bundle: .module)
-                .frame(width: 24, height: 24)
-            #else
-              if #available(iOS 18.0, *) {
-                Image(systemName: "text.document")
-                  .frame(width: 24, height: 24)
-              } else {
-                Image(systemName: "doc.text")
-                  .frame(width: 24, height: 24)
-              }
-            #endif
             Text("Terms of Service")
               .padding(.leading, 8)
           }
@@ -220,19 +237,6 @@ struct SettingsView: View {
           openURL(Constants.privacyPolicyURL)
         } label: {
           HStack {
-            #if SKIP
-              Image("lock.document", bundle: .module)
-                .frame(width: 24, height: 24)
-            #else
-              if #available(iOS 18.0, *) {
-                Image(systemName: "lock.document")
-                  .frame(width: 24, height: 24)
-              } else {
-                Image(systemName: "lock.doc")
-                  .frame(width: 24, height: 24)
-              }
-
-            #endif
             Text("Privacy Policy")
               .padding(.leading, 8)
           }
@@ -243,21 +247,19 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
 
-        Button {
-          store.send(.contactButtonTapped)
-        } label: {
-          HStack {
-            Image(systemName: SystemImageMapping.getIconName(from: "envelope"))
-              .frame(width: 24, height: 24)
-            Text("Contact")
-              .padding(.leading, 8)
-          }
-          .frame(maxWidth: .infinity, alignment: .leading)
-          #if !SKIP
+        #if !SKIP
+          Button {
+            store.send(.licenseButtonTapped)
+          } label: {
+            HStack {
+              Text("Licenses")
+                .padding(.leading, 8)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
-          #endif
-        }
-        .buttonStyle(.plain)
+          }
+          .buttonStyle(.plain)
+        #endif
       }
 
       Section {
@@ -292,6 +294,15 @@ struct SettingsView: View {
         ContactView(store: contactStore)
       }
     }
+    #if !SKIP
+      .navigationDestination(
+        isPresented: $store.showLicenseList,
+        destination: {
+          if let store = store.licenseStore {
+            LicenseListView(store: store)
+          }
+        })
+    #endif
     .task {
       store.send(.task)
     }

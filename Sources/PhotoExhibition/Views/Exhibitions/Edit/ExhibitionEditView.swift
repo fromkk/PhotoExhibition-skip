@@ -314,52 +314,52 @@ struct ExhibitionEditView: View {
             } label: {
               Text("Select Cover Image")
             }
-#if SKIP
-            .withMediaPicker(
-              type: MediaPickerType.library,
-              isPresented: $store.imagePickerPresented,
-              selectedImageURL: $store.pickedImageURL
-            )
-#else
-            .photosPicker(
-              isPresented: $store.imagePickerPresented,
-              selection: Binding(
-                get: { nil },
-                set: { item in
-                  if let item = item {
-                    Task {
-                      do {
-                        if let data = try await item.loadTransferable(type: Data.self) {
-                          let ext: String
-                          switch data.imageFormat {
-                          case .gif:
-                            ext = "gif"
-                          case .jpeg:
-                            ext = "jpg"
-                          case .png:
-                            ext = "png"
-                          default:
-                            // サポートされていない画像形式のエラーを表示
-                            store.error = ImageFormatError.unknownImageFormat
-                            store.showError = true
-                            return
+            #if SKIP
+              .withMediaPicker(
+                type: MediaPickerType.library,
+                isPresented: $store.imagePickerPresented,
+                selectedImageURL: $store.pickedImageURL
+              )
+            #else
+              .photosPicker(
+                isPresented: $store.imagePickerPresented,
+                selection: Binding(
+                  get: { nil },
+                  set: { item in
+                    if let item = item {
+                      Task {
+                        do {
+                          if let data = try await item.loadTransferable(type: Data.self) {
+                            let ext: String
+                            switch data.imageFormat {
+                            case .gif:
+                              ext = "gif"
+                            case .jpeg:
+                              ext = "jpg"
+                            case .png:
+                              ext = "png"
+                            default:
+                              // サポートされていない画像形式のエラーを表示
+                              store.error = ImageFormatError.unknownImageFormat
+                              store.showError = true
+                              return
+                            }
+                            let tempURL = FileManager.default.temporaryDirectory
+                              .appendingPathComponent(
+                                UUID().uuidString + "." + ext)
+                            try data.write(to: tempURL)
+                            store.pickedImageURL = tempURL
                           }
-                          let tempURL = FileManager.default.temporaryDirectory
-                            .appendingPathComponent(
-                              UUID().uuidString + "." + ext)
-                          try data.write(to: tempURL)
-                          store.pickedImageURL = tempURL
+                        } catch {
+                          logger.error("error \(error.localizedDescription)")
+                          store.error = error
+                          store.showError = true
                         }
-                      } catch {
-                        logger.error("error \(error.localizedDescription)")
-                        store.error = error
-                        store.showError = true
                       }
                     }
                   }
-                }
-              ))
-#endif
+                ))
+            #endif
           }
         }
 
