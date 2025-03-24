@@ -689,6 +689,16 @@
         }
       }
     },
+    "Share" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "共有"
+          }
+        }
+      }
+    },
     "Sign In" : {
       "localizations" : {
         "ja" : {

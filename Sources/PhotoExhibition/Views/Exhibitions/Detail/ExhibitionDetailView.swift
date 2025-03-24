@@ -100,7 +100,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var isShowFootprintsList: Bool = false
 
   var shareURL: URL {
-    URL(string: "https://photoexhibition-86595.web.app/exhibition/\(exhibition.id)")!
+    URL(string: "https://\(Constants.hostingDomain)/exhibition/\(exhibition.id)")!
   }
 
   init(
@@ -858,9 +858,13 @@ struct ExhibitionDetailView: View {
       }
 
       ToolbarItem(placement: .primaryAction) {
-        ShareLink(item: store.shareURL, label: {
-          Image(systemName: "square.and.arrow.up")
-        })
+        ShareLink(
+          item: "\(store.exhibition.name) \(Constants.hashTag) \(store.shareURL)",
+          label: {
+            Image(systemName: "square.and.arrow.up")
+          }
+        )
+        .accessibilityLabel(Text("Share"))
       }
     }
     .sheet(isPresented: $store.showEditSheet) {
