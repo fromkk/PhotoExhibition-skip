@@ -12,6 +12,8 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
     case loadMore
     case addButtonTapped
     case exhibitionSelected(Exhibition)
+    case postAgreementAccepted
+    case postAgreementDismissed
   }
 
   var exhibitions: [Exhibition] = []
@@ -20,8 +22,13 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   private var nextCursor: String? = nil
   var hasMore: Bool = true
 
+  var isLoadingMember: Bool = false
+  var showPostAgreement: Bool = false
+
   private let exhibitionsClient: any ExhibitionsClient
   private let currentUserClient: any CurrentUserClient
+  private let membersClient: any MembersClient
+  private let memberUpdateClient: any MemberUpdateClient
   private let analyticsClient: any AnalyticsClient
 
   var isExhibitionShown: Bool = false
@@ -34,10 +41,14 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   init(
     exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
     currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+    membersClient: any MembersClient = DefaultMembersClient(),
+    memberUpdateClient: any MemberUpdateClient = DefaultMemberUpdateClient(),
     analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
   ) {
     self.exhibitionsClient = exhibitionsClient
     self.currentUserClient = currentUserClient
+    self.membersClient = membersClient
+    self.memberUpdateClient = memberUpdateClient
     self.analyticsClient = analyticsClient
   }
 
@@ -58,9 +69,57 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       exhibitionDetailStore = createExhibitionDetailStore(for: exhibition)
       isExhibitionShown = true
     case .addButtonTapped:
-      exhibitionEditStore = ExhibitionEditStore(mode: .create, delegate: self)
-      isExhibitionEditShown = true
+      Task {
+        do {
+          guard let uid = currentUserClient.currentUser()?.uid else {
+            return
+          }
+
+          isLoadingMember = true
+          let uids: [any Sendable] = [uid]
+          let result = try await membersClient.fetch(uids)
+          isLoadingMember = false
+          guard let member = result.first else {
+            return
+          }
+
+          if member.postAgreement {
+            showCreateExhibitionView()
+          } else {
+            withAnimation {
+              showPostAgreement = true
+            }
+          }
+        } catch {
+          self.error = error
+        }
+      }
+    case .postAgreementAccepted:
+      withAnimation {
+        showPostAgreement = false
+      }
+      guard let uid = currentUserClient.currentUser()?.uid else {
+        return
+      }
+      Task {
+        do {
+          _ = try await memberUpdateClient.postAgreement(memberID: uid)
+          showCreateExhibitionView()
+        } catch {
+          self.error = error
+        }
+      }
+    case .postAgreementDismissed:
+      withAnimation {
+        showPostAgreement = false
+      }
     }
+  }
+
+  @MainActor
+  private func showCreateExhibitionView() {
+    exhibitionEditStore = ExhibitionEditStore(mode: .create, delegate: self)
+    isExhibitionEditShown = true
   }
 
   // 展示会詳細画面用のストアを作成するメソッド
