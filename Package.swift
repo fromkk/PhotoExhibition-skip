@@ -17,7 +17,7 @@ let package = Package(
       name: "PhotoExhibitionApp",
       type: .dynamic,
       targets: ["PhotoExhibition"]
-    ),
+    )
   ],
   dependencies: [
     .package(url: "https://source.skip.tools/skip.git", from: "1.3.4"),

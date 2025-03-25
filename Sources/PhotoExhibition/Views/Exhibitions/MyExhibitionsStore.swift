@@ -69,13 +69,12 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       exhibitionDetailStore = createExhibitionDetailStore(for: exhibition)
       isExhibitionShown = true
     case .addButtonTapped:
+      guard let uid = currentUserClient.currentUser()?.uid else {
+        return
+      }
+      isLoadingMember = true
       Task {
         do {
-          guard let uid = currentUserClient.currentUser()?.uid else {
-            return
-          }
-
-          isLoadingMember = true
           let uids: [any Sendable] = [uid]
           let result = try await membersClient.fetch(uids)
           isLoadingMember = false

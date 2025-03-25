@@ -642,14 +642,14 @@ struct PhotoDetailView: View {
       }
     }
     #if !SKIP
-    .sheet(
-      isPresented: $store.showExif,
-      content: {
-        if let store = store.exifStore {
-          ExifView(store: store)
+      .sheet(
+        isPresented: $store.showExif,
+        content: {
+          if let store = store.exifStore {
+            ExifView(store: store)
+          }
         }
-      }
-    )
+      )
     #endif
     .alert("Delete Photo", isPresented: $store.showDeleteConfirmation) {
       Button("Cancel", role: .cancel) {}

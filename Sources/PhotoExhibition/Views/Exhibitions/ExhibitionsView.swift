@@ -97,11 +97,14 @@ struct ExhibitionsView: View {
       .disabled(store.showPostAgreement)
 
       if store.showPostAgreement {
-        PostAgreementView(onAgree: {
-          store.send(.postAgreementAccepted)
-        }, onDismiss: {
-          store.send(.postAgreementDismissed)
-        })
+        PostAgreementView(
+          onAgree: {
+            store.send(.postAgreementAccepted)
+          },
+          onDismiss: {
+            store.send(.postAgreementDismissed)
+          }
+        )
         .transition(.opacity)
       }
     }

@@ -10,7 +10,8 @@ import Foundation
 struct Member: Hashable, Sendable, Identifiable, Codable {
   init(
     id: String, name: String? = nil, icon: String? = nil, icon_256x256: String? = nil,
-    icon_512x512: String? = nil, icon_1024x1024: String? = nil, postAgreement: Bool = false, createdAt: Date, updatedAt: Date
+    icon_512x512: String? = nil, icon_1024x1024: String? = nil, postAgreement: Bool = false,
+    createdAt: Date, updatedAt: Date
   ) {
     self.id = id
     self.name = name

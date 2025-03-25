@@ -325,8 +325,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
         path: "test-path",
         title: "Test Photo",
         description: "Test Description",
-        takenDate: Date(),
-        photographer: "Test Photographer",
+        metadata: nil,
         createdAt: Date(),
         updatedAt: Date()
       )
@@ -547,17 +546,14 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     let testURL = URL(string: "file:///test/photo.jpg")!
 
     // モックの写真を設定
-    let mockPhoto = Photo(
-      id: "mock-photo-id",
-      path: "exhibitions/test-exhibition-id/photos/mock-uuid",
-      title: nil,
-      description: nil,
-      takenDate: nil,
-      photographer: nil,
+    let testPhoto = Photo(
+      id: "test-photo-id",
+      path: "exhibitions/test-exhibition-id/photos/test-photo-id",
+      metadata: nil,
       createdAt: Date(),
       updatedAt: Date()
     )
-    mockPhotoClient.mockAddedPhoto = mockPhoto
+    mockPhotoClient.mockAddedPhoto = testPhoto
 
     // ストアの作成
     let store = ExhibitionDetailStore(
@@ -596,7 +592,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
 
     // 写真が写真リストに追加されたことを確認
     XCTAssertEqual(store.photos.count, 1, "Photo should be added to the photos array")
-    XCTAssertEqual(store.photos[0].id, mockPhoto.id, "Correct photo should be added")
+    XCTAssertEqual(store.photos[0].id, testPhoto.id, "Correct photo should be added")
 
     // 編集シートが表示されることを確認
     XCTAssertTrue(store.showPhotoEditSheet, "Photo edit sheet should be shown")
@@ -647,6 +643,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     let testPhoto = Photo(
       id: "test-photo-id",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id",
+      metadata: nil,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -704,6 +701,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     let testPhoto = Photo(
       id: "mock-photo-id",
       path: "exhibitions/test-exhibition-id/photos/922EB6A2-40FF-4B76-8205-E99764F17B87",
+      metadata: nil,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -805,6 +803,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     let testPhoto = Photo(
       id: "test-photo-id",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id",
+      metadata: nil,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -813,6 +812,7 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       path: "exhibitions/test-exhibition-id/photos/test-photo-id",
       title: "Updated Title",
       description: "Updated Description",
+      metadata: nil,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -867,12 +867,14 @@ final class ExhibitionDetailStoreTests: XCTestCase {
     let testPhoto1 = Photo(
       id: "test-photo-id-1",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id-1",
+      metadata: nil,
       createdAt: Date(),
       updatedAt: Date()
     )
     let testPhoto2 = Photo(
       id: "test-photo-id-2",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id-2",
+      metadata: nil,
       createdAt: Date(),
       updatedAt: Date()
     )

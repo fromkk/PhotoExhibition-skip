@@ -11,19 +11,19 @@ struct PostAgreementItemView: View {
       HStack(spacing: 8) {
         if isChecked {
           #if SKIP
-          Image(systemName: SystemImageMapping.getIconName(from: "checkmark"))
-            .foregroundColor(Color.black)
+            Image(systemName: SystemImageMapping.getIconName(from: "checkmark"))
+              .foregroundColor(Color.black)
           #else
-          Image(systemName: "checkmark.square")
-            .foregroundColor(Color.black)
+            Image(systemName: "checkmark.square")
+              .foregroundColor(Color.black)
           #endif
         } else {
           #if SKIP
-          Image("square", bundle: .module)
-            .foregroundColor(Color.black)
+            Image("square", bundle: .module)
+              .foregroundColor(Color.black)
           #else
-          Image(systemName: "square")
-            .foregroundColor(Color.black)
+            Image(systemName: "square")
+              .foregroundColor(Color.black)
           #endif
         }
 
@@ -83,18 +83,18 @@ struct PostAgreementView: View {
           .frame(maxWidth: .infinity, alignment: .center)
           .frame(height: 200)
           #if !SKIP
-          .background {
-            LinearGradient(
-              colors: [
-                Color("gradient_purple", bundle: .module),
-                Color("gradient_blue", bundle: .module),
-              ],
-              startPoint: UnitPoint(x: 1, y: 0),
-              endPoint: UnitPoint(x: 0, y: 1)
-            )
-          }
+            .background {
+              LinearGradient(
+                colors: [
+                  Color("gradient_purple", bundle: .module),
+                  Color("gradient_blue", bundle: .module),
+                ],
+                startPoint: UnitPoint(x: 1, y: 0),
+                endPoint: UnitPoint(x: 0, y: 1)
+              )
+            }
           #else
-          .background(Color.white)
+            .background(Color.white)
           #endif
 
           VStack(spacing: 16) {

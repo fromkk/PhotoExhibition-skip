@@ -76,13 +76,12 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
     case .refresh:
       fetchExhibitions()
     case .createExhibitionButtonTapped:
+      guard let uid = currentUserClient.currentUser()?.uid else {
+        return
+      }
+      isLoadingMember = true
       Task {
         do {
-          guard let uid = currentUserClient.currentUser()?.uid else {
-            return
-          }
-
-          isLoadingMember = true
           let uids: [any Sendable] = [uid]
           let result = try await membersClient.fetch(uids)
           isLoadingMember = false
