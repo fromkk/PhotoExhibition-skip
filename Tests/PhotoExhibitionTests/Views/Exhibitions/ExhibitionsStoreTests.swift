@@ -264,7 +264,7 @@ final class ExhibitionsStoreTests: XCTestCase {
     )
 
     // createExhibitionアクションを送信
-    store.send(ExhibitionsStore.Action.createExhibition)
+    store.send(ExhibitionsStore.Action.createExhibitionButtonTapped)
 
     // 作成シートが表示されることを確認
     XCTAssertTrue(store.showCreateExhibition)

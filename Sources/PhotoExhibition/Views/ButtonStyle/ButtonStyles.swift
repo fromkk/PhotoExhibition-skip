@@ -16,7 +16,6 @@ extension View {
       .fontWeight(.semibold)
       .padding(.horizontal, 16)
       .padding(.vertical, 12)
-      .background(Color.white)
       .foregroundStyle(Color.accentColor)
       .clipShape(Capsule())
       .overlay {

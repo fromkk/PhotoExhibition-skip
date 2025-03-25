@@ -26,6 +26,17 @@ struct PostAgreementItemView: View {
 }
 
 struct PostAgreementView: View {
+  let onAgree: () -> Void
+  let onDismiss: () -> Void
+
+  init(
+    onAgree: @escaping () -> Void,
+    onDismiss: @escaping () -> Void
+  ) {
+    self.onAgree = onAgree
+    self.onDismiss = onDismiss
+  }
+
   /// 他人を不快にさせる画像は投稿しない
   @State var noOffensiveContent: Bool = false
   /// 著作権や肖像権を侵害しない
@@ -83,7 +94,7 @@ struct PostAgreementView: View {
             }
 
             Button {
-
+              onAgree()
             } label: {
               Text("Agree")
                 .font(.headline)
@@ -94,7 +105,7 @@ struct PostAgreementView: View {
         }
 
         Button {
-
+          onDismiss()
         } label: {
           Image(systemName: "xmark")
             .foregroundStyle(Color("text", bundle: .module))
@@ -120,5 +131,5 @@ struct PostAgreementView: View {
 }
 
 #Preview {
-  PostAgreementView()
+  PostAgreementView(onAgree: {}, onDismiss: {})
 }

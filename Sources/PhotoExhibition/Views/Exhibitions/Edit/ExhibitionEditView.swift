@@ -68,8 +68,6 @@ final class ExhibitionEditStore: Store {
   var isLoadingCoverImage: Bool = false
   var coverImagePath: String?
 
-  var showPostAgreement: Bool = false
-
   private let mode: Mode
   weak var delegate: (any ExhibitionEditStoreDelegate)?
   private let currentUserClient: any CurrentUserClient
@@ -114,7 +112,6 @@ final class ExhibitionEditStore: Store {
     logger.info("action \(String(describing: action))")
     switch action {
     case .task:
-      showPostAgreement = true
       Task {
         await analyticsClient.analyticsScreen(name: "ExhibitionEditView")
       }
@@ -455,11 +452,6 @@ struct ExhibitionEditView: View {
         if let errorMessage = store.error?.localizedDescription {
           Text(errorMessage)
         }
-      }
-      .fullScreenCover(
-        isPresented: $store.showPostAgreement
-      ) {
-        PostAgreementView()
       }
       .onChange(of: store.shouldDismiss) { _, shouldDismiss in
         if shouldDismiss {
