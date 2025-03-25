@@ -176,6 +176,6 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   }
 
   func didCancelExhibition() {
-    // nop
+    isExhibitionEditShown = false
   }
 }

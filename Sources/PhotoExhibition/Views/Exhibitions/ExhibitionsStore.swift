@@ -177,7 +177,8 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   }
 
   func didCancelExhibition() {
-    // nothing to do
+    showCreateExhibition = false
+    exhibitionToEdit = nil
   }
 
   private func fetchExhibitions() {

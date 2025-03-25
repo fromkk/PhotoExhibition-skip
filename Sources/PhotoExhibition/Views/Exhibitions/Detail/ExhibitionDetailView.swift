@@ -412,7 +412,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   }
 
   func didCancelExhibition() {
-    // 何もしない
+    showEditSheet = false
   }
 
   private func reloadExhibition() {
