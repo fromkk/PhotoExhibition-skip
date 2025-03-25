@@ -15,8 +15,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
   let path_1024x1024: String?
   let title: String?
   let description: String?
-  let takenDate: Date?
-  let photographer: String?
+  let metadata: String?
   let sort: Int
   let createdAt: Date
   let updatedAt: Date
@@ -29,8 +28,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     path_1024x1024: String? = nil,
     title: String? = nil,
     description: String? = nil,
-    takenDate: Date? = nil,
-    photographer: String? = nil,
+    metadata: String?,
     sort: Int = 0,
     createdAt: Date,
     updatedAt: Date
@@ -42,8 +40,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.path_1024x1024 = path_1024x1024
     self.title = title
     self.description = description
-    self.takenDate = takenDate
-    self.photographer = photographer
+    self.metadata = metadata
     self.sort = sort
     self.createdAt = createdAt
     self.updatedAt = updatedAt
@@ -63,15 +60,8 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.path_1024x1024 = data["path_1024x1024"] as? String
     self.title = data["title"] as? String
     self.description = data["description"] as? String
-    self.photographer = data["photographer"] as? String
+    self.metadata = data["metadata"] as? String
     self.sort = data["sort"] as? Int ?? 0
-
-    if let takenDateTimestamp = data["takenDate"] as? Timestamp {
-      self.takenDate = takenDateTimestamp.dateValue()
-    } else {
-      self.takenDate = nil
-    }
-
     self.createdAt = createdAtTimestamp.dateValue()
     self.updatedAt = updatedAtTimestamp.dateValue()
   }

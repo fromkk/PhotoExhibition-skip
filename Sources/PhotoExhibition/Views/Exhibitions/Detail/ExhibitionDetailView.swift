@@ -346,8 +346,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
             path: photo.path,
             title: title.isEmpty ? nil : title,
             description: description.isEmpty ? nil : description,
-            takenDate: photo.takenDate,
-            photographer: photo.photographer,
+            metadata: photo.metadata,
             createdAt: photo.createdAt,
             updatedAt: Date()
           )

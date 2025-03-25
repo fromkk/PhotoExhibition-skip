@@ -28,10 +28,13 @@ final class PhotoDetailStore: Store {
     case showPreviousPhoto
     case reportButtonTapped
     case toggleUIVisible
+    #if !SKIP
+      case infoButtonTapped
+    #endif
   }
 
   let exhibitionId: String
-  let photo: Photo
+  var photo: Photo
   let isOrganizer: Bool
 
   // デリゲートを追加
@@ -57,6 +60,11 @@ final class PhotoDetailStore: Store {
 
   var showReport: Bool = false
   private(set) var reportStore: ReportStore?
+
+  #if !SKIP
+    var showExif: Bool = false
+    private(set) var exifStore: ExifStore?
+  #endif
 
   init(
     exhibitionId: String,
@@ -136,6 +144,11 @@ final class PhotoDetailStore: Store {
       showReport = true
     case .toggleUIVisible:
       isUIVisible = !isUIVisible
+    #if !SKIP
+      case .infoButtonTapped:
+        exifStore = ExifStore(photo: photo)
+        showExif = true
+    #endif
     }
   }
 
@@ -172,8 +185,7 @@ final class PhotoDetailStore: Store {
           path: photo.path,
           title: title.isEmpty ? nil : title,
           description: description.isEmpty ? nil : description,
-          takenDate: photo.takenDate,
-          photographer: photo.photographer,
+          metadata: photo.metadata,
           createdAt: photo.createdAt,
           updatedAt: Date()
         )
@@ -219,6 +231,7 @@ final class PhotoDetailStore: Store {
 
     let nextIndex = (currentPhotoIndex + 1) % photos.count
     currentPhotoIndex = nextIndex
+    photo = photos[nextIndex]
     imageURL = nil
 
     // 次の写真の画像を読み込む
@@ -248,6 +261,7 @@ final class PhotoDetailStore: Store {
 
     let previousIndex = (currentPhotoIndex - 1 + photos.count) % photos.count
     currentPhotoIndex = previousIndex
+    photo = photos[previousIndex]
     imageURL = nil
     isLoading = true
 
@@ -528,8 +542,19 @@ struct PhotoDetailView: View {
           }
         }
 
-        ToolbarItem(placement: .topBarTrailing) {
+        ToolbarItem(placement: .primaryAction) {
           HStack(spacing: 16) {
+            #if !SKIP
+              if store.photo.metadata != nil {
+                Button {
+                  store.send(.infoButtonTapped)
+                } label: {
+                  Image(systemName: "info.circle")
+                }
+                .accessibilityLabel(Text("Information"))
+              }
+            #endif
+
             if scale > CGFloat(1.0) {
               Button {
                 resetZoom()
@@ -616,6 +641,14 @@ struct PhotoDetailView: View {
         store.send(.updatePhoto(title: title, description: description))
       }
     }
+    .sheet(
+      isPresented: $store.showExif,
+      content: {
+        if let store = store.exifStore {
+          ExifView(store: store)
+        }
+      }
+    )
     .alert("Delete Photo", isPresented: $store.showDeleteConfirmation) {
       Button("Cancel", role: .cancel) {}
       Button("Delete", role: .destructive) {
@@ -724,8 +757,7 @@ struct PhotoEditView: View {
         title: "Sample Photo",
         description:
           "This is a sample photo description that shows how the detail view will look with text overlay.",
-        takenDate: Date(),
-        photographer: "John Doe",
+        metadata: nil,
         createdAt: Date(),
         updatedAt: Date()
       ),
