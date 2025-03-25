@@ -11,12 +11,21 @@ extension View {
       .clipShape(Capsule())
   }
 
+  func disabledButtonStyle() -> some View {
+    self
+      .fontWeight(.semibold)
+      .padding(.horizontal, 16)
+      .padding(.vertical, 12)
+      .background(Color.gray)
+      .foregroundStyle(Color.white)
+      .clipShape(Capsule())
+  }
+
   func secondaryButtonStyle() -> some View {
     self
       .fontWeight(.semibold)
       .padding(.horizontal, 16)
       .padding(.vertical, 12)
-      .background(Color.white)
       .foregroundStyle(Color.accentColor)
       .clipShape(Capsule())
       .overlay {

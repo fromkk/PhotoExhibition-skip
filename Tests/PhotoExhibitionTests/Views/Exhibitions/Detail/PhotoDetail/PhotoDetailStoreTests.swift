@@ -42,8 +42,7 @@ final class PhotoDetailStoreTests: XCTestCase {
     path_1024x1024: "test-path_1024x1024",
     title: "Test Photo",
     description: "Test Description",
-    takenDate: Date(),
-    photographer: "Test Photographer",
+    metadata: nil,
     createdAt: Date(),
     updatedAt: Date()
   )
@@ -56,8 +55,7 @@ final class PhotoDetailStoreTests: XCTestCase {
       path_1024x1024: "test-path_1024x1024",
       title: "Test Photo",
       description: "Test Description",
-      takenDate: Date(),
-      photographer: "Test Photographer",
+      metadata: nil,
       createdAt: Date(),
       updatedAt: Date()
     )

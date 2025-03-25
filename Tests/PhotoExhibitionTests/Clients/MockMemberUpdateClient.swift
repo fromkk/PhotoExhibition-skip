@@ -22,6 +22,12 @@ final class MockMemberUpdateClient: MemberUpdateClient {
   var updatedProfileName: String? = nil
   var updatedProfileIconPath: String? = nil
 
+  // postAgreement()の呼び出し追跡
+  var postAgreementCalled = false
+  var postAgreementMemberID: String?
+  var postAgreementResult: Member?
+  var postAgreementError: Error?
+
   // モック結果
   var mockMember: Member = Member(
     id: "mock-user-id",
@@ -116,6 +122,25 @@ final class MockMemberUpdateClient: MemberUpdateClient {
     )
   }
 
+  func postAgreement(memberID: String) async throws -> Member {
+    postAgreementCalled = true
+    postAgreementMemberID = memberID
+
+    if let error = postAgreementError {
+      throw error
+    }
+
+    return postAgreementResult
+      ?? Member(
+        id: memberID,
+        name: "Test User",
+        icon: nil,
+        postAgreement: true,
+        createdAt: Date(),
+        updatedAt: Date()
+      )
+  }
+
   // MARK: - テスト用のヘルパーメソッド
 
   func reset() {
@@ -130,6 +155,10 @@ final class MockMemberUpdateClient: MemberUpdateClient {
     updatedProfileMemberID = nil
     updatedProfileName = nil
     updatedProfileIconPath = nil
+    postAgreementCalled = false
+    postAgreementMemberID = nil
+    postAgreementResult = nil
+    postAgreementError = nil
 
     // デフォルト値に戻す
     shouldSucceed = true

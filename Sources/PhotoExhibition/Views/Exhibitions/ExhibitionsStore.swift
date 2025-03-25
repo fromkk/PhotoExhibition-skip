@@ -9,12 +9,14 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   enum Action {
     case task
     case refresh
-    case createExhibition
+    case createExhibitionButtonTapped
     case editExhibition(Exhibition)
     case showExhibitionDetail(Exhibition)
     case loadMore
     case exhibitionCreated(Exhibition)
     case exhibitionUpdated(Exhibition)
+    case postAgreementAccepted
+    case postAgreementDismissed
   }
 
   var exhibitions: [Exhibition] = []
@@ -25,6 +27,9 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   private var nextCursor: String? = nil
   var hasMore: Bool = true
 
+  var isLoadingMember: Bool = false
+  var showPostAgreement: Bool = false
+
   // 選択された展示会の詳細画面用のストアを保持
   private(set) var exhibitionDetailStore: ExhibitionDetailStore?
   // 詳細画面への遷移状態
@@ -34,6 +39,8 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
 
   private let exhibitionsClient: any ExhibitionsClient
   private let currentUserClient: any CurrentUserClient
+  private let membersClient: any MembersClient
+  private let memberUpdateClient: any MemberUpdateClient
   private let storageClient: any StorageClient
   private let imageCache: any StorageImageCacheProtocol
   private let photoClient: any PhotoClient
@@ -42,6 +49,8 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   init(
     exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
     currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
+    membersClient: any MembersClient = DefaultMembersClient(),
+    memberUpdateClient: any MemberUpdateClient = DefaultMemberUpdateClient(),
     storageClient: any StorageClient = DefaultStorageClient(),
     imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
     photoClient: any PhotoClient = DefaultPhotoClient(),
@@ -49,6 +58,8 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   ) {
     self.exhibitionsClient = exhibitionsClient
     self.currentUserClient = currentUserClient
+    self.membersClient = membersClient
+    self.memberUpdateClient = memberUpdateClient
     self.storageClient = storageClient
     self.imageCache = imageCache
     self.photoClient = photoClient
@@ -64,16 +75,32 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       }
     case .refresh:
       fetchExhibitions()
-    case .createExhibition:
-      exhibitionEditStore = ExhibitionEditStore(
-        mode: .create,
-        delegate: self,
-        currentUserClient: currentUserClient,
-        exhibitionsClient: exhibitionsClient,
-        storageClient: storageClient,
-        imageCache: imageCache
-      )
-      showCreateExhibition = true
+    case .createExhibitionButtonTapped:
+      guard let uid = currentUserClient.currentUser()?.uid else {
+        return
+      }
+      isLoadingMember = true
+      Task {
+        do {
+          let uids: [any Sendable] = [uid]
+          let result = try await membersClient.fetch(uids)
+          isLoadingMember = false
+          guard let member = result.first else {
+            return
+          }
+
+          if member.postAgreement {
+            showCreateExhibitionView()
+          } else {
+            withAnimation {
+              showPostAgreement = true
+            }
+          }
+        } catch {
+          self.error = error
+        }
+      }
+
     case .editExhibition(let exhibition):
       exhibitionEditStore = ExhibitionEditStore(
         mode: .edit(exhibition),
@@ -108,7 +135,39 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       }
       exhibitionToEdit = nil
       exhibitionEditStore = nil
+    case .postAgreementAccepted:
+      withAnimation {
+        showPostAgreement = false
+      }
+      guard let uid = currentUserClient.currentUser()?.uid else {
+        return
+      }
+      Task {
+        do {
+          _ = try await memberUpdateClient.postAgreement(memberID: uid)
+          showCreateExhibitionView()
+        } catch {
+          self.error = error
+        }
+      }
+    case .postAgreementDismissed:
+      withAnimation {
+        showPostAgreement = false
+      }
     }
+  }
+
+  @MainActor
+  private func showCreateExhibitionView() {
+    exhibitionEditStore = ExhibitionEditStore(
+      mode: .create,
+      delegate: self,
+      currentUserClient: currentUserClient,
+      exhibitionsClient: exhibitionsClient,
+      storageClient: storageClient,
+      imageCache: imageCache
+    )
+    showCreateExhibition = true
   }
 
   // MARK: - ExhibitionEditStoreDelegate

@@ -12,6 +12,8 @@ final class ExhibitionsStoreTests: XCTestCase {
   private var mockStorageImageCache: MockStorageImageCache!
   private var mockPhotoClient: MockPhotoClient!
   private var mockAnalyticsClient: MockAnalyticsClient!
+  private var mockMemberUpdateClient: MockMemberUpdateClient!
+  private var mockMembersClient: MockMembersClient!
 
   override func setUp() async throws {
     // テスト用の展示会データを作成
@@ -64,6 +66,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     mockStorageImageCache = MockStorageImageCache()
     mockPhotoClient = MockPhotoClient()
     mockAnalyticsClient = MockAnalyticsClient()
+    mockMemberUpdateClient = MockMemberUpdateClient()
+    mockMembersClient = MockMembersClient()
   }
 
   override func tearDown() async throws {
@@ -74,6 +78,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     mockStorageImageCache = nil
     mockPhotoClient = nil
     mockAnalyticsClient = nil
+    mockMemberUpdateClient = nil
+    mockMembersClient = nil
   }
 
   // MARK: - 初期化のテスト
@@ -83,6 +89,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
       photoClient: mockPhotoClient,
@@ -106,6 +114,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
       photoClient: mockPhotoClient,
@@ -143,6 +153,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
       photoClient: mockPhotoClient,
@@ -198,6 +210,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
       photoClient: mockPhotoClient,
@@ -230,6 +244,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
       photoClient: mockPhotoClient,
@@ -252,21 +268,30 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertFalse(store.isLoading)
   }
 
-  func testCreateExhibitionActionShowsCreateSheet() {
-    // ストアの作成
-    let store = ExhibitionsStore(
-      exhibitionsClient: mockExhibitionsClient,
-      currentUserClient: mockCurrentUserClient,
-      storageClient: mockStorageClient,
-      imageCache: mockStorageImageCache,
-      photoClient: mockPhotoClient,
-      analyticsClient: mockAnalyticsClient
-    )
+  func testCreateExhibitionActionShowsCreateSheet() async throws {
+    let store = createStore()
+    mockCurrentUserClient.mockUser = User(uid: "test-user")
 
-    // createExhibitionアクションを送信
-    store.send(ExhibitionsStore.Action.createExhibition)
+    // メンバー情報のモックを設定（既にガイドラインに同意済み）
+    mockMembersClient.mockMembers = [
+      Member(
+        id: "test-user",
+        name: "Test User",
+        icon: nil,
+        postAgreement: true,  // 既に同意済み
+        createdAt: Date(),
+        updatedAt: Date()
+      )
+    ]
 
-    // 作成シートが表示されることを確認
+    store.send(ExhibitionsStore.Action.createExhibitionButtonTapped)
+    XCTAssertTrue(store.isLoadingMember)
+
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    // ガイドライン同意済みなので、直接作成画面が表示される
+    XCTAssertFalse(store.isLoadingMember)
+    XCTAssertFalse(store.showPostAgreement)
     XCTAssertTrue(store.showCreateExhibition)
   }
 
@@ -275,6 +300,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
       photoClient: mockPhotoClient,
@@ -296,6 +323,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
       photoClient: mockPhotoClient,
@@ -328,6 +357,8 @@ final class ExhibitionsStoreTests: XCTestCase {
     let store = ExhibitionsStore(
       exhibitionsClient: mockExhibitionsClient,
       currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
       storageClient: mockStorageClient,
       imageCache: mockStorageImageCache,
       photoClient: mockPhotoClient,
@@ -348,5 +379,55 @@ final class ExhibitionsStoreTests: XCTestCase {
 
     // isLoadingがfalseに戻ることを確認
     XCTAssertFalse(store.isLoading)
+  }
+
+  // ガイドライン同意のテストを追加
+  func testPostAgreement() async throws {
+    let store = createStore()
+    mockCurrentUserClient.mockUser = User(uid: "test-user")
+
+    // メンバー情報のモックを設定
+    mockMembersClient.mockMembers = [
+      Member(
+        id: "test-user",
+        name: "Test User",
+        icon: nil,
+        postAgreement: false,
+        createdAt: Date(),
+        updatedAt: Date()
+      )
+    ]
+
+    store.send(ExhibitionsStore.Action.createExhibitionButtonTapped)
+    XCTAssertTrue(store.isLoadingMember)
+
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    XCTAssertFalse(store.isLoadingMember)
+    XCTAssertTrue(store.showPostAgreement)
+
+    store.send(ExhibitionsStore.Action.postAgreementAccepted)
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    XCTAssertFalse(store.showPostAgreement)
+    XCTAssertTrue(mockMemberUpdateClient.postAgreementCalled)
+    XCTAssertEqual(mockMemberUpdateClient.postAgreementMemberID, "test-user")
+
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    XCTAssertTrue(store.showCreateExhibition)
+  }
+
+  private func createStore() -> ExhibitionsStore {
+    return ExhibitionsStore(
+      exhibitionsClient: mockExhibitionsClient,
+      currentUserClient: mockCurrentUserClient,
+      membersClient: mockMembersClient,
+      memberUpdateClient: mockMemberUpdateClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      photoClient: mockPhotoClient,
+      analyticsClient: mockAnalyticsClient
+    )
   }
 }

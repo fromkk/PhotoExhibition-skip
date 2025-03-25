@@ -15,78 +15,97 @@ struct ExhibitionsView: View {
   }
 
   var body: some View {
-    NavigationStack {
-      VStack(spacing: 8) {
-        if store.isLoading && store.exhibitions.isEmpty {
-          ProgressView()
-        } else if store.exhibitions.isEmpty {
-          #if SKIP
-            HStack(spacing: 8) {
-              Image("photo.on.rectangle", bundle: .module)
-              Text("No Exhibitions")
-            }
-          #else
-            ContentUnavailableView(
-              "No Exhibitions",
-              systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle"),
-              description: Text("Create a new exhibition")
-            )
-          #endif
-        } else {
-          List {
-            ForEach(store.exhibitions) { exhibition in
-              Button {
-                store.send(.showExhibitionDetail(exhibition))
-              } label: {
-                ExhibitionRow(exhibition: exhibition)
+    ZStack {
+      NavigationStack {
+        VStack(spacing: 8) {
+          if store.isLoading && store.exhibitions.isEmpty {
+            ProgressView()
+          } else if store.exhibitions.isEmpty {
+            #if SKIP
+              HStack(spacing: 8) {
+                Image("photo.on.rectangle", bundle: .module)
+                Text("No Exhibitions")
               }
-              .buttonStyle(.plain)
-            }
-
-            if store.hasMore {
-              ProgressView()
-                .onAppear {
-                  store.send(.loadMore)
+            #else
+              ContentUnavailableView(
+                "No Exhibitions",
+                systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle"),
+                description: Text("Create a new exhibition")
+              )
+            #endif
+          } else {
+            List {
+              ForEach(store.exhibitions) { exhibition in
+                Button {
+                  store.send(.showExhibitionDetail(exhibition))
+                } label: {
+                  ExhibitionRow(exhibition: exhibition)
                 }
+                .buttonStyle(.plain)
+              }
+
+              if store.hasMore {
+                ProgressView()
+                  .onAppear {
+                    store.send(.loadMore)
+                  }
+              }
+            }
+            .refreshable {
+              store.send(.refresh)
             }
           }
-          .refreshable {
-            store.send(.refresh)
-          }
-        }
 
-        #if !os(Android)
-          BannerContentView(adUnitId: Constants.adMobHomeFooterUnitID)
-        #endif
-      }
-      .navigationTitle(Text("Exhibitions"))
-      .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
-        if let detailStore = store.exhibitionDetailStore {
-          ExhibitionDetailView(store: detailStore)
+          #if !os(Android)
+            BannerContentView(adUnitId: Constants.adMobHomeFooterUnitID)
+          #endif
         }
-      }
-      .toolbar {
-        ToolbarItem(placement: .primaryAction) {
-          Button {
-            store.send(.createExhibition)
-          } label: {
-            Image(systemName: SystemImageMapping.getIconName(from: "plus"))
-              .accessibilityLabel("Create a new exhibition")
+        .navigationTitle(Text("Exhibitions"))
+        .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
+          if let detailStore = store.exhibitionDetailStore {
+            ExhibitionDetailView(store: detailStore)
+          }
+        }
+        .toolbar {
+          ToolbarItem(placement: .primaryAction) {
+            if store.isLoadingMember {
+              ProgressView()
+            } else {
+              Button {
+                store.send(.createExhibitionButtonTapped)
+              } label: {
+                Image(systemName: SystemImageMapping.getIconName(from: "plus"))
+                  .accessibilityLabel("Create a new exhibition")
+              }
+            }
+          }
+        }
+        .task {
+          store.send(.task)
+        }
+        .sheet(isPresented: $store.showCreateExhibition) {
+          if let editStore = store.exhibitionEditStore {
+            ExhibitionEditView(store: editStore)
+          }
+        }
+        .sheet(item: $store.exhibitionToEdit) { exhibition in
+          if let editStore = store.exhibitionEditStore {
+            ExhibitionEditView(store: editStore)
           }
         }
       }
-      .task {
-        store.send(.task)
-      }
-      .sheet(isPresented: $store.showCreateExhibition) {
-        if let editStore = store.exhibitionEditStore {
-          ExhibitionEditView(store: editStore)
-        }
-      }
-      .sheet(item: $store.exhibitionToEdit) { exhibition in
-        if let editStore = store.exhibitionEditStore {
-          ExhibitionEditView(store: editStore)
-        }
+      .disabled(store.showPostAgreement)
+
+      if store.showPostAgreement {
+        PostAgreementView(
+          onAgree: {
+            store.send(.postAgreementAccepted)
+          },
+          onDismiss: {
+            store.send(.postAgreementDismissed)
+          }
+        )
+        .transition(.opacity)
       }
     }
   }

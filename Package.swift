@@ -14,7 +14,10 @@ let package = Package(
   ],
   products: [
     .library(
-      name: "PhotoExhibitionApp", type: .dynamic, targets: ["PhotoExhibition"])
+      name: "PhotoExhibitionApp",
+      type: .dynamic,
+      targets: ["PhotoExhibition"]
+    )
   ],
   dependencies: [
     .package(url: "https://source.skip.tools/skip.git", from: "1.3.4"),
@@ -22,9 +25,14 @@ let package = Package(
     .package(url: "https://source.skip.tools/skip-kit.git", from: "0.3.1"),
     .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.7.3"),
     .package(
-      url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
-      from: "12.2.0"),
-    .package(url: "https://github.com/maiyama18/LicensesPlugin.git", from: "0.2.0"),
+      url:
+        "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+      from: "12.2.0"
+    ),
+    .package(
+      url: "https://github.com/maiyama18/LicensesPlugin.git",
+      from: "0.2.0"
+    ),
   ],
   targets: [
     .target(
@@ -37,7 +45,10 @@ let package = Package(
         .product(name: "SkipFirebaseFirestore", package: "skip-firebase"),
         .product(name: "SkipFirebaseFunctions", package: "skip-firebase"),
         .product(name: "SkipFirebaseStorage", package: "skip-firebase"),
-        .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
+        .product(
+          name: "GoogleMobileAds",
+          package: "swift-package-manager-google-mobile-ads"
+        ),
       ],
       resources: [.process("Resources")],
       plugins: [

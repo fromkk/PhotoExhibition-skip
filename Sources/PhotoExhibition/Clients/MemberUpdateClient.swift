@@ -10,6 +10,7 @@ protocol MemberUpdateClient: Sendable {
   func updateName(memberID: String, name: String) async throws -> Member
   func updateIcon(memberID: String, iconPath: String?) async throws -> Member
   func updateProfile(memberID: String, name: String, iconPath: String?) async throws -> Member
+  func postAgreement(memberID: String) async throws -> Member
 }
 
 enum MemberUpdateClientError: Error, Sendable, LocalizedError {
@@ -109,6 +110,33 @@ actor DefaultMemberUpdateClient: MemberUpdateClient {
       // アイコンを削除する場合（nilの場合）
       updateData["icon"] = FieldValue.delete()
     }
+
+    // Update Firestore document
+    try await memberRef.updateData(updateData)
+
+    // Get updated data
+    let document = try await memberRef.getDocument()
+
+    guard let data = document.data() else {
+      throw MemberUpdateClientError.memberNotFound
+    }
+
+    guard let member = Member(documentID: memberID, data: data) else {
+      throw MemberUpdateClientError.invalidData
+    }
+
+    return member
+  }
+
+  func postAgreement(memberID: String) async throws -> Member {
+    let db = Firestore.firestore()
+    let memberRef = db.collection("members").document(memberID)
+
+    // Prepare update data
+    let updateData: [String: Any] = [
+      "postAgreement": true,
+      "updatedAt": Timestamp(date: Date()),
+    ]
 
     // Update Firestore document
     try await memberRef.updateData(updateData)
