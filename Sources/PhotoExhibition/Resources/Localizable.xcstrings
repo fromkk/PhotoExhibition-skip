@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    " I will not upload images that violate laws or public morals." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法令・公序良俗に反する画像は投稿しません"
+          }
+        }
+      }
+    },
     "%lld / %lld" : {
       "localizations" : {
         "en" : {
@@ -53,6 +63,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "足跡を追加"
+          }
+        }
+      }
+    },
+    "Agree" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同意する"
           }
         }
       }
@@ -473,6 +493,26 @@
         }
       }
     },
+    "I will not upload images that may offend others." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "他人を不快にさせる画像は投稿しません"
+          }
+        }
+      }
+    },
+    "I will only upload images that respect copyrights and portrait rights." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "著作権や肖像権を侵害しない画像を投稿します"
+          }
+        }
+      }
+    },
     "Information" : {
       "localizations" : {
         "ja" : {
@@ -679,6 +719,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "報告する理由を入力してください。"
+          }
+        }
+      }
+    },
+    "Please review and agree to the following before creating an exhibition." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示を作成するには以下の内容を確認の上同意してください"
           }
         }
       }
@@ -926,6 +976,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "この操作は元に戻せません。すべてのデータが完全に削除されます。"
+          }
+        }
+      }
+    },
+    "This illustration was created using JOY." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イラストはJOYを利用して作成しました"
           }
         }
       }

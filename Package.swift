@@ -18,7 +18,6 @@ let package = Package(
       type: .dynamic,
       targets: ["PhotoExhibition"]
     ),
-    .library(name: "PostAgreementFeature", targets: ["PostAgreementFeature"]),
   ],
   dependencies: [
     .package(url: "https://source.skip.tools/skip.git", from: "1.3.4"),
@@ -39,7 +38,6 @@ let package = Package(
     .target(
       name: "PhotoExhibition",
       dependencies: [
-        "PostAgreementFeature",
         .product(name: "SkipUI", package: "skip-ui"),
         .product(name: "SkipKit", package: "skip-kit"),
         .product(name: "SkipFirebaseAnalytics", package: "skip-firebase"),
@@ -66,9 +64,6 @@ let package = Package(
       ],
       resources: [.process("Resources")],
       plugins: [.plugin(name: "skipstone", package: "skip")]
-    ),
-    .target(
-      name: "PostAgreementFeature"
     ),
   ]
 )
