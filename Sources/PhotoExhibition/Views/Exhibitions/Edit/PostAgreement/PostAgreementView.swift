@@ -9,10 +9,27 @@ struct PostAgreementItemView: View {
       isChecked = !isChecked
     } label: {
       HStack(spacing: 8) {
-        Image(systemName: isChecked ? "checkmark.square" : "square")
-          .foregroundColor(Color("text", bundle: .module))
+        if isChecked {
+          #if SKIP
+          Image(systemName: SystemImageMapping.getIconName(from: "checkmark"))
+            .foregroundColor(Color.black)
+          #else
+          Image(systemName: "checkmark.square")
+            .foregroundColor(Color.black)
+          #endif
+        } else {
+          #if SKIP
+          Image("square", bundle: .module)
+            .foregroundColor(Color.black)
+          #else
+          Image(systemName: "square")
+            .foregroundColor(Color.black)
+          #endif
+        }
+
         Text(text)
           .font(.subheadline)
+          .foregroundStyle(Color.black)
           .frame(maxWidth: .infinity, alignment: .leading)
       }
     }
@@ -44,6 +61,10 @@ struct PostAgreementView: View {
   /// 法令・公序良俗に反しない
   @State var legalCompliance: Bool = false
 
+  var isAgreeButtonEnabled: Bool {
+    noOffensiveContent && respectsCopyright && legalCompliance
+  }
+
   public var body: some View {
     ZStack {
       ZStack(alignment: .topTrailing) {
@@ -56,10 +77,12 @@ struct PostAgreementView: View {
             Text("This illustration was created using JOY.")
               .frame(maxWidth: .infinity, alignment: .trailing)
               .font(.caption)
+              .foregroundStyle(Color.black)
               .padding(8)
           }
           .frame(maxWidth: .infinity, alignment: .center)
           .frame(height: 200)
+          #if !SKIP
           .background {
             LinearGradient(
               colors: [
@@ -70,12 +93,15 @@ struct PostAgreementView: View {
               endPoint: UnitPoint(x: 0, y: 1)
             )
           }
+          #else
+          .background(Color.white)
+          #endif
 
           VStack(spacing: 16) {
             VStack(spacing: 8) {
               Text("Please review and agree to the following before creating an exhibition.")
                 .font(.headline)
-                .foregroundStyle(Color("text", bundle: .module))
+                .foregroundStyle(Color.black)
 
               PostAgreementItemView(
                 isChecked: $noOffensiveContent,
@@ -96,10 +122,15 @@ struct PostAgreementView: View {
             Button {
               onAgree()
             } label: {
-              Text("Agree")
-                .font(.headline)
+              if isAgreeButtonEnabled {
+                Text("Agree")
+                  .primaryButtonStyle()
+              } else {
+                Text("Agree")
+                  .disabledButtonStyle()
+              }
             }
-            .disabled(!noOffensiveContent || !respectsCopyright || !legalCompliance)
+            .disabled(!isAgreeButtonEnabled)
           }
           .padding(16)
         }
@@ -108,16 +139,16 @@ struct PostAgreementView: View {
           onDismiss()
         } label: {
           Image(systemName: "xmark")
-            .foregroundStyle(Color("text", bundle: .module))
+            .foregroundStyle(Color.black)
             .padding(8)
-            .background(Color("background", bundle: .module))
+            .background(Color.white)
             .clipShape(Circle())
             .padding(8)
         }
         .accessibilityLabel(Text("Close"))
       }
       .background {
-        Color("background", bundle: .module)
+        Color.white
       }
       .clipShape(RoundedRectangle(cornerRadius: 16))
       .padding(.horizontal, 24)

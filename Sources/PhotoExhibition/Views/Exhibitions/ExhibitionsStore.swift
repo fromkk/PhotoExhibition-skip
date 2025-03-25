@@ -40,6 +40,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   private let exhibitionsClient: any ExhibitionsClient
   private let currentUserClient: any CurrentUserClient
   private let membersClient: any MembersClient
+  private let memberUpdateClient: any MemberUpdateClient
   private let storageClient: any StorageClient
   private let imageCache: any StorageImageCacheProtocol
   private let photoClient: any PhotoClient
@@ -49,6 +50,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
     exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
     currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
     membersClient: any MembersClient = DefaultMembersClient(),
+    memberUpdateClient: any MemberUpdateClient = DefaultMemberUpdateClient(),
     storageClient: any StorageClient = DefaultStorageClient(),
     imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
     photoClient: any PhotoClient = DefaultPhotoClient(),
@@ -57,6 +59,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
     self.exhibitionsClient = exhibitionsClient
     self.currentUserClient = currentUserClient
     self.membersClient = membersClient
+    self.memberUpdateClient = memberUpdateClient
     self.storageClient = storageClient
     self.imageCache = imageCache
     self.photoClient = photoClient
@@ -90,7 +93,9 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
           if member.postAgreement {
             showCreateExhibitionView()
           } else {
-            showPostAgreement = true
+            withAnimation {
+              showPostAgreement = true
+            }
           }
         } catch {
           self.error = error
@@ -132,10 +137,24 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       exhibitionToEdit = nil
       exhibitionEditStore = nil
     case .postAgreementAccepted:
-      showPostAgreement = false
-      showCreateExhibitionView()
+      withAnimation {
+        showPostAgreement = false
+      }
+      guard let uid = currentUserClient.currentUser()?.uid else {
+        return
+      }
+      Task {
+        do {
+          _ = try await memberUpdateClient.postAgreement(memberID: uid)
+          showCreateExhibitionView()
+        } catch {
+          self.error = error
+        }
+      }
     case .postAgreementDismissed:
-      showPostAgreement = false
+      withAnimation {
+        showPostAgreement = false
+      }
     }
   }
 

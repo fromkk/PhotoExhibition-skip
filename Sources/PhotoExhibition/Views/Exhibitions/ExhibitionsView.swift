@@ -68,11 +68,15 @@ struct ExhibitionsView: View {
         }
         .toolbar {
           ToolbarItem(placement: .primaryAction) {
-            Button {
-              store.send(.createExhibitionButtonTapped)
-            } label: {
-              Image(systemName: SystemImageMapping.getIconName(from: "plus"))
-                .accessibilityLabel("Create a new exhibition")
+            if store.isLoadingMember {
+              ProgressView()
+            } else {
+              Button {
+                store.send(.createExhibitionButtonTapped)
+              } label: {
+                Image(systemName: SystemImageMapping.getIconName(from: "plus"))
+                  .accessibilityLabel("Create a new exhibition")
+              }
             }
           }
         }
@@ -90,6 +94,7 @@ struct ExhibitionsView: View {
           }
         }
       }
+      .disabled(store.showPostAgreement)
 
       if store.showPostAgreement {
         PostAgreementView(onAgree: {
@@ -97,6 +102,7 @@ struct ExhibitionsView: View {
         }, onDismiss: {
           store.send(.postAgreementDismissed)
         })
+        .transition(.opacity)
       }
     }
   }
