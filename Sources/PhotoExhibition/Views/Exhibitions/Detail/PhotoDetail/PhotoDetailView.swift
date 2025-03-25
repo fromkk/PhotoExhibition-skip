@@ -641,6 +641,7 @@ struct PhotoDetailView: View {
         store.send(.updatePhoto(title: title, description: description))
       }
     }
+    #if !SKIP
     .sheet(
       isPresented: $store.showExif,
       content: {
@@ -649,6 +650,7 @@ struct PhotoDetailView: View {
         }
       }
     )
+    #endif
     .alert("Delete Photo", isPresented: $store.showDeleteConfirmation) {
       Button("Cancel", role: .cancel) {}
       Button("Delete", role: .destructive) {
