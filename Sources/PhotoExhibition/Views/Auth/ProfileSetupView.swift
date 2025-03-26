@@ -194,11 +194,20 @@ struct ProfileSetupView: View {
               Spacer()
               HStack {
                 Spacer()
-                Image(systemName: SystemImageMapping.getIconName(from: "camera.circle.fill"))
+                #if SKIP
+                Image("camera.circle.fill", bundle: .module)
                   .resizable()
                   .frame(width: 30, height: 30)
                   .background(Circle().fill(Color("background", bundle: .module)))
                   .offset(x: 5, y: 5)
+                #else
+                Image(systemName: "camera.circle.fill")
+                  .resizable()
+                  .frame(width: 30, height: 30)
+                  .background(Circle().fill(Color("background", bundle: .module)))
+                  .offset(x: 5, y: 5)
+                #endif
+
               }
             }
             .frame(width: 120, height: 120)
