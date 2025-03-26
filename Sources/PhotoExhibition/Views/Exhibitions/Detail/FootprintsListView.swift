@@ -58,13 +58,6 @@ struct FootprintsListView: View {
     }
     .navigationTitle("Visitors")
     .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .cancellationAction) {
-        Button("Close") {
-          store.send(.closeButtonTapped)
-        }
-      }
-    }
     .task {
       store.send(.loadFootprints)
     }

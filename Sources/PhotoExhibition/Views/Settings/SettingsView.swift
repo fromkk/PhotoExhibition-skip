@@ -277,10 +277,12 @@ struct SettingsView: View {
       }
     }
     .navigationTitle(Text("Settings"))
-    .navigationDestination(isPresented: $store.isProfileEditPresented) {
+    .sheet(isPresented: $store.isProfileEditPresented) {
       if let profileSetupStore = store.profileSetupStore {
-        ProfileSetupView(store: profileSetupStore)
-          .navigationTitle(Text("Edit Profile"))
+        NavigationStack {
+          ProfileSetupView(store: profileSetupStore)
+            .navigationTitle(Text("Edit Profile"))
+        }
       }
     }
     .navigationDestination(isPresented: $store.showMyExhibitions) {

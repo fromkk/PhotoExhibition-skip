@@ -195,17 +195,17 @@ struct ProfileSetupView: View {
               HStack {
                 Spacer()
                 #if SKIP
-                Image("camera.circle.fill", bundle: .module)
-                  .resizable()
-                  .frame(width: 30, height: 30)
-                  .background(Circle().fill(Color("background", bundle: .module)))
-                  .offset(x: 5, y: 5)
+                  Image("camera.circle.fill", bundle: .module)
+                    .resizable()
+                    .frame(width: 30, height: 30)
+                    .background(Circle().fill(Color("background", bundle: .module)))
+                    .offset(x: 5, y: 5)
                 #else
-                Image(systemName: "camera.circle.fill")
-                  .resizable()
-                  .frame(width: 30, height: 30)
-                  .background(Circle().fill(Color("background", bundle: .module)))
-                  .offset(x: 5, y: 5)
+                  Image(systemName: "camera.circle.fill")
+                    .resizable()
+                    .frame(width: 30, height: 30)
+                    .background(Circle().fill(Color("background", bundle: .module)))
+                    .offset(x: 5, y: 5)
                 #endif
 
               }
