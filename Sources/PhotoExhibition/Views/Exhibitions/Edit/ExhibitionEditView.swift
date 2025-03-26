@@ -358,7 +358,9 @@ struct ExhibitionEditView: View {
                       }
                     }
                   }
-                ))
+                ),
+                matching: .images
+              )
             #endif
           }
         }

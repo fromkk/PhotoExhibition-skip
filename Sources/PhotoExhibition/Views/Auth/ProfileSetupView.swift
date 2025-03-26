@@ -263,7 +263,9 @@ struct ProfileSetupView: View {
                 }
               }
             }
-          ))
+          ),
+          matching: .images
+        )
       #endif
 
       TextField("Username", text: $store.name)

@@ -30,6 +30,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case loadCoverImage
     case addPhotoButtonTapped
     case photoSelected(URL?)
+    case photosSelected([URL])
     case loadPhotos
     case photoTapped(Photo)
     case updateUploadedPhoto(title: String, description: String)
@@ -39,9 +40,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case moveCompleted
     case showOrganizerProfile
     case dismissError
-    case recordFootprint
     case loadFootprints
-    case loadMoreFootprints
     case toggleFootprint
     case showFootprintsListTapped
   }
@@ -59,6 +58,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
   // 写真関連
   var photos: [Photo] = []
+  var isMovingPhotos: Bool = false
   var isLoadingPhotos: Bool = false
   var photoPickerPresented: Bool = false
   var selectedPhotoURL: URL? = nil
@@ -168,7 +168,30 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       }
     case .photoSelected(let url):
       if let url = url {
-        uploadPhoto(from: url)
+        isUploadingPhoto = true
+        Task {
+          do {
+            try await uploadPhoto(from: url, shouldShowEditSheet: true)
+          } catch {
+            self.error = error
+            self.isErrorAlertPresented = true
+          }
+          isUploadingPhoto = false
+        }
+      }
+    case let .photosSelected(urls):
+      guard !urls.isEmpty else { return }
+      isUploadingPhoto = true
+      Task {
+        do {
+          for url in urls {
+            try await uploadPhoto(from: url, shouldShowEditSheet: false)
+          }
+        } catch {
+          self.error = error
+          self.isErrorAlertPresented = true
+        }
+        isUploadingPhoto = false
       }
     case .loadPhotos:
       loadPhotos()
@@ -202,12 +225,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case .dismissError:
       error = nil
       isErrorAlertPresented = false
-    case .recordFootprint:
-      recordFootprint()
     case .loadFootprints:
       loadFootprints()
-    case .loadMoreFootprints:
-      loadMoreFootprints()
     case .toggleFootprint:
       toggleFootprint()
     case .showFootprintsListTapped:
@@ -278,51 +297,42 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     }
   }
 
-  private func uploadPhoto(from url: URL) {
+  private func uploadPhoto(from url: URL, shouldShowEditSheet: Bool) async throws {
     guard isOrganizer else { return }
 
-    isUploadingPhoto = true
+    // 一意のIDを生成
+    let photoId = UUID().uuidString
+    let photoPath = "exhibitions/\(exhibition.id)/photos/\(photoId)"
 
-    Task {
-      do {
-        // 一意のIDを生成
-        let photoId = UUID().uuidString
-        let photoPath = "exhibitions/\(exhibition.id)/photos/\(photoId)"
+    // 先に写真情報をFirestoreに保存（パスのみ）
+    let initialPhoto = try await photoClient.addPhoto(
+      exhibitionId: exhibition.id,
+      photoId: photoId,
+      path: photoPath,
+      sort: photos.count
+    )
 
-        // 先に写真情報をFirestoreに保存（パスのみ）
-        let initialPhoto = try await photoClient.addPhoto(
-          exhibitionId: exhibition.id,
-          photoId: photoId,
-          path: photoPath,
-          sort: photos.count
-        )
+    // 写真をStorageにアップロード
+    do {
+      try await storageClient.upload(from: url, to: photoPath)
 
-        // 写真をStorageにアップロード
-        do {
-          try await storageClient.upload(from: url, to: photoPath)
+      // 新しい写真を追加
+      photos.append(initialPhoto)
 
-          // 新しい写真を追加
-          photos.append(initialPhoto)
+      // アナリティクスイベントを記録
+      await analyticsClient.send(.photoUploaded, parameters: [:])
 
-          // アナリティクスイベントを記録
-          await analyticsClient.send(.photoUploaded, parameters: [:])
-
-          // アップロードした写真を選択して編集シートを表示
-          uploadedPhoto = initialPhoto
-          showPhotoEditSheet = true
-        } catch {
-          // 画像アップロードに失敗した場合、Firestoreから写真データを削除
-          print("Failed to upload photo: \(error.localizedDescription)")
-          try? await photoClient.deletePhoto(
-            exhibitionId: exhibition.id, photoId: initialPhoto.id)
-          self.error = error
-        }
-      } catch {
-        print("Failed to create photo data: \(error.localizedDescription)")
-        self.error = error
+      if shouldShowEditSheet {
+        // アップロードした写真を選択して編集シートを表示
+        uploadedPhoto = initialPhoto
+        showPhotoEditSheet = true
       }
-
-      isUploadingPhoto = false
+    } catch {
+      // 画像アップロードに失敗した場合、Firestoreから写真データを削除
+      print("Failed to upload photo: \(error.localizedDescription)")
+      try? await photoClient.deletePhoto(
+        exhibitionId: exhibition.id, photoId: initialPhoto.id)
+      throw error
     }
   }
 
@@ -465,9 +475,30 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     isOrganizerProfileShown = true
   }
 
-  private func recordFootprint() {
-    // 自動的に足跡を記録する機能は使わないため、空のメソッドにします
-  }
+  #if !SKIP
+    func moveImageToTempURL(_ item: PhotosPickerItem) async throws -> URL? {
+      if let data = try await item.loadTransferable(type: Data.self) {
+        let ext: String
+        switch data.imageFormat {
+        case .gif:
+          ext = "gif"
+        case .jpeg:
+          ext = "jpg"
+        case .png:
+          ext = "png"
+        default:
+          // サポートされていない画像形式のエラーを表示
+          throw ImageFormatError.unknownImageFormat
+        }
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
+          UUID().uuidString + "." + ext)
+        try data.write(to: tempURL)
+        return tempURL
+      } else {
+        return nil
+      }
+    }
+  #endif
 
   private func loadFootprints() {
     guard isOrganizer else { return }
@@ -485,10 +516,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
       isLoadingFootprints = false
     }
-  }
-
-  private func loadMoreFootprints() {
-    // 何もしない - この機能は FootprintsListStore に移動しました
   }
 
   private func toggleFootprint() {
@@ -801,7 +828,7 @@ struct ExhibitionDetailView: View {
                 Spacer()
 
                 if store.isOrganizer {
-                  if store.isUploadingPhoto {
+                  if store.isUploadingPhoto || store.isMovingPhotos {
                     ProgressView()
                   }
 
@@ -811,7 +838,9 @@ struct ExhibitionDetailView: View {
                     Label("Add", systemImage: SystemImageMapping.getIconName(from: "plus"))
                       .font(.subheadline)
                   }
-                  .disabled(store.photos.count >= maxExhibitionPhotos || store.isUploadingPhoto)
+                  .disabled(
+                    store.photos.count >= maxExhibitionPhotos || store.isUploadingPhoto
+                      || store.isMovingPhotos)
                 }
               }
             }
@@ -938,45 +967,30 @@ struct ExhibitionDetailView: View {
       .photosPicker(
         isPresented: $store.photoPickerPresented,
         selection: Binding(
-          get: { nil },
-          set: { item in
-            if let item = item {
-              Task {
-                do {
-                  if let data = try await item.loadTransferable(type: Data.self) {
-                    #if !SKIP
-                      let ext: String
-                      switch data.imageFormat {
-                      case .gif:
-                        ext = "gif"
-                      case .jpeg:
-                        ext = "jpg"
-                      case .png:
-                        ext = "png"
-                      default:
-                        // サポートされていない画像形式のエラーを表示
-                        store.error = ImageFormatError.unknownImageFormat
-                        store.isErrorAlertPresented = true
-                        return
-                      }
-                    #else
-                      // Skip環境では対応しない（拡張子の処理はSkipKit内で行われる）
-                      let ext = "jpg"
-                    #endif
-                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
-                      UUID().uuidString + "." + ext)
-                    try data.write(to: tempURL)
-                    store.send(.photoSelected(tempURL))
+          get: { [] },
+          set: { items in
+            guard !items.isEmpty else { return }
+            store.isMovingPhotos = true
+            Task {
+              do {
+                var urls: [URL] = []
+                for item in items {
+                  if let url = try await store.moveImageToTempURL(item) {
+                    urls.append(url)
                   }
-                } catch {
-                  logger.error("error \(error.localizedDescription)")
-                  store.error = error
-                  store.isErrorAlertPresented = true
                 }
+                store.isMovingPhotos = false
+                store.send(.photosSelected(urls))
+              } catch {
+                store.error = error
+                store.isErrorAlertPresented = true
               }
             }
           }
-        ))
+        ),
+        maxSelectionCount: 10,
+        matching: .images
+      )
     #endif
     .sheet(isPresented: $store.showReport) {
       if let reportStore = store.reportStore {
