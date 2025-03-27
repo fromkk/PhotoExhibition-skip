@@ -30,7 +30,13 @@ final class RootStore: Store {
   private(set) var isSignedIn: Bool = false {
     didSet {
       if isSignedIn {
-        exhibitionsStore = ExhibitionsStore()
+        // クライアントの生成
+        let exhibitionsClient = DefaultExhibitionsClient(
+          blockClient: DefaultBlockClient.shared,
+          currentUserClient: DefaultCurrentUserClient()
+        )
+
+        exhibitionsStore = ExhibitionsStore(exhibitionsClient: exhibitionsClient)
         settingsStore = SettingsStore()
         settingsStore?.delegate = self
       } else {

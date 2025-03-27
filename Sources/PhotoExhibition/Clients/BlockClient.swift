@@ -10,50 +10,71 @@ import OSLog
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BlockClient")
 
 protocol BlockClient: Sendable {
-  func blockUser(_ userId: String) async throws
-  func unblockUser(_ userId: String) async throws
-  func isBlocked(_ userId: String) async throws -> Bool
+  func blockUser(currentUserId: String, blockUserId: String) async throws
+  func unblockUser(currentUserId: String, blockUserId: String) async throws
+  func isBlocked(currentUserId: String, blockUserId: String) async throws -> Bool
+  func fetchBlockedUserIds(currentUserId: String) async throws -> [String]
 }
 
 actor DefaultBlockClient: BlockClient {
-  private let db: Firestore
-  private let currentUserId: String
+  static let shared = DefaultBlockClient()
 
-  init(db: Firestore = Firestore.firestore(), currentUserId: String) {
+  private let db: Firestore
+
+  init(db: Firestore = Firestore.firestore()) {
     self.db = db
-    self.currentUserId = currentUserId
   }
 
-  func blockUser(_ userId: String) async throws {
-    logger.info("blockUser: \(userId)")
+  func blockUser(currentUserId: String, blockUserId: String) async throws {
+    logger.info("blockUser: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
-    let blockedUser = BlockedUser(userId: userId, createdAt: Date())
+    let blockedUser = BlockedUser(userId: blockUserId, createdAt: Date())
     try await db.collection("members")
       .document(currentUserId)
       .collection("blocked")
-      .document(userId)
+      .document(blockUserId)
       .setData(blockedUser.toData())
   }
 
-  func unblockUser(_ userId: String) async throws {
-    logger.info("unblockUser: \(userId)")
+  func unblockUser(currentUserId: String, blockUserId: String) async throws {
+    logger.info("unblockUser: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
     try await db.collection("members")
       .document(currentUserId)
       .collection("blocked")
-      .document(userId)
+      .document(blockUserId)
       .delete()
   }
 
-  func isBlocked(_ userId: String) async throws -> Bool {
-    logger.info("isBlocked checking: \(userId)")
+  func isBlocked(currentUserId: String, blockUserId: String) async throws -> Bool {
+    logger.info("isBlocked checking: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
     let document = try await db.collection("members")
       .document(currentUserId)
       .collection("blocked")
-      .document(userId)
+      .document(blockUserId)
       .getDocument()
 
     return document.exists
+  }
+
+  func fetchBlockedUserIds(currentUserId: String) async throws -> [String] {
+    logger.info("fetchBlockedUserIds for user: \(currentUserId)")
+
+    let snapshot = try await db.collection("members")
+      .document(currentUserId)
+      .collection("blocked")
+      .getDocuments()
+
+    var userIds: [String] = []
+    for document in snapshot.documents {
+      let data = document.data()
+      if let userId = data["userId"] as? String {
+        userIds.append(userId)
+      }
+    }
+
+    logger.info("Found \(userIds.count) blocked users")
+    return userIds
   }
 }

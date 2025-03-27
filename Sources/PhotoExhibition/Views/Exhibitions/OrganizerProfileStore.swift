@@ -45,7 +45,7 @@ final class OrganizerProfileStore: Store {
   private let photoClient: any PhotoClient
   private let currentUserClient: any CurrentUserClient
   private let storageClient: any StorageClient
-  private var blockClient: BlockClient?
+  private var blockClient: any BlockClient
 
   init(
     organizer: Member,
@@ -54,7 +54,8 @@ final class OrganizerProfileStore: Store {
     analyticsClient: any AnalyticsClient = DefaultAnalyticsClient(),
     photoClient: any PhotoClient = DefaultPhotoClient(),
     currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
-    storageClient: any StorageClient = DefaultStorageClient()
+    storageClient: any StorageClient = DefaultStorageClient(),
+    blockClient: any BlockClient = DefaultBlockClient.shared
   ) {
     self.organizer = organizer
     self.exhibitionsClient = exhibitionsClient
@@ -63,11 +64,7 @@ final class OrganizerProfileStore: Store {
     self.photoClient = photoClient
     self.currentUserClient = currentUserClient
     self.storageClient = storageClient
-
-    // ログインユーザーIDを取得してBlockClientを初期化
-    if let currentUser = currentUserClient.currentUser() {
-      self.blockClient = DefaultBlockClient(currentUserId: currentUser.uid)
-    }
+    self.blockClient = blockClient
   }
 
   func send(_ action: Action) {
@@ -179,11 +176,14 @@ final class OrganizerProfileStore: Store {
   }
 
   private func checkBlockStatus() {
-    guard let blockClient = blockClient else { return }
+    guard let currentUser = currentUserClient.currentUser() else {
+      return
+    }
 
     Task {
       do {
-        let isBlocked = try await blockClient.isBlocked(organizer.id)
+        let isBlocked = try await blockClient.isBlocked(
+          currentUserId: currentUser.uid, blockUserId: organizer.id)
         send(.blockStateChanged(isBlocked))
       } catch {
         print("Failed to check block status: \(error.localizedDescription)")
@@ -192,13 +192,15 @@ final class OrganizerProfileStore: Store {
   }
 
   private func blockUser() {
-    guard let blockClient = blockClient, !isBlockingUser else { return }
+    guard let currentUser = currentUserClient.currentUser(),
+      !isBlockingUser
+    else { return }
 
     isBlockingUser = true
 
     Task {
       do {
-        try await blockClient.blockUser(organizer.id)
+        try await blockClient.blockUser(currentUserId: currentUser.uid, blockUserId: organizer.id)
         send(.blockUserCompleted)
       } catch {
         print("Failed to block user: \(error.localizedDescription)")
@@ -208,13 +210,15 @@ final class OrganizerProfileStore: Store {
   }
 
   private func unblockUser() {
-    guard let blockClient = blockClient, !isBlockingUser else { return }
+    guard let currentUser = currentUserClient.currentUser(),
+      !isBlockingUser
+    else { return }
 
     isBlockingUser = true
 
     Task {
       do {
-        try await blockClient.unblockUser(organizer.id)
+        try await blockClient.unblockUser(currentUserId: currentUser.uid, blockUserId: organizer.id)
         send(.unblockUserCompleted)
       } catch {
         print("Failed to unblock user: \(error.localizedDescription)")
