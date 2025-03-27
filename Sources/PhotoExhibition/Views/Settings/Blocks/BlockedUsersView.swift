@@ -12,6 +12,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 final class BlockedUsersStore: Store {
   enum Action: Sendable {
     case task
+    case refreshed
     case unblockButtonTapped(String)
     case unblockUserCompleted(String)
   }
@@ -38,6 +39,8 @@ final class BlockedUsersStore: Store {
   func send(_ action: Action) {
     switch action {
     case .task:
+      loadBlockedUsers()
+    case .refreshed:
       loadBlockedUsers()
     case .unblockButtonTapped(let userId):
       unblockUser(userId)
@@ -142,11 +145,11 @@ struct BlockedUsersView: View {
       }
     }
     .navigationTitle("Blocked Users")
-    .task {
+    .onAppear {
       store.send(.task)
     }
     .refreshable {
-      store.send(.task)
+      store.send(.refreshed)
     }
     .alert(
       "Error",

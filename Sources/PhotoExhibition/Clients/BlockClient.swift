@@ -19,17 +19,11 @@ protocol BlockClient: Sendable {
 actor DefaultBlockClient: BlockClient {
   static let shared = DefaultBlockClient()
 
-  private let db: Firestore
-
-  init(db: Firestore = Firestore.firestore()) {
-    self.db = db
-  }
-
   func blockUser(currentUserId: String, blockUserId: String) async throws {
     logger.info("blockUser: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
     let blockedUser = BlockedUser(userId: blockUserId, createdAt: Date())
-    try await db.collection("members")
+    try await Firestore.firestore().collection("members")
       .document(currentUserId)
       .collection("blocked")
       .document(blockUserId)
@@ -39,7 +33,7 @@ actor DefaultBlockClient: BlockClient {
   func unblockUser(currentUserId: String, blockUserId: String) async throws {
     logger.info("unblockUser: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
-    try await db.collection("members")
+    try await Firestore.firestore().collection("members")
       .document(currentUserId)
       .collection("blocked")
       .document(blockUserId)
@@ -49,7 +43,7 @@ actor DefaultBlockClient: BlockClient {
   func isBlocked(currentUserId: String, blockUserId: String) async throws -> Bool {
     logger.info("isBlocked checking: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
-    let document = try await db.collection("members")
+    let document = try await Firestore.firestore().collection("members")
       .document(currentUserId)
       .collection("blocked")
       .document(blockUserId)
@@ -61,7 +55,7 @@ actor DefaultBlockClient: BlockClient {
   func fetchBlockedUserIds(currentUserId: String) async throws -> [String] {
     logger.info("fetchBlockedUserIds for user: \(currentUserId)")
 
-    let snapshot = try await db.collection("members")
+    let snapshot = try await Firestore.firestore().collection("members")
       .document(currentUserId)
       .collection("blocked")
       .getDocuments()

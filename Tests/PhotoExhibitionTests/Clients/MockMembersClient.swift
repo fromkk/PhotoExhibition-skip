@@ -43,7 +43,7 @@ final class MockMembersClient: MembersClient {
     errorToThrow = nil
   }
 
-  func addMockMember(_ member: Member) {
+  func addMockMember(_ member: Member) async throws {
     mockMembers.append(member)
   }
 }

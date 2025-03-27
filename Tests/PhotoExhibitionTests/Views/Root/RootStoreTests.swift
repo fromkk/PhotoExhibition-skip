@@ -64,7 +64,7 @@ final class RootStoreTests: XCTestCase {
     )
 
     mockCurrentUserClient.mockUser = User(uid: userID)
-    mockMembersClient.addMockMember(testMember)
+    try await mockMembersClient.addMockMember(testMember)
 
     let store = RootStore(
       currentUserClient: mockCurrentUserClient,
@@ -102,7 +102,7 @@ final class RootStoreTests: XCTestCase {
     )
 
     mockCurrentUserClient.mockUser = User(uid: userID)
-    mockMembersClient.addMockMember(testMember)
+    try await mockMembersClient.addMockMember(testMember)
 
     let store = RootStore(
       currentUserClient: mockCurrentUserClient,
