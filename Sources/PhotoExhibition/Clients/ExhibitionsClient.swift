@@ -26,7 +26,7 @@ protocol ExhibitionsClient: Sendable {
 }
 
 actor DefaultExhibitionsClient: ExhibitionsClient {
-  private let pageSize = 10
+  private let pageSize = 30
   private let blockClient: any BlockClient
   private let currentUserClient: CurrentUserClient
 
