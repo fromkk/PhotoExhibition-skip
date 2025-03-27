@@ -17,9 +17,9 @@ final class MockMembersClient: MembersClient {
 
   // MARK: - MembersClientプロトコルの実装
 
-  func fetch(_ UIDs: [any Sendable]) async throws -> [Member] {
+  func fetch(_ UIDs: [String]) async throws -> [Member] {
     fetchWasCalled = true
-    fetchArguments = UIDs.map { $0 as! String }
+    fetchArguments = UIDs
 
     if !shouldSucceed, let error = errorToThrow {
       throw error
@@ -27,7 +27,7 @@ final class MockMembersClient: MembersClient {
 
     // 指定されたUIDに一致するメンバーだけを返す
     return mockMembers.filter { member in
-      UIDs.filter({ ($0 as! String) == member.id }).count > 0
+      UIDs.filter({ $0 == member.id }).count > 0
     }
   }
 
