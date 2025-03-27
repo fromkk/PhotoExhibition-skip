@@ -95,6 +95,12 @@ struct OrganizerProfileView: View {
             Text(store.organizer.name ?? "No Name")
               .font(.title)
               .fontWeight(.bold)
+
+            // ブロックUI - ナビゲーションバーに移動したので削除
+            if store.isBlockingUser {
+              ProgressView()
+                .padding(.top, 4)
+            }
           }
           .padding()
 
@@ -112,6 +118,39 @@ struct OrganizerProfileView: View {
     .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
       if let detailStore = store.exhibitionDetailStore {
         ExhibitionDetailView(store: detailStore)
+      }
+    }
+    .toolbar {
+      if store.canShowBlockButton {
+        ToolbarItem(placement: .primaryAction) {
+          Menu {
+            if store.isBlocked {
+              Button {
+                store.send(.unblockButtonTapped)
+              } label: {
+                #if SKIP
+                  Text("Unblock User")
+                #else
+                  Label("Unblock User", systemImage: "person.crop.circle.badge.checkmark")
+                #endif
+              }
+              .disabled(store.isBlockingUser)
+            } else {
+              Button(role: .destructive) {
+                store.send(.blockButtonTapped)
+              } label: {
+                #if SKIP
+                  Text("Block User")
+                #else
+                  Label("Block User", systemImage: "person.crop.circle.badge.xmark")
+                #endif
+              }
+              .disabled(store.isBlockingUser)
+            }
+          } label: {
+            Image(systemName: SystemImageMapping.getIconName(from: "ellipsis"))
+          }
+        }
       }
     }
     .task {
