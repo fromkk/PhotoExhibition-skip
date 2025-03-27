@@ -97,7 +97,7 @@ final class SettingsStoreTests: XCTestCase {
     XCTAssertTrue(store.isLogoutConfirmationPresented)
   }
 
-  func testTask() async {
+  func testTask() async throws {
     // Arrange
     let userId = "test-user-id"
     let testMember = Member(
@@ -109,7 +109,7 @@ final class SettingsStoreTests: XCTestCase {
     )
 
     mockCurrentUserClient.mockUser = User(uid: userId)
-    mockMembersClient.addMockMember(testMember)
+    try await mockMembersClient.addMockMember(testMember)
 
     let store = SettingsStore(
       currentUserClient: mockCurrentUserClient,
@@ -143,7 +143,7 @@ final class SettingsStoreTests: XCTestCase {
     XCTAssertTrue(store.isProfileEditPresented)
   }
 
-  func testDidCompleteProfileSetup() async {
+  func testDidCompleteProfileSetup() async throws {
     // Arrange
     let userId = "test-user-id"
     let testMember = Member(
@@ -155,7 +155,7 @@ final class SettingsStoreTests: XCTestCase {
     )
 
     mockCurrentUserClient.mockUser = User(uid: userId)
-    mockMembersClient.addMockMember(testMember)
+    try await mockMembersClient.addMockMember(testMember)
 
     let store = SettingsStore(
       currentUserClient: mockCurrentUserClient,

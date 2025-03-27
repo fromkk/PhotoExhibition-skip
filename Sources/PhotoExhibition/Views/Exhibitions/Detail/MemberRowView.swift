@@ -58,7 +58,7 @@ struct MemberRowView: View {
     }
     .task {
       do {
-        let userIds: [any Sendable] = [userId]
+        let userIds: [String] = [userId]
         if let member = await memberCache.getMember(withID: userId) {
           userName = member.name
           if let iconPath = member.iconPath {

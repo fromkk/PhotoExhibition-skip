@@ -30,7 +30,13 @@ final class RootStore: Store {
   private(set) var isSignedIn: Bool = false {
     didSet {
       if isSignedIn {
-        exhibitionsStore = ExhibitionsStore()
+        // クライアントの生成
+        let exhibitionsClient = DefaultExhibitionsClient(
+          blockClient: DefaultBlockClient.shared,
+          currentUserClient: DefaultCurrentUserClient()
+        )
+
+        exhibitionsStore = ExhibitionsStore(exhibitionsClient: exhibitionsClient)
         settingsStore = SettingsStore()
         settingsStore?.delegate = self
       } else {
@@ -55,7 +61,7 @@ final class RootStore: Store {
       if let currentUser = currentUserClient.currentUser() {
         Task {
           do {
-            let uids: [any Sendable] = [currentUser.uid]
+            let uids = [currentUser.uid]
             let members = try await membersClient.fetch(uids)
             if let member = members.first {
               await MainActor.run {

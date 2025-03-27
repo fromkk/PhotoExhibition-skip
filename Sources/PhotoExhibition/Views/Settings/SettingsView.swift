@@ -21,6 +21,7 @@ protocol SettingsStoreDelegate: AnyObject {
   var isProfileEditPresented: Bool = false
   var showMyExhibitions: Bool = false
   var showContact: Bool = false
+  var showBlockedUsers: Bool = false
   #if !SKIP
     var showLicenseList: Bool = false
   #endif
@@ -31,6 +32,8 @@ protocol SettingsStoreDelegate: AnyObject {
   private(set) var myExhibitionsStore: MyExhibitionsStore?
   // 問い合わせ画面用のストア
   private(set) var contactStore: ContactStore?
+  // ブロックユーザー一覧画面用のストア
+  private(set) var blockedUsersStore: BlockedUsersStore?
   #if !SKIP
     // ライセンス画面のストア
     private(set) var licenseStore: LicenseListStore?
@@ -56,6 +59,7 @@ protocol SettingsStoreDelegate: AnyObject {
     case deleteAccountButtonTapped
     case presentDeleteAccountConfirmation
     case contactButtonTapped
+    case blockedUsersButtonTapped
     #if !SKIP
       case licenseButtonTapped
     #endif
@@ -113,6 +117,9 @@ protocol SettingsStoreDelegate: AnyObject {
     case .contactButtonTapped:
       contactStore = ContactStore()
       showContact = true
+    case .blockedUsersButtonTapped:
+      blockedUsersStore = BlockedUsersStore()
+      showBlockedUsers = true
     #if !SKIP
       case .licenseButtonTapped:
         licenseStore = LicenseListStore()
@@ -133,7 +140,7 @@ protocol SettingsStoreDelegate: AnyObject {
     }
 
     do {
-      let uids: [any Sendable] = [user.uid]
+      let uids = [user.uid]
       let members = try await membersClient.fetch(uids)
       if let fetchedMember = members.first {
         member = fetchedMember
@@ -179,9 +186,7 @@ struct SettingsView: View {
           }
           .buttonStyle(.plain)
         }
-      }
 
-      Section {
         Button {
           store.send(.myExhibitionsButtonTapped)
         } label: {
@@ -194,6 +199,20 @@ struct SettingsView: View {
                 .frame(width: 24, height: 24)
             #endif
             Text("My Exhibitions")
+              .padding(.leading, 8)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          #if !SKIP
+            .contentShape(Rectangle())
+          #endif
+        }
+        .buttonStyle(.plain)
+
+        Button {
+          store.send(.blockedUsersButtonTapped)
+        } label: {
+          HStack {
+            Text("Blocked Users")
               .padding(.leading, 8)
           }
           .frame(maxWidth: .infinity, alignment: .leading)
@@ -294,6 +313,12 @@ struct SettingsView: View {
     .navigationDestination(isPresented: $store.showContact) {
       if let contactStore = store.contactStore {
         ContactView(store: contactStore)
+      }
+    }
+    .navigationDestination(isPresented: $store.showBlockedUsers) {
+      if let blockedUsersStore = store.blockedUsersStore {
+        BlockedUsersView(store: blockedUsersStore)
+          .navigationTitle(Text("Blocked Users"))
       }
     }
     #if !SKIP

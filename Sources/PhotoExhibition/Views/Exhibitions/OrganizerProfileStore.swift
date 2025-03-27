@@ -11,6 +11,11 @@ final class OrganizerProfileStore: Store {
     case task
     case loadMoreExhibitions
     case showExhibitionDetail(Exhibition)
+    case blockButtonTapped
+    case unblockButtonTapped
+    case blockUserCompleted
+    case unblockUserCompleted
+    case blockStateChanged(Bool)
   }
 
   var organizer: Member
@@ -21,6 +26,13 @@ final class OrganizerProfileStore: Store {
   var hasMore: Bool = true
   var organizerIconURL: URL? = nil
   var isLoadingIcon: Bool = false
+  var isBlocked: Bool = false
+  var isBlockingUser: Bool = false
+
+  var canShowBlockButton: Bool {
+    guard let currentUser = currentUserClient.currentUser() else { return false }
+    return currentUser.uid != organizer.id
+  }
 
   // 選択された展示会の詳細画面用のストアを保持
   private(set) var exhibitionDetailStore: ExhibitionDetailStore?
@@ -33,6 +45,7 @@ final class OrganizerProfileStore: Store {
   private let photoClient: any PhotoClient
   private let currentUserClient: any CurrentUserClient
   private let storageClient: any StorageClient
+  private var blockClient: any BlockClient
 
   init(
     organizer: Member,
@@ -41,7 +54,8 @@ final class OrganizerProfileStore: Store {
     analyticsClient: any AnalyticsClient = DefaultAnalyticsClient(),
     photoClient: any PhotoClient = DefaultPhotoClient(),
     currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
-    storageClient: any StorageClient = DefaultStorageClient()
+    storageClient: any StorageClient = DefaultStorageClient(),
+    blockClient: any BlockClient = DefaultBlockClient.shared
   ) {
     self.organizer = organizer
     self.exhibitionsClient = exhibitionsClient
@@ -50,6 +64,7 @@ final class OrganizerProfileStore: Store {
     self.photoClient = photoClient
     self.currentUserClient = currentUserClient
     self.storageClient = storageClient
+    self.blockClient = blockClient
   }
 
   func send(_ action: Action) {
@@ -63,6 +78,7 @@ final class OrganizerProfileStore: Store {
       }
       loadIcon()
       fetchExhibitions()
+      checkBlockStatus()
 
     case .loadMoreExhibitions:
       if !isLoading && hasMore {
@@ -79,6 +95,23 @@ final class OrganizerProfileStore: Store {
         photoClient: photoClient
       )
       isExhibitionDetailShown = true
+
+    case .blockButtonTapped:
+      blockUser()
+
+    case .unblockButtonTapped:
+      unblockUser()
+
+    case .blockUserCompleted:
+      isBlocked = true
+      isBlockingUser = false
+
+    case .unblockUserCompleted:
+      isBlocked = false
+      isBlockingUser = false
+
+    case .blockStateChanged(let isBlocked):
+      self.isBlocked = isBlocked
     }
   }
 
@@ -139,6 +172,58 @@ final class OrganizerProfileStore: Store {
       }
 
       isLoading = false
+    }
+  }
+
+  private func checkBlockStatus() {
+    guard let currentUser = currentUserClient.currentUser() else {
+      return
+    }
+
+    Task {
+      do {
+        let isBlocked = try await blockClient.isBlocked(
+          currentUserId: currentUser.uid, blockUserId: organizer.id)
+        send(.blockStateChanged(isBlocked))
+      } catch {
+        print("Failed to check block status: \(error.localizedDescription)")
+      }
+    }
+  }
+
+  private func blockUser() {
+    guard let currentUser = currentUserClient.currentUser(),
+      !isBlockingUser
+    else { return }
+
+    isBlockingUser = true
+
+    Task {
+      do {
+        try await blockClient.blockUser(currentUserId: currentUser.uid, blockUserId: organizer.id)
+        send(.blockUserCompleted)
+      } catch {
+        print("Failed to block user: \(error.localizedDescription)")
+        isBlockingUser = false
+      }
+    }
+  }
+
+  private func unblockUser() {
+    guard let currentUser = currentUserClient.currentUser(),
+      !isBlockingUser
+    else { return }
+
+    isBlockingUser = true
+
+    Task {
+      do {
+        try await blockClient.unblockUser(currentUserId: currentUser.uid, blockUserId: organizer.id)
+        send(.unblockUserCompleted)
+      } catch {
+        print("Failed to unblock user: \(error.localizedDescription)")
+        isBlockingUser = false
+      }
     }
   }
 }

@@ -26,7 +26,17 @@ protocol ExhibitionsClient: Sendable {
 }
 
 actor DefaultExhibitionsClient: ExhibitionsClient {
-  private let pageSize = 10
+  private let pageSize = 30
+  private let blockClient: any BlockClient
+  private let currentUserClient: CurrentUserClient
+
+  init(
+    blockClient: any BlockClient = DefaultBlockClient.shared,
+    currentUserClient: CurrentUserClient = DefaultCurrentUserClient()
+  ) {
+    self.blockClient = blockClient
+    self.currentUserClient = currentUserClient
+  }
 
   func fetch(now: Date, cursor: String?) async throws -> (
     exhibitions: [Exhibition], nextCursor: String?
@@ -34,11 +44,20 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
     logger.info("fetch cursor: \(String(describing: cursor))")
     let firestore = Firestore.firestore()
 
+    // ブロックしているユーザー一覧を取得し、そのユーザーが主催している展示会を除外する
+    var blockedUserIds: [String] = []
+    if let currentUser = currentUserClient.currentUser() {
+      blockedUserIds =
+        try await blockClient
+        .fetchBlockedUserIds(currentUserId: currentUser.uid)
+      logger.info("Excluding exhibitions from \(blockedUserIds.count) blocked users")
+    }
+
     var query = firestore.collection("exhibitions")
       .whereField("from", isLessThanOrEqualTo: Timestamp(date: now))
       .whereField("to", isGreaterThanOrEqualTo: Timestamp(date: now))
       .whereField("status", isEqualTo: ExhibitionStatus.published.rawValue)
-      .order(by: "to", descending: true)
+      .order(by: "from", descending: true)
       #if SKIP
         .limit(to: Int64(pageSize))
       #else
@@ -58,6 +77,14 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
       let data = document.data()
       guard let organizerUID = data["organizer"] as? String else {
         continue
+      }
+
+      // 30件以上のブロックユーザーがいる場合、whereNotInで除外できなかった残りのユーザーをここでフィルタリング
+      if !blockedUserIds.isEmpty {
+        if blockedUserIds.contains(organizerUID) {
+          logger.info("スキップ: ブロック中のユーザー \(organizerUID) の展示 (2次フィルタリング)")
+          continue
+        }
       }
 
       // キャッシュからメンバーを取得を試みる
@@ -84,6 +111,15 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
         // 取得したメンバーをキャッシュに保存
         await DefaultMemberCacheClient.shared.setMember(organizer)
         result.append(exhibition)
+      }
+    }
+
+    // すべてブロックしていた場合、またはフィルタリングにより結果が空の場合は、次のページを取得
+    if result.isEmpty && exhibitions.documents.count > 0 {
+      let nextCursor = exhibitions.documents.last?.documentID
+      if let nextCursor = nextCursor {
+        let (nextExhibitions, furtherCursor) = try await fetch(now: now, cursor: nextCursor)
+        return (nextExhibitions, furtherCursor)
       }
     }
 
