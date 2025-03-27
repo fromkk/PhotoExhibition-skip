@@ -72,7 +72,7 @@ final class FootprintsListStore: Store {
   private func showUserProfile(userId: String) {
     Task {
       do {
-        let userIds: [any Sendable] = [userId]
+        let userIds = [userId]
         let members = try await membersClient.fetch(userIds)
         if let member = members.first {
           self.memberProfileStore = OrganizerProfileStore(organizer: member)

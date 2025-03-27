@@ -82,7 +82,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       isLoadingMember = true
       Task {
         do {
-          let uids: [any Sendable] = [uid]
+          let uids = [uid]
           let result = try await membersClient.fetch(uids)
           isLoadingMember = false
           guard let member = result.first else {

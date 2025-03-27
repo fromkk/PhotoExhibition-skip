@@ -154,6 +154,22 @@
         }
       }
     },
+    "Blocked Users" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block list"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブロックリスト"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "ja" : {
@@ -603,6 +619,16 @@
         }
       }
     },
+    "No blocked users" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブロックしているユーザーはいません"
+          }
+        }
+      }
+    },
     "No Exhibitions" : {
       "localizations" : {
         "ja" : {
@@ -1016,6 +1042,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タイトル"
+          }
+        }
+      }
+    },
+    "Unblock" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブロック解除"
           }
         }
       }
