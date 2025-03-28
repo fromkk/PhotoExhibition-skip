@@ -9,6 +9,25 @@ import XCTest
 #endif
 
 @MainActor
+final class MockExhibitionEditStoreDelegate: ExhibitionEditStoreDelegate {
+  var didSaveExhibitionCalled = false
+  var didCancelExhibitionCalled = false
+
+  func didSaveExhibition() {
+    didSaveExhibitionCalled = true
+  }
+
+  func didCancelExhibition() {
+    didCancelExhibitionCalled = true
+  }
+
+  func reset() {
+    didSaveExhibitionCalled = false
+    didCancelExhibitionCalled = false
+  }
+}
+
+@MainActor
 final class ExhibitionEditStoreTests: XCTestCase {
   // テスト用のモックデータ
   private var testExhibition: Exhibition!
@@ -17,8 +36,19 @@ final class ExhibitionEditStoreTests: XCTestCase {
   private var mockStorageClient: MockStorageClient!
   private var mockStorageImageCache: MockStorageImageCache!
   private var mockAnalyticsClient: MockAnalyticsClient!
+  private var mockPhotoClient: MockPhotoClient!
+  private var mockMember: Member!
 
   override func setUp() async throws {
+    // モックメンバーを作成
+    mockMember = Member(
+      id: "test-user-id",
+      name: "Test User",
+      icon: nil,
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+
     // テスト用の展示会データを作成
     testExhibition = Exhibition(
       id: "test-exhibition-id",
@@ -26,13 +56,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
       description: "Test Description",
       from: Date(),
       to: Date().addingTimeInterval(60 * 60 * 24 * 7),  // 1週間後
-      organizer: Member(
-        id: "organizer-id",
-        name: "Organizer Name",
-        icon: nil,
-        createdAt: Date(),
-        updatedAt: Date()
-      ),
+      organizer: mockMember,
       coverImagePath: "test/cover-image.jpg",
       createdAt: Date(),
       updatedAt: Date()
@@ -44,6 +68,10 @@ final class ExhibitionEditStoreTests: XCTestCase {
     mockStorageClient = MockStorageClient()
     mockStorageImageCache = MockStorageImageCache()
     mockAnalyticsClient = MockAnalyticsClient()
+    mockPhotoClient = MockPhotoClient()
+
+    // CurrentUserClientのモック設定
+    mockCurrentUserClient.mockUser = User(uid: mockMember.id)
   }
 
   override func tearDown() async throws {
@@ -53,6 +81,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
     mockStorageClient = nil
     mockStorageImageCache = nil
     mockAnalyticsClient = nil
+    mockPhotoClient = nil
   }
 
   // MARK: - 初期化のテスト
@@ -580,5 +609,136 @@ final class ExhibitionEditStoreTests: XCTestCase {
 
     // 検証
     XCTAssertTrue(mockDelegate.didCancelExhibitionCalled, "Delegate method should be called")
+  }
+
+  // MARK: - ステータス変更のテスト
+
+  func testStatusChangedActionToPublishedWithNoPhotosShowsError() async throws {
+    // Setup
+    let store = ExhibitionEditStore(
+      mode: ExhibitionEditStore.Mode.edit(testExhibition),
+      delegate: nil,
+      currentUserClient: mockCurrentUserClient,
+      exhibitionsClient: mockExhibitionsClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      analyticsClient: mockAnalyticsClient,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真がない状態を設定
+    mockPhotoClient.fetchPhotosResult = []
+
+    // Act
+    store.send(ExhibitionEditStore.Action.statusChanged(ExhibitionStatus.published))
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
+
+    // Assert
+    XCTAssertNotNil(store.error)
+    XCTAssertTrue(store.showError)
+    XCTAssertTrue(mockPhotoClient.fetchPhotosWasCalled)
+    XCTAssertEqual(mockPhotoClient.fetchPhotosExhibitionId, testExhibition.id)
+    XCTAssertEqual(store.status, ExhibitionStatus.draft)
+  }
+
+  func testStatusChangedActionToPublishedWithPhotosSucceeds() async throws {
+    // Setup
+    let store = ExhibitionEditStore(
+      mode: ExhibitionEditStore.Mode.edit(testExhibition),
+      delegate: nil,
+      currentUserClient: mockCurrentUserClient,
+      exhibitionsClient: mockExhibitionsClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      analyticsClient: mockAnalyticsClient,
+      photoClient: mockPhotoClient
+    )
+
+    // テスト用の写真を作成
+    let testPhoto = Photo(
+      id: "id",
+      path: "path",
+      path_256x256: nil,
+      path_512x512: nil,
+      path_1024x1024: nil,
+      title: "title",
+      description: "description",
+      metadata: nil,
+      sort: 0,
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+    mockPhotoClient.fetchPhotosResult = [testPhoto]
+
+    // Act
+    store.send(ExhibitionEditStore.Action.statusChanged(ExhibitionStatus.published))
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
+
+    // Assert
+    XCTAssertNil(store.error)
+    XCTAssertFalse(store.showError)
+    XCTAssertTrue(mockPhotoClient.fetchPhotosWasCalled)
+    XCTAssertEqual(mockPhotoClient.fetchPhotosExhibitionId, testExhibition.id)
+    XCTAssertEqual(store.status, ExhibitionStatus.published)
+  }
+
+  func testSaveExhibitionWithPublishedStatusAndNoPhotosShowsError() async throws {
+    // Setup
+    let store = ExhibitionEditStore(
+      mode: ExhibitionEditStore.Mode.edit(testExhibition),
+      delegate: nil,
+      currentUserClient: mockCurrentUserClient,
+      exhibitionsClient: mockExhibitionsClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      analyticsClient: mockAnalyticsClient,
+      photoClient: mockPhotoClient
+    )
+
+    // 写真がない状態を設定
+    mockPhotoClient.fetchPhotosResult = []
+
+    // 公開ステータスに設定
+    store.status = ExhibitionStatus.published
+
+    // Act
+    store.send(ExhibitionEditStore.Action.saveButtonTapped)
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
+
+    // Assert
+    XCTAssertNotNil(store.error)
+    XCTAssertTrue(store.showError)
+    XCTAssertTrue(mockPhotoClient.fetchPhotosWasCalled)
+    XCTAssertEqual(mockPhotoClient.fetchPhotosExhibitionId, testExhibition.id)
+    XCTAssertFalse(mockExhibitionsClient.updateWasCalled)
+  }
+
+  func testSaveExhibitionInCreateModeWithPublishedStatusAutomaticallySetsToDraft() async throws {
+    // Setup
+    let store = ExhibitionEditStore(
+      mode: ExhibitionEditStore.Mode.create,
+      delegate: nil,
+      currentUserClient: mockCurrentUserClient,
+      exhibitionsClient: mockExhibitionsClient,
+      storageClient: mockStorageClient,
+      imageCache: mockStorageImageCache,
+      analyticsClient: mockAnalyticsClient,
+      photoClient: mockPhotoClient
+    )
+
+    store.name = "Test Exhibition"
+    store.status = ExhibitionStatus.published
+
+    // Act
+    store.send(ExhibitionEditStore.Action.saveButtonTapped)
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒待機
+
+    // Assert
+    XCTAssertNil(store.error)
+    XCTAssertTrue(mockExhibitionsClient.createWithIdWasCalled)
+    // 新規作成時は常にdraftになることを確認
+    if let data = mockExhibitionsClient.createdWithIdData {
+      XCTAssertEqual(data["status"] as? String, ExhibitionStatus.draft.rawValue)
+    }
   }
 }

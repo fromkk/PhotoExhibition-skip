@@ -40,6 +40,7 @@ final class ExhibitionEditStore: Store {
     case updateTo(Date)
     case updateCoverImage(URL?)
     case photoPicked(URL)
+    case statusChanged(ExhibitionStatus)
     case dismissError
   }
 
@@ -74,6 +75,7 @@ final class ExhibitionEditStore: Store {
   private let storageClient: any StorageClient
   private let imageCache: any StorageImageCacheProtocol
   private let analyticsClient: any AnalyticsClient
+  private let photoClient: any PhotoClient
 
   init(
     mode: Mode,
@@ -82,7 +84,8 @@ final class ExhibitionEditStore: Store {
     exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
     storageClient: any StorageClient = DefaultStorageClient(),
     imageCache: any StorageImageCacheProtocol = StorageImageCache.shared,
-    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient(),
+    photoClient: any PhotoClient = DefaultPhotoClient()
   ) {
     self.mode = mode
     self.delegate = delegate
@@ -91,6 +94,7 @@ final class ExhibitionEditStore: Store {
     self.storageClient = storageClient
     self.imageCache = imageCache
     self.analyticsClient = analyticsClient
+    self.photoClient = photoClient
 
     if case .edit(let exhibition) = mode {
       self.name = exhibition.name
@@ -153,6 +157,30 @@ final class ExhibitionEditStore: Store {
       imagePickerPresented = true
     case .photoPicked(let url):
       pickedImageURL = url
+    case .statusChanged(let newStatus):
+      // 公開に変更しようとしている場合は写真の枚数をチェック
+      if newStatus == .published && status != .published {
+        Task {
+          do {
+            // 編集モードの場合のみ写真チェックが可能
+            if case .edit(let exhibition) = mode {
+              let photos = try await photoClient.fetchPhotos(exhibitionId: exhibition.id)
+              if photos.isEmpty {
+                error = ExhibitionEditError.noPhotosForPublishing
+                showError = true
+                return
+              }
+            }
+            // 写真があれば、または新規作成の場合はステータス変更
+            status = newStatus
+          } catch {
+            self.error = error
+            showError = true
+          }
+        }
+      } else {
+        status = newStatus
+      }
     case .dismissError:
       error = nil
       showError = false
@@ -166,8 +194,21 @@ final class ExhibitionEditStore: Store {
     switch mode {
     case .edit(let exhibition):
       exhibitionId = exhibition.id
+
+      // 公開しようとしている場合は写真の枚数をチェック
+      if status == .published {
+        let photos = try await photoClient.fetchPhotos(exhibitionId: exhibition.id)
+        if photos.isEmpty {
+          throw ExhibitionEditError.noPhotosForPublishing
+        }
+      }
     case .create:
       exhibitionId = UUID().uuidString
+
+      // 新規作成の場合は公開状態にしない（写真を追加する機会がないため）
+      if status == .published {
+        status = .draft
+      }
     }
 
     // 先にFirestoreにデータを作成/更新する（カバー画像パスなし）
@@ -259,6 +300,7 @@ enum ExhibitionEditError: Error, LocalizedError, Hashable {
   case emptyName
   case userNotLoggedIn
   case saveFailed(String)
+  case noPhotosForPublishing
 
   var errorDescription: String? {
     switch self {
@@ -268,6 +310,8 @@ enum ExhibitionEditError: Error, LocalizedError, Hashable {
       return "Please login"
     case .saveFailed(let message):
       return "Failed to save: \(message)"
+    case .noPhotosForPublishing:
+      return "At least one photo is required to publish the exhibition"
     }
   }
 }
@@ -394,7 +438,13 @@ struct ExhibitionEditView: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-              Picker("Status", selection: $store.status) {
+              Picker(
+                "Status",
+                selection: Binding(
+                  get: { self.store.status },
+                  set: { self.store.send(.statusChanged($0)) }
+                )
+              ) {
                 ForEach(ExhibitionStatus.editableCases) { status in
                   Text(status.localizedKey).tag(status)
                 }

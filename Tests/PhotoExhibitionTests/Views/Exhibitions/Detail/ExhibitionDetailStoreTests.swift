@@ -3,7 +3,7 @@ import XCTest
 @testable import PhotoExhibition
 
 @MainActor
-final class MockExhibitionEditStoreDelegate: ExhibitionEditStoreDelegate {
+final class DetailMockExhibitionEditStoreDelegate: ExhibitionEditStoreDelegate {
   var didSaveExhibitionCalled = false
   var didCancelExhibitionCalled = false
 
