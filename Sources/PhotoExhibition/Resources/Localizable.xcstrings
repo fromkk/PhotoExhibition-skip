@@ -15,7 +15,7 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "%1$lld / %2$lld"
           }
         },
@@ -113,6 +113,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本当にログアウトしますか？"
+          }
+        }
+      }
+    },
+    "At least one photo is required to publish the exhibition" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示を公開するには少なくとも1枚の写真が必要です"
           }
         }
       }

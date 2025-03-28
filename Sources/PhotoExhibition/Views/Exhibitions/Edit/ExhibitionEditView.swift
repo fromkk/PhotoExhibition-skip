@@ -305,13 +305,13 @@ enum ExhibitionEditError: Error, LocalizedError, Hashable {
   var errorDescription: String? {
     switch self {
     case .emptyName:
-      return "Please enter exhibition name"
+      return String(localized: "Please enter exhibition name")
     case .userNotLoggedIn:
-      return "Please login"
+      return String(localized: "Please login")
     case .saveFailed(let message):
-      return "Failed to save: \(message)"
+      return String(localized: "Failed to save: \(message)")
     case .noPhotosForPublishing:
-      return "At least one photo is required to publish the exhibition"
+      return String(localized: "At least one photo is required to publish the exhibition")
     }
   }
 }
