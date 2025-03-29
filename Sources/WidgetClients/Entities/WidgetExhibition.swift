@@ -3,7 +3,7 @@ import Foundation
 import SwiftUI
 
 // 展示状態（draft: 下書き, published: 公開, banned: 管理者によるBAN）
-public enum ExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable {
+public enum WidgetExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable {
   case draft
   case published
   case banned
@@ -18,11 +18,11 @@ public enum ExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable,
 }
 
 // 写真展情報
-public struct Exhibition: Hashable, Sendable, Identifiable, Codable {
+public struct WidgetExhibition: Hashable, Sendable, Identifiable, Codable {
   public init(
     id: String, name: String, description: String? = nil, from: Date, to: Date,
-    organizer: Member, coverImagePath: String? = nil, cover_256x256: String? = nil,
-    cover_512x512: String? = nil, cover_1024x1024: String? = nil, status: ExhibitionStatus = .draft,
+    organizer: WidgetMember, coverImagePath: String? = nil, cover_256x256: String? = nil,
+    cover_512x512: String? = nil, cover_1024x1024: String? = nil, status: WidgetExhibitionStatus = .draft,
     createdAt: Date, updatedAt: Date
   ) {
     self.id = id
@@ -45,16 +45,16 @@ public struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   public let description: String?
   public let from: Date
   public let to: Date
-  public let organizer: Member
+  public let organizer: WidgetMember
   public let coverImagePath: String?
   public let cover_256x256: String?
   public let cover_512x512: String?
   public let cover_1024x1024: String?
-  public let status: ExhibitionStatus
+  public let status: WidgetExhibitionStatus
   public let createdAt: Date
   public let updatedAt: Date
 
-  public init?(documentID: String, data: [String: Any], organizer: Member) {
+  public init?(documentID: String, data: [String: Any], organizer: WidgetMember) {
     guard let name = data["name"] as? String,
       let fromTimestamp = data["from"] as? Timestamp,
       let toTimestamp = data["to"] as? Timestamp,
@@ -75,7 +75,7 @@ public struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     self.cover_256x256 = data["cover_256x256"] as? String
     self.cover_512x512 = data["cover_512x512"] as? String
     self.cover_1024x1024 = data["cover_1024x1024"] as? String
-    self.status = ExhibitionStatus(rawValue: statusString) ?? .published
+    self.status = WidgetExhibitionStatus(rawValue: statusString) ?? .published
     self.createdAt = createdAtTimestamp.dateValue()
     self.updatedAt = updatedAtTimestamp.dateValue()
   }

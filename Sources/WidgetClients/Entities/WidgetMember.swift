@@ -7,7 +7,7 @@ import Foundation
 #endif
 
 // 主催者情報
-public struct Member: Hashable, Sendable, Identifiable, Codable {
+public struct WidgetMember: Hashable, Sendable, Identifiable, Codable {
   public init(
     id: String, name: String? = nil, icon: String? = nil, icon_256x256: String? = nil,
     icon_512x512: String? = nil, icon_1024x1024: String? = nil, postAgreement: Bool = false,

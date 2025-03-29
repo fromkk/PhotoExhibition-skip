@@ -3,12 +3,12 @@ import WidgetClients
 import WidgetKit
 
 struct Provider: TimelineProvider {
-  private let exhibitionsClient: any ExhibitionsClient
-  private let storageClient: any StorageClient
+  private let exhibitionsClient: any WidgetExhibitionsClient
+  private let storageClient: any WidgetStorageClient
 
   init(
-    exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
-    storageClient: any StorageClient = DefaultStorageClient()
+    exhibitionsClient: any WidgetExhibitionsClient = DefaultWidgetExhibitionsClient(),
+    storageClient: any WidgetStorageClient = DefaultWidgetStorageClient()
   ) {
     self.exhibitionsClient = exhibitionsClient
     self.storageClient = storageClient
@@ -70,7 +70,7 @@ struct Provider: TimelineProvider {
 
 struct ExhibitionEntry: TimelineEntry {
   let date: Date
-  let exhibition: Exhibition?
+  let exhibition: WidgetExhibition?
   let coverImage: UIImage?
 
   var openURL: URL? {
@@ -165,14 +165,14 @@ struct ExhibitionWidget: Widget {
   ExhibitionWidget()
 } timeline: {
   let now = Date()
-  let member = Member(
+  let member = WidgetMember(
     id: "preview",
     name: "Preview User",
     createdAt: now,
     updatedAt: now
   )
 
-  let exhibition = Exhibition(
+  let exhibition = WidgetExhibition(
     id: "preview",
     name: "Sample Exhibition",
     description: "This is a sample exhibition",
