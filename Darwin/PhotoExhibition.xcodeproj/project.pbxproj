@@ -68,6 +68,7 @@
 		49F90C2B2A52156200F06D93 /* Main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Main.swift; path = Sources/Main.swift; sourceTree = SOURCE_ROOT; };
 		49F90C2F2A52156300F06D93 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		49F90C312A52156300F06D93 /* Entitlements.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Entitlements.plist; sourceTree = "<group>"; };
+		AD2DF80E2D97FE68006EB3F0 /* ExhibitionWidget.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ExhibitionWidget.xcconfig; sourceTree = "<group>"; };
 		AD5536DD2D86CBCA001D3896 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		ADA8854D2D97A68000230226 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -135,6 +136,7 @@
 				496EB72F2A6AE4DE00C1253C /* README.md */,
 				496EB72F2A6AE4DE00C1253A /* Skip.env */,
 				496EB72F2A6AE4DE00C1253B /* PhotoExhibition.xcconfig */,
+				AD2DF80E2D97FE68006EB3F0 /* ExhibitionWidget.xcconfig */,
 				496BDBED2B8A7E9C00C09264 /* Localizable.xcstrings */,
 				493609562A6B7EAE00C401E2 /* PhotoExhibition */,
 				49F90C2A2A52156200F06D93 /* App */,
@@ -444,6 +446,7 @@
 		};
 		ADA885662D97B92D00230226 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AD2DF80E2D97FE68006EB3F0 /* ExhibitionWidget.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
@@ -497,7 +500,7 @@
 				INFOPLIST_FILE = ExhibitionWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ExhibitionWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -516,6 +519,7 @@
 		};
 		ADA885672D97B92D00230226 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AD2DF80E2D97FE68006EB3F0 /* ExhibitionWidget.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
@@ -564,7 +568,7 @@
 				INFOPLIST_FILE = ExhibitionWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ExhibitionWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
