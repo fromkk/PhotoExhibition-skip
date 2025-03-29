@@ -42,6 +42,7 @@ let package = Package(
       dependencies: [
         .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
         .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
+        .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
       ]),
     .target(
       name: "PhotoExhibition",
