@@ -94,33 +94,45 @@ struct ExhibitionWidgetEntryView: View {
 
   var body: some View {
     if let exhibition = entry.exhibition {
-      ZStack(alignment: .bottomLeading) {
-        if let coverImage = entry.coverImage {
-          Image(uiImage: coverImage)
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-        } else {
-          Color.gray
-        }
+      GeometryReader { geometry in
+        ZStack(alignment: .bottom) {
+          // Background image
+          if let coverImage = entry.coverImage {
+            Image(uiImage: coverImage)
+              .resizable()
+              .aspectRatio(contentMode: .fill)
+              .frame(width: geometry.size.width, height: geometry.size.height)
+              .clipped()
+          } else {
+            Color.gray
+          }
 
-        VStack(alignment: .leading, spacing: 4) {
-          Text(
-            String(
-              format: String(localized: "%@ - %@"), dateFormatter.string(from: exhibition.from),
-              dateFormatter.string(from: exhibition.to))
+          // Gradient overlay for better text visibility
+          LinearGradient(
+            gradient: Gradient(colors: [.clear, .black.opacity(0.7)]),
+            startPoint: .top,
+            endPoint: .bottom
           )
-          .font(.caption)
-          .foregroundColor(.white)
+          .frame(height: geometry.size.height * 0.6)
 
-          Text(exhibition.name)
-            .font(.headline)
+          // Text content
+          VStack(alignment: .leading, spacing: 4) {
+            Text(
+              String(
+                format: String(localized: "%@ - %@"), dateFormatter.string(from: exhibition.from),
+                dateFormatter.string(from: exhibition.to))
+            )
+            .font(.caption)
             .foregroundColor(.white)
-            .lineLimit(2)
+
+            Text(exhibition.name)
+              .font(.headline)
+              .foregroundColor(.white)
+              .lineLimit(2)
+          }
+          .padding(12)
+          .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(8)
-        .background(Color.black.opacity(0.6))
-        .cornerRadius(8)
-        .padding(8)
       }
     } else {
       VStack {
