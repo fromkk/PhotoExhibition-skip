@@ -1,1 +1,4 @@
-
+• Added widget functionality to display exhibitions
+  • Added URL scheme support for enhanced app navigation
+• Fixed photo upload processes to handle multiple uploads correctly
+• Added validation to ensure at least one photo for published exhibitions
