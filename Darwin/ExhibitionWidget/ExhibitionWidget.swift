@@ -72,6 +72,14 @@ struct ExhibitionEntry: TimelineEntry {
   let date: Date
   let exhibition: Exhibition?
   let coverImage: UIImage?
+
+  var openURL: URL? {
+    if let exhibitionId = exhibition?.id {
+      return URL(string: "exhivision://exhibition/\(exhibitionId)")
+    } else {
+      return nil
+    }
+  }
 }
 
 struct ExhibitionWidgetEntryView: View {
@@ -128,17 +136,16 @@ struct ExhibitionWidget: Widget {
 
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: Provider()) { entry in
-      if #available(iOS 17.0, *) {
-        ExhibitionWidgetEntryView(entry: entry)
-          .containerBackground(.fill.tertiary, for: .widget)
-      } else {
-        ExhibitionWidgetEntryView(entry: entry)
-          .padding()
-          .background()
-      }
+      ExhibitionWidgetEntryView(entry: entry)
+        .containerBackground(.fill.tertiary, for: .widget)
+        .widgetURL(entry.openURL)
     }
     .configurationDisplayName("Exhibition")
     .description("Shows information about current exhibitions.")
+    .supportedFamilies([
+      .systemSmall, .systemMedium, .systemLarge, .systemExtraLarge,
+    ])
+    .contentMarginsDisabled()
   }
 }
 
