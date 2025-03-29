@@ -16,6 +16,18 @@ lane :assemble do |options|
     skip_archive: ENV["FASTLANE_SKIP_ARCHIVE"] == "YES",
     skip_codesigning: ENV["FASTLANE_SKIP_CODESIGNING"] == "YES"
   )
+
+  # Firebase Crashlyticsにdsymをアップロード
+  begin
+    UI.important "Firebase Crashlyticsにdebug symbolsをアップロード中..."
+    upload_symbols_to_crashlytics(
+      gsp_path: "Prod/GoogleService-Info.plist",
+      binary_path: "fastlane/bin/upload-symbols"
+    )
+    UI.success "Firebase Crashlyticsへのdebug symbolsアップロードが完了しました"
+  rescue => e
+    UI.error "Firebase Crashlyticsへのdebug symbolsアップロードに失敗しました: #{e.message}"
+  end
 end
 
 lane :release do |options|
