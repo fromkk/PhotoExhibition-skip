@@ -1,51 +1,124 @@
 import SwiftUI
+import WidgetClients
 import WidgetKit
 
 struct Provider: TimelineProvider {
-  func placeholder(in context: Context) -> SimpleEntry {
-    SimpleEntry(date: Date(), emoji: "😀")
+  private let exhibitionsClient: any ExhibitionsClient
+  private let storageClient: any StorageClient
+
+  init(
+    exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
+    storageClient: any StorageClient = DefaultStorageClient()
+  ) {
+    self.exhibitionsClient = exhibitionsClient
+    self.storageClient = storageClient
   }
 
-  func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> Void) {
-    let entry = SimpleEntry(date: Date(), emoji: "😀")
+  func placeholder(in context: Context) -> ExhibitionEntry {
+    ExhibitionEntry(date: Date(), exhibition: nil, coverImage: nil)
+  }
+
+  func getSnapshot(in context: Context, completion: @escaping (ExhibitionEntry) -> Void) {
+    let entry = ExhibitionEntry(date: Date(), exhibition: nil, coverImage: nil)
     completion(entry)
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-    var entries: [SimpleEntry] = []
+    Task {
+      do {
+        let now = Date()
+        let (exhibitions, _) = try await exhibitionsClient.fetch(now: now, cursor: nil)
 
-    // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-    let currentDate = Date()
-    for hourOffset in 0..<5 {
-      let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = SimpleEntry(date: entryDate, emoji: "😀")
-      entries.append(entry)
+        if let exhibition = exhibitions.shuffled().first {
+          var coverImage: UIImage? = nil
+
+          if let coverPath = exhibition.coverPath {
+            do {
+              let url = try await storageClient.url(coverPath)
+              if let (data, _) = try? await URLSession.shared.data(from: url),
+                let image = UIImage(data: data)
+              {
+                coverImage = image
+              }
+            } catch {
+              print("Failed to load cover image: \(error)")
+            }
+          }
+
+          let entry = ExhibitionEntry(date: now, exhibition: exhibition, coverImage: coverImage)
+          let nextUpdate =
+            Calendar.current.date(byAdding: .hour, value: 1, to: now)
+            ?? now.addingTimeInterval(3600)
+          let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+          completion(timeline)
+        } else {
+          let entry = ExhibitionEntry(date: now, exhibition: nil, coverImage: nil)
+          let nextUpdate =
+            Calendar.current.date(byAdding: .hour, value: 1, to: now)
+            ?? now.addingTimeInterval(3600)
+          let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+          completion(timeline)
+        }
+      } catch {
+        let entry = ExhibitionEntry(date: Date(), exhibition: nil, coverImage: nil)
+        let timeline = Timeline(entries: [entry], policy: .atEnd)
+        completion(timeline)
+      }
     }
-
-    let timeline = Timeline(entries: entries, policy: .atEnd)
-    completion(timeline)
   }
-
-  //    func relevances() async -> WidgetRelevances<Void> {
-  //        // Generate a list containing the contexts this widget is relevant in.
-  //    }
 }
 
-struct SimpleEntry: TimelineEntry {
+struct ExhibitionEntry: TimelineEntry {
   let date: Date
-  let emoji: String
+  let exhibition: Exhibition?
+  let coverImage: UIImage?
 }
 
 struct ExhibitionWidgetEntryView: View {
   var entry: Provider.Entry
 
-  var body: some View {
-    VStack {
-      Text("Time:")
-      Text(entry.date, style: .time)
+  private var dateFormatter: DateFormatter {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .short
+    return formatter
+  }
 
-      Text("Emoji:")
-      Text(entry.emoji)
+  var body: some View {
+    if let exhibition = entry.exhibition {
+      ZStack(alignment: .bottomLeading) {
+        if let coverImage = entry.coverImage {
+          Image(uiImage: coverImage)
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+        } else {
+          Color.gray
+        }
+
+        VStack(alignment: .leading, spacing: 4) {
+          Text(
+            String(
+              format: String(localized: "%@ - %@"), dateFormatter.string(from: exhibition.from),
+              dateFormatter.string(from: exhibition.to))
+          )
+          .font(.caption)
+          .foregroundColor(.white)
+
+          Text(exhibition.name)
+            .font(.headline)
+            .foregroundColor(.white)
+            .lineLimit(2)
+        }
+        .padding(8)
+        .background(Color.black.opacity(0.6))
+        .cornerRadius(8)
+        .padding(8)
+      }
+    } else {
+      VStack {
+        Text("No Exhibition", comment: "Displayed when no exhibition is available")
+          .font(.headline)
+      }
     }
   }
 }
@@ -64,14 +137,34 @@ struct ExhibitionWidget: Widget {
           .background()
       }
     }
-    .configurationDisplayName("My Widget")
-    .description("This is an example widget.")
+    .configurationDisplayName("Exhibition")
+    .description("Shows information about current exhibitions.")
   }
 }
 
 #Preview(as: .systemSmall) {
   ExhibitionWidget()
 } timeline: {
-  SimpleEntry(date: .now, emoji: "😀")
-  SimpleEntry(date: .now, emoji: "🤩")
+  let now = Date()
+  let member = Member(
+    id: "preview",
+    name: "Preview User",
+    createdAt: now,
+    updatedAt: now
+  )
+
+  let exhibition = Exhibition(
+    id: "preview",
+    name: "Sample Exhibition",
+    description: "This is a sample exhibition",
+    from: now.addingTimeInterval(-86400),
+    to: now.addingTimeInterval(86400),
+    organizer: member,
+    coverImagePath: "https://example.com/image.jpg",
+    status: .published,
+    createdAt: now,
+    updatedAt: now
+  )
+
+  ExhibitionEntry(date: now, exhibition: exhibition, coverImage: nil)
 }

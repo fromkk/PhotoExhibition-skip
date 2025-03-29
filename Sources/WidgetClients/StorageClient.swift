@@ -1,5 +1,5 @@
-import Foundation
 import FirebaseStorage
+import Foundation
 
 public protocol StorageClient: Sendable {
   func url(_ path: String) async throws -> URL
