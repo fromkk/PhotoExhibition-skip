@@ -69,6 +69,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   func send(_ action: Action) {
     switch action {
     case .task:
+      guard !isLoading else { return }
       fetchExhibitions()
       Task {
         await analyticsClient.analyticsScreen(name: "ExhibitionsView")

@@ -129,17 +129,25 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       // 足跡の状態を確認
       checkFootprintStatus()
     }
+
+    send(.checkPermissions)
+    send(.loadCoverImage)
+    send(.loadPhotos)
+    if isOrganizer {
+      send(.loadFootprints)
+    }
+
+    Task {
+      await analyticsClient.analyticsScreen(name: "ExhibitionDetailView")
+      await analyticsClient.send(
+        AnalyticsEvents.exhibitionViewed, parameters: ["exhibition_id": exhibition.id])
+    }
   }
 
   func send(_ action: Action) {
     switch action {
     case .checkPermissions:
       checkIfUserIsOrganizer()
-      Task {
-        await analyticsClient.analyticsScreen(name: "ExhibitionDetailView")
-        await analyticsClient.send(
-          AnalyticsEvents.exhibitionViewed, parameters: ["exhibition_id": exhibition.id])
-      }
     case .editExhibition:
       if isOrganizer {
         exhibitionEditStore = ExhibitionEditStore(
@@ -944,14 +952,6 @@ struct ExhibitionDetailView: View {
     .navigationDestination(isPresented: $store.isOrganizerProfileShown) {
       if let organizerProfileStore = store.organizerProfileStore {
         OrganizerProfileView(store: organizerProfileStore)
-      }
-    }
-    .task {
-      store.send(.checkPermissions)
-      store.send(.loadCoverImage)
-      store.send(.loadPhotos)
-      if store.isOrganizer {
-        store.send(.loadFootprints)
       }
     }
     #if SKIP
