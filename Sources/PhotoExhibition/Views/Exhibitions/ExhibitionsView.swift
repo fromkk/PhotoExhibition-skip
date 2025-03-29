@@ -80,9 +80,6 @@ struct ExhibitionsView: View {
             }
           }
         }
-        .task {
-          store.send(.task)
-        }
         .sheet(isPresented: $store.showCreateExhibition) {
           if let editStore = store.exhibitionEditStore {
             ExhibitionEditView(store: editStore)
@@ -95,6 +92,9 @@ struct ExhibitionsView: View {
         }
       }
       .disabled(store.showPostAgreement)
+      .task {
+        store.send(.task)
+      }
 
       if store.showPostAgreement {
         PostAgreementView(
