@@ -183,13 +183,13 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       guard !urls.isEmpty else { return }
       isUploadingPhoto = true
       Task {
-        do {
-          for url in urls {
-            try await uploadPhoto(from: url, shouldShowEditSheet: false)
+        for url in urls {
+          do {
+            try await uploadPhoto(from: url, shouldShowEditSheet: urls.count == 1)
+          } catch {
+            self.error = error
+            self.isErrorAlertPresented = true
           }
-        } catch {
-          self.error = error
-          self.isErrorAlertPresented = true
         }
         isUploadingPhoto = false
       }
@@ -972,19 +972,19 @@ struct ExhibitionDetailView: View {
             guard !items.isEmpty else { return }
             store.isMovingPhotos = true
             Task {
-              do {
-                var urls: [URL] = []
-                for item in items {
+              var urls: [URL] = []
+              for item in items {
+                do {
                   if let url = try await store.moveImageToTempURL(item) {
                     urls.append(url)
                   }
+                } catch {
+                  store.error = error
+                  store.isErrorAlertPresented = true
                 }
-                store.isMovingPhotos = false
-                store.send(.photosSelected(urls))
-              } catch {
-                store.error = error
-                store.isErrorAlertPresented = true
               }
+              store.isMovingPhotos = false
+              store.send(.photosSelected(urls))
             }
           }
         ),

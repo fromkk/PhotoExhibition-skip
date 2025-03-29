@@ -82,6 +82,6 @@ Carthage/Build/
 **/fastlane/test_output
 review_information/
 
-GoogleService-Info.plist
+**/GoogleService-Info.plist
 google-services.json
 .cursorrules
