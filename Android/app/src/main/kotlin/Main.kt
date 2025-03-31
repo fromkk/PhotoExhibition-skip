@@ -20,6 +20,8 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.initialization.InitializationStatus
 
 internal val logger: SkipLogger = SkipLogger(subsystem = "photo.exhibition", category = "PhotoExhibition")
 
@@ -33,6 +35,11 @@ open class AndroidAppMain: Application {
         logger.info("starting app")
         ProcessInfo.launch(applicationContext)
         FirebaseApp.configure()
+        
+        // Initialize the Mobile Ads SDK
+        MobileAds.initialize(this) { initializationStatus: InitializationStatus ->
+            logger.info("AdMob SDK initialized")
+        }
     }
 
     companion object {
