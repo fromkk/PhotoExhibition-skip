@@ -10,6 +10,8 @@ enum Constants {
 
   #if DEBUG
     static let adMobHomeFooterUnitID: String = "ca-app-pub-3940256099942544/2435281174"
+  #elseif SKIP
+    static let adMobHomeFooterUnitID: String = "ca-app-pub-4938162641824294/8567220300"
   #else
     static let adMobHomeFooterUnitID: String = "ca-app-pub-4938162641824294/4034601435"
   #endif
