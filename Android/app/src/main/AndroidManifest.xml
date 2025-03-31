@@ -7,7 +7,7 @@
 
     <!-- permissions needed for using the internet or an embedded WebKit browser -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:label="@string/app_name"
@@ -15,6 +15,12 @@
         android:supportsRtl="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher">
+        
+        <!-- AdMob アプリ ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-4938162641824294~7185688000"/>
+            
         <activity
             android:name=".MainActivity"
             android:exported="true"
