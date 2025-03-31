@@ -9,6 +9,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:photoexhibition-86595.web.app</string>
+		<string>applinks:exhivision.app</string>
 	</array>
 </dict>
 </plist>

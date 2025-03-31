@@ -40,6 +40,7 @@
 
                 <data android:scheme="https" />
                 <data android:host="photoexhibition-86595.web.app" />
+                <data android:host="exhivision.app" />
                 <data android:pathAdvancedPattern="/exhibition/[a-zA-Z0-9\-]+" />
             </intent-filter>
         </activity>
