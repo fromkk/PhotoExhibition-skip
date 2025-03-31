@@ -56,9 +56,7 @@ struct ExhibitionsView: View {
             }
           }
 
-          #if !os(Android)
-            BannerContentView(adUnitId: Constants.adMobHomeFooterUnitID)
-          #endif
+          BannerContentainerView(adUnitId: Constants.adMobHomeFooterUnitID)
         }
         .navigationTitle(Text("Exhibitions"))
         .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
