@@ -830,9 +830,6 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       footprintClient: mockFootprintClient
     )
 
-    // 写真を事前に読み込む
-    store.send(ExhibitionDetailStore.Action.loadPhotos)
-
     // 非同期処理の完了を待つ
     try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
@@ -891,9 +888,6 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       photoClient: mockPhotoClient,
       footprintClient: mockFootprintClient
     )
-
-    // 写真を事前に読み込む
-    store.send(ExhibitionDetailStore.Action.loadPhotos)
 
     // 非同期処理の完了を待つ
     try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒

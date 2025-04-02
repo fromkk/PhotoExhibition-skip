@@ -63,6 +63,14 @@ struct AuthRootView: View {
           }
         }
         .padding(.top, 8)
+
+        if let version = store.deviceInfo.appVersion,
+          let buildNumber = store.deviceInfo.buildNumber
+        {
+          Text("\(version) (\(buildNumber))")
+            .font(.footnote)
+            .frame(maxWidth: .infinity, alignment: .center)
+        }
       }
       .padding(16)
       .navigationDestination(isPresented: $store.showSignIn) {

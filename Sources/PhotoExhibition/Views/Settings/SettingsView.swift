@@ -25,6 +25,7 @@ protocol SettingsStoreDelegate: AnyObject {
   #if !SKIP
     var showLicenseList: Bool = false
   #endif
+  let deviceInfo: any DeviceInfo
 
   // プロフィール編集画面用のストア
   private(set) var profileSetupStore: ProfileSetupStore?
@@ -42,11 +43,13 @@ protocol SettingsStoreDelegate: AnyObject {
   init(
     currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
     membersClient: any MembersClient = DefaultMembersClient(),
-    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
+    analyticsClient: any AnalyticsClient = DefaultAnalyticsClient(),
+    deviceInfo: any DeviceInfo = DefaultDeviceInfo()
   ) {
     self.currentUserClient = currentUserClient
     self.membersClient = membersClient
     self.analyticsClient = analyticsClient
+    self.deviceInfo = deviceInfo
   }
 
   enum Action {
@@ -292,6 +295,12 @@ struct SettingsView: View {
           store.send(.presentDeleteAccountConfirmation)
         } label: {
           Text("Delete Account")
+        }
+      } footer: {
+        if let version = store.deviceInfo.appVersion, let buildNumber = store.deviceInfo.buildNumber {
+          Text("\(version) (\(buildNumber))")
+            .font(.footnote)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
       }
     }
