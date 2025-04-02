@@ -23,6 +23,7 @@ final class AuthRootStore: Store {
     private let authClient: AuthClient
     private var currentNonce: String?
   #endif
+  let deviceInfo: any DeviceInfo
 
   weak var delegate: (any AuthRootStoreDelegate)?
   var error: Error?
@@ -32,22 +33,26 @@ final class AuthRootStore: Store {
       currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
       membersClient: any MembersClient = DefaultMembersClient(),
       authClient: any AuthClient = DefaultAuthClient(),
-      analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
+      analyticsClient: any AnalyticsClient = DefaultAnalyticsClient(),
+      deviceInfo: any DeviceInfo = DefaultDeviceInfo()
     ) {
       self.currentUserClient = currentUserClient
       self.membersClient = membersClient
       self.authClient = authClient
       self.analyticsClient = analyticsClient
+      self.deviceInfo = deviceInfo
     }
   #else
     init(
       currentUserClient: any CurrentUserClient = DefaultCurrentUserClient(),
       membersClient: any MembersClient = DefaultMembersClient(),
-      analyticsClient: any AnalyticsClient = DefaultAnalyticsClient()
+      analyticsClient: any AnalyticsClient = DefaultAnalyticsClient(),
+      deviceInfo: any DeviceInfo = DefaultDeviceInfo()
     ) {
       self.currentUserClient = currentUserClient
       self.membersClient = membersClient
       self.analyticsClient = analyticsClient
+      self.deviceInfo = deviceInfo
     }
   #endif
 
