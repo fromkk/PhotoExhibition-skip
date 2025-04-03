@@ -37,6 +37,9 @@
         }
       }
     },
+    "exhivision" : {
+
+    },
     "No Exhibition" : {
       "comment" : "Displayed when no exhibition is available",
       "localizations" : {

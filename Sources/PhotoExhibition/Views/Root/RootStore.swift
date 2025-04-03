@@ -114,17 +114,21 @@ final class RootStore: Store {
     if url.scheme == "exhivision" {
       // Custom url scheme
       // URLのパスを解析
-      let pathComponents = url.pathComponents
-      guard pathComponents.count == 2 && url.host() == "exhibition" else { return }
+      if url.host() == "add_exhibition" {
+        showAddExhibition()
+      } else {
+        let pathComponents = url.pathComponents
+        guard pathComponents.count == 2 && url.host() == "exhibition" else { return }
 
-      // exhibitionIdを取得
-      let exhibitionId = pathComponents[1]
+        // exhibitionIdを取得
+        let exhibitionId = pathComponents[1]
 
-      // 展示タブを選択
-      selectedTab = .exhibitions
+        // 展示タブを選択
+        selectedTab = .exhibitions
 
-      // ExhibitionsStoreに展示会の表示を要求
-      exhibitionsStore?.showExhibitionDetail(exhibitionId: exhibitionId)
+        // ExhibitionsStoreに展示会の表示を要求
+        exhibitionsStore?.showExhibitionDetail(exhibitionId: exhibitionId)
+      }
     } else {
       // URLのパスを解析
       let pathComponents = url.pathComponents

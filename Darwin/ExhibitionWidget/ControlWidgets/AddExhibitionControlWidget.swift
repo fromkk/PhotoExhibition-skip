@@ -3,7 +3,7 @@ import SwiftUI
 import AppIntents
 
 @available(iOS 18.0, *)
-struct AddExhibitionWidget: ControlWidget {
+struct AddExhibitionControlWidget: ControlWidget {
   var body: some ControlWidgetConfiguration {
     AppIntentControlConfiguration(
       kind: "AddExhibitionWidget",

@@ -10,8 +10,9 @@ struct ExhibitionWidgetBundle: WidgetBundle {
 
   var body: some Widget {
     ExhibitionWidget()
+    AddExhibitionLockScreenWidget()
     if #available(iOS 18.0, *) {
-      AddExhibitionWidget()
+      AddExhibitionControlWidget()
     }
   }
 }
