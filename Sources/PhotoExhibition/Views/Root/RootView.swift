@@ -1,5 +1,9 @@
 import SwiftUI
 
+#if !SKIP
+  import IntentHelper
+#endif
+
 struct RootView: View {
   @Bindable var store = RootStore()
   var body: some View {
@@ -52,6 +56,14 @@ struct RootView: View {
     .onOpenURL { url in
       store.send(.handleUniversalLink(url))
     }
+    #if !SKIP
+      .onReceive(
+        NotificationCenter.default.publisher(for: .addExhibitionRequest),
+        perform: { _ in
+          store.send(.addExhibitionRequestReceived)
+        }
+      )
+    #endif
   }
 }
 

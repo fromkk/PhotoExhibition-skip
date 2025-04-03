@@ -25,6 +25,7 @@ final class RootStore: Store {
     case signedIn(Member)
     case signedOut
     case handleUniversalLink(URL)
+    case addExhibitionRequestReceived
   }
 
   private(set) var isSignedIn: Bool = false {
@@ -54,6 +55,7 @@ final class RootStore: Store {
   private(set) var settingsStore: SettingsStore?
   private(set) var profileSetupStore: ProfileSetupStore?
   private var pendingUniversalLink: URL?
+  private var pendingAddExhibitionRequestReceived: Bool = false
 
   func send(_ action: Action) {
     switch action {
@@ -84,6 +86,9 @@ final class RootStore: Store {
       } else if let url = pendingUniversalLink {
         handleOpenURL(url)
         pendingUniversalLink = nil
+      } else if pendingAddExhibitionRequestReceived {
+        showAddExhibition()
+        pendingAddExhibitionRequestReceived = false
       }
     case .signedOut:
       isSignedIn = false
@@ -94,6 +99,12 @@ final class RootStore: Store {
       } else {
         pendingUniversalLink = url
       }
+    case .addExhibitionRequestReceived:
+      if isSignedIn {
+        showAddExhibition()
+      } else {
+        pendingAddExhibitionRequestReceived = true
+      }
     }
   }
 
@@ -103,17 +114,21 @@ final class RootStore: Store {
     if url.scheme == "exhivision" {
       // Custom url scheme
       // URLのパスを解析
-      let pathComponents = url.pathComponents
-      guard pathComponents.count == 2 && url.host() == "exhibition" else { return }
+      if url.host() == "add_exhibition" {
+        showAddExhibition()
+      } else {
+        let pathComponents = url.pathComponents
+        guard pathComponents.count == 2 && url.host() == "exhibition" else { return }
 
-      // exhibitionIdを取得
-      let exhibitionId = pathComponents[1]
+        // exhibitionIdを取得
+        let exhibitionId = pathComponents[1]
 
-      // 展示タブを選択
-      selectedTab = .exhibitions
+        // 展示タブを選択
+        selectedTab = .exhibitions
 
-      // ExhibitionsStoreに展示会の表示を要求
-      exhibitionsStore?.showExhibitionDetail(exhibitionId: exhibitionId)
+        // ExhibitionsStoreに展示会の表示を要求
+        exhibitionsStore?.showExhibitionDetail(exhibitionId: exhibitionId)
+      }
     } else {
       // URLのパスを解析
       let pathComponents = url.pathComponents
@@ -135,6 +150,10 @@ final class RootStore: Store {
     store.delegate = self
     profileSetupStore = store
     isProfileSetupShown = true
+  }
+
+  private func showAddExhibition() {
+    exhibitionsStore?.send(.createExhibitionButtonTapped)
   }
 }
 

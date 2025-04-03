@@ -2,7 +2,7 @@ import SwiftUI
 import WidgetClients
 import WidgetKit
 
-struct Provider: TimelineProvider {
+struct ExhibitionWidgetProvider: TimelineProvider {
   private let exhibitionsClient: any WidgetExhibitionsClient
   private let storageClient: any WidgetStorageClient
 
@@ -83,7 +83,7 @@ struct ExhibitionEntry: TimelineEntry {
 }
 
 struct ExhibitionWidgetEntryView: View {
-  var entry: Provider.Entry
+  var entry: ExhibitionWidgetProvider.Entry
 
   private var dateFormatter: DateFormatter {
     let formatter = DateFormatter()
@@ -147,7 +147,7 @@ struct ExhibitionWidget: Widget {
   let kind: String = "ExhibitionWidget"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: Provider()) { entry in
+    StaticConfiguration(kind: kind, provider: ExhibitionWidgetProvider()) { entry in
       ExhibitionWidgetEntryView(entry: entry)
         .containerBackground(.fill.tertiary, for: .widget)
         .widgetURL(entry.openURL)

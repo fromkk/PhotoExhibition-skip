@@ -3,7 +3,8 @@ import Foundation
 import SwiftUI
 
 // 展示状態（draft: 下書き, published: 公開, banned: 管理者によるBAN）
-public enum WidgetExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable {
+public enum WidgetExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable
+{
   case draft
   case published
   case banned
@@ -22,7 +23,8 @@ public struct WidgetExhibition: Hashable, Sendable, Identifiable, Codable {
   public init(
     id: String, name: String, description: String? = nil, from: Date, to: Date,
     organizer: WidgetMember, coverImagePath: String? = nil, cover_256x256: String? = nil,
-    cover_512x512: String? = nil, cover_1024x1024: String? = nil, status: WidgetExhibitionStatus = .draft,
+    cover_512x512: String? = nil, cover_1024x1024: String? = nil,
+    status: WidgetExhibitionStatus = .draft,
     createdAt: Date, updatedAt: Date
   ) {
     self.id = id
