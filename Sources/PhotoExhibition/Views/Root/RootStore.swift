@@ -25,6 +25,7 @@ final class RootStore: Store {
     case signedIn(Member)
     case signedOut
     case handleUniversalLink(URL)
+    case addExhibitionRequestReceived
   }
 
   private(set) var isSignedIn: Bool = false {
@@ -54,6 +55,7 @@ final class RootStore: Store {
   private(set) var settingsStore: SettingsStore?
   private(set) var profileSetupStore: ProfileSetupStore?
   private var pendingUniversalLink: URL?
+  private var pendingAddExhibitionRequestReceived: Bool = false
 
   func send(_ action: Action) {
     switch action {
@@ -84,6 +86,9 @@ final class RootStore: Store {
       } else if let url = pendingUniversalLink {
         handleOpenURL(url)
         pendingUniversalLink = nil
+      } else if pendingAddExhibitionRequestReceived {
+        showAddExhibition()
+        pendingAddExhibitionRequestReceived = false
       }
     case .signedOut:
       isSignedIn = false
@@ -93,6 +98,12 @@ final class RootStore: Store {
         handleOpenURL(url)
       } else {
         pendingUniversalLink = url
+      }
+    case .addExhibitionRequestReceived:
+      if isSignedIn {
+        showAddExhibition()
+      } else {
+        pendingAddExhibitionRequestReceived = true
       }
     }
   }
@@ -135,6 +146,10 @@ final class RootStore: Store {
     store.delegate = self
     profileSetupStore = store
     isProfileSetupShown = true
+  }
+
+  private func showAddExhibition() {
+    exhibitionsStore?.send(.createExhibitionButtonTapped)
   }
 }
 

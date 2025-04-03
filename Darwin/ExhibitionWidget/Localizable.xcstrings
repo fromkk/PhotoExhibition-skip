@@ -17,6 +17,16 @@
         }
       }
     },
+    "Add Exhibition" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示を追加"
+          }
+        }
+      }
+    },
     "Exhibition" : {
       "localizations" : {
         "ja" : {

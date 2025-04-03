@@ -13,12 +13,13 @@ let package = Package(
     .iOS(.v17)
   ],
   products: [
-    .library(name: "WidgetClients", targets: ["WidgetClients"]),
+    .library(name: "IntentHelper", targets: ["IntentHelper"]),
     .library(
       name: "PhotoExhibitionApp",
       type: .dynamic,
       targets: ["PhotoExhibition"]
     ),
+    .library(name: "WidgetClients", targets: ["WidgetClients"]),
   ],
   dependencies: [
     .package(url: "https://source.skip.tools/skip.git", from: "1.3.4"),
@@ -38,15 +39,12 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "WidgetClients",
-      dependencies: [
-        .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
-        .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
-        .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
-      ]),
+      name: "IntentHelper"
+    ),
     .target(
       name: "PhotoExhibition",
       dependencies: [
+        "IntentHelper",
         .product(name: "SkipUI", package: "skip-ui"),
         .product(name: "SkipKit", package: "skip-kit"),
         .product(name: "SkipFirebaseAnalytics", package: "skip-firebase"),
@@ -74,5 +72,12 @@ let package = Package(
       resources: [.process("Resources")],
       plugins: [.plugin(name: "skipstone", package: "skip")]
     ),
+    .target(
+      name: "WidgetClients",
+      dependencies: [
+        .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
+        .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
+        .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
+      ]),
   ]
 )

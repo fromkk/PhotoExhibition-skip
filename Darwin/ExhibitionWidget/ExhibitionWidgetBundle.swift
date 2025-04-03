@@ -10,5 +10,8 @@ struct ExhibitionWidgetBundle: WidgetBundle {
 
   var body: some Widget {
     ExhibitionWidget()
+    if #available(iOS 18.0, *) {
+      AddExhibitionWidget()
+    }
   }
 }
