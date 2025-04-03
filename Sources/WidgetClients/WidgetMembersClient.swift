@@ -1,7 +1,8 @@
 import FirebaseFirestore
 import OSLog
 
-private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "WidgetMembersClient")
+private let logger = Logger(
+  subsystem: Bundle.main.bundleIdentifier!, category: "WidgetMembersClient")
 
 public protocol WidgetMembersClient: Sendable {
   func fetch(_ uids: [String]) async throws -> [WidgetMember]

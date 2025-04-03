@@ -1,7 +1,8 @@
 import FirebaseFirestore
 import OSLog
 
-private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "WidgetExhibitionsClient")
+private let logger = Logger(
+  subsystem: Bundle.main.bundleIdentifier!, category: "WidgetExhibitionsClient")
 
 public protocol WidgetExhibitionsClient: Sendable {
   func fetch(now: Date, cursor: String?) async throws -> (
@@ -51,7 +52,8 @@ public actor DefaultWidgetExhibitionsClient: WidgetExhibitionsClient {
       }
 
       guard
-        let exhibition = WidgetExhibition(documentID: document.documentID, data: data, organizer: member)
+        let exhibition = WidgetExhibition(
+          documentID: document.documentID, data: data, organizer: member)
       else {
         continue
       }
@@ -75,7 +77,10 @@ public actor DefaultWidgetExhibitionsClient: WidgetExhibitionsClient {
     guard let organizer = try await membersClient.fetch([organizerUID]).first else {
       throw WidgetExhibitionsClientError.organizerNotFound
     }
-    guard let exhibition = WidgetExhibition(documentID: document.documentID, data: data, organizer: organizer) else {
+    guard
+      let exhibition = WidgetExhibition(
+        documentID: document.documentID, data: data, organizer: organizer)
+    else {
       throw WidgetExhibitionsClientError.invalidData
     }
     return exhibition

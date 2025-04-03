@@ -52,8 +52,7 @@ public struct AddExhibitionLockScreenWidget: Widget {
       if #available(iOS 17.0, *) {
         LockScreenWidgetView(entry: entry)
           .containerBackground(.fill.tertiary, for: .widget)
-      }
-      else {
+      } else {
         LockScreenWidgetView(entry: entry)
           .padding()
           .background()
@@ -73,4 +72,3 @@ public struct AddExhibitionLockScreenWidget: Widget {
   BasicEntry(date: .now)
   BasicEntry(date: .now)
 }
-

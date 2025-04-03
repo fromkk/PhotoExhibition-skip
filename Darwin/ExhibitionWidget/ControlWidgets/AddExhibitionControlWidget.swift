@@ -1,6 +1,6 @@
-import WidgetKit
-import SwiftUI
 import AppIntents
+import SwiftUI
+import WidgetKit
 
 @available(iOS 18.0, *)
 struct AddExhibitionControlWidget: ControlWidget {

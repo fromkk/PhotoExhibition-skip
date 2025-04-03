@@ -297,7 +297,8 @@ struct SettingsView: View {
           Text("Delete Account")
         }
       } footer: {
-        if let version = store.deviceInfo.appVersion, let buildNumber = store.deviceInfo.buildNumber {
+        if let version = store.deviceInfo.appVersion, let buildNumber = store.deviceInfo.buildNumber
+        {
           Text("\(version) (\(buildNumber))")
             .font(.footnote)
             .frame(maxWidth: .infinity, alignment: .center)

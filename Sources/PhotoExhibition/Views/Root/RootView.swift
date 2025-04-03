@@ -1,7 +1,8 @@
-#if !SKIP
-import IntentHelper
-#endif
 import SwiftUI
+
+#if !SKIP
+  import IntentHelper
+#endif
 
 struct RootView: View {
   @Bindable var store = RootStore()
@@ -56,12 +57,12 @@ struct RootView: View {
       store.send(.handleUniversalLink(url))
     }
     #if !SKIP
-    .onReceive(
-      NotificationCenter.default.publisher(for: .addExhibitionRequest),
-      perform: { _ in
-        store.send(.addExhibitionRequestReceived)
-      }
-    )
+      .onReceive(
+        NotificationCenter.default.publisher(for: .addExhibitionRequest),
+        perform: { _ in
+          store.send(.addExhibitionRequestReceived)
+        }
+      )
     #endif
   }
 }

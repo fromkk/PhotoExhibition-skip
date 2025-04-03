@@ -2,8 +2,7 @@ import AppIntents
 import IntentHelper
 import WidgetKit
 
-struct AddExhibitionIntent: AppIntent
-{
+struct AddExhibitionIntent: AppIntent {
   static let openAppWhenRun: Bool = true
   static let title: LocalizedStringResource = "Add Exhibition"
   func perform() async throws -> some IntentResult {
@@ -13,4 +12,5 @@ struct AddExhibitionIntent: AppIntent
 }
 
 extension AddExhibitionIntent: WidgetConfigurationIntent,
-                               ControlConfigurationIntent {}
+  ControlConfigurationIntent
+{}
