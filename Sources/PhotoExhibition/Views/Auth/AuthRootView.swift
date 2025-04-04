@@ -7,6 +7,7 @@ import SwiftUI
 struct AuthRootView: View {
   @Bindable var store: AuthRootStore
   @Environment(\.openURL) private var openURL
+  @Environment(\.colorScheme) private var colorScheme
 
   init(delegate: any AuthRootStoreDelegate) {
     self.store = AuthRootStore()
@@ -28,6 +29,7 @@ struct AuthRootView: View {
             } onCompletion: { result in
               store.send(.signInWithAppleCompleted(result))
             }
+            .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
             .frame(height: 44)
           #endif
 
