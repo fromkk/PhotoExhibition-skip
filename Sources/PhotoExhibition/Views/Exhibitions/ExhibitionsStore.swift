@@ -34,7 +34,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   var exhibitionEditStore: ExhibitionEditStore?
 
   // PostAgreement表示用の状態
-  var postAgreementStore: PostAgreementStore?
+  var showPostAgreement: Bool = false
 
   private let exhibitionsClient: any ExhibitionsClient
   private let currentUserClient: any CurrentUserClient
@@ -93,7 +93,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
             showCreateExhibitionView()
           } else {
             withAnimation {
-              postAgreementStore = PostAgreementStore()
+              showPostAgreement = true
             }
           }
         } catch {
@@ -135,7 +135,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       exhibitionEditStore = nil
     case .postAgreementAccepted:
       withAnimation {
-        postAgreementStore = nil
+        showPostAgreement = false
       }
       guard let uid = currentUserClient.currentUser()?.uid else {
         return
@@ -150,7 +150,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       }
     case .postAgreementDismissed:
       withAnimation {
-        postAgreementStore = nil
+        showPostAgreement = false
       }
     }
   }

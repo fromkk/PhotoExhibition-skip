@@ -23,7 +23,7 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   var hasMore: Bool = true
 
   var isLoadingMember: Bool = false
-  var postAgreementStore: PostAgreementStore?
+  var showPostAgreement: Bool = false
 
   private let exhibitionsClient: any ExhibitionsClient
   private let currentUserClient: any CurrentUserClient
@@ -82,7 +82,7 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
             showCreateExhibitionView()
           } else {
             withAnimation {
-              postAgreementStore = PostAgreementStore()
+              showPostAgreement = true
             }
           }
         } catch {
@@ -91,7 +91,7 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       }
     case .postAgreementAccepted:
       withAnimation {
-        postAgreementStore = nil
+        showPostAgreement = false
       }
       guard let uid = currentUserClient.currentUser()?.uid else {
         return
@@ -106,7 +106,7 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       }
     case .postAgreementDismissed:
       withAnimation {
-        postAgreementStore = nil
+        showPostAgreement = false
       }
     }
   }

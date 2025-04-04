@@ -85,9 +85,9 @@ struct MyExhibitionsView: View {
           ExhibitionEditView(store: store)
         }
       }
-      .disabled(store.postAgreementStore != nil)
+      .disabled(store.showPostAgreement)
 
-      if store.postAgreementStore != nil {
+      if store.showPostAgreement {
         PostAgreementView(
           onAgree: {
             store.send(.postAgreementAccepted)

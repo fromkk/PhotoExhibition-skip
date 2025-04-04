@@ -99,12 +99,12 @@ struct ExhibitionsView: View {
           }
         }
       }
-      .disabled(store.postAgreementStore != nil)
+      .disabled(store.showPostAgreement)
       .task {
         store.send(.task)
       }
 
-      if store.postAgreementStore != nil {
+      if store.showPostAgreement {
         PostAgreementView(
           onAgree: {
             store.send(.postAgreementAccepted)
