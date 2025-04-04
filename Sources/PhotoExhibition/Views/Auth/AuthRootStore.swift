@@ -66,28 +66,10 @@ final class AuthRootStore: Store {
     case didSignInSuccessfully(Member)
   }
 
-  var showSignIn: Bool = false {
-    didSet {
-      if showSignIn {
-        authStore = AuthStore(authMode: .signIn)
-        authStore?.delegate = self
-      } else {
-        authStore = nil
-      }
-    }
+  var authStore: AuthStore?
+  var authMode: AuthMode? {
+    authStore?.authMode
   }
-  var showSignUp: Bool = false {
-    didSet {
-      if showSignUp {
-        authStore = AuthStore(authMode: .signUp)
-        authStore?.delegate = self
-      } else {
-        authStore = nil
-      }
-    }
-  }
-
-  private(set) var authStore: AuthStore?
 
   #if !SKIP
     private func randomNonceString(length: Int = 32) -> String {
@@ -128,11 +110,9 @@ final class AuthRootStore: Store {
     case .signInButtonTapped:
       authStore = AuthStore(authMode: .signIn)
       authStore?.delegate = self
-      showSignIn = true
     case .signUpButtonTapped:
       authStore = AuthStore(authMode: .signUp)
       authStore?.delegate = self
-      showSignUp = true
     #if !SKIP
       case .signInWithAppleCompleted(let result):
         switch result {
@@ -161,8 +141,7 @@ final class AuthRootStore: Store {
         }
     #endif
     case .didSignInSuccessfully(let member):
-      showSignIn = false
-      showSignUp = false
+      authStore = nil
       delegate?.didSignInSuccessfully(with: member)
     }
   }

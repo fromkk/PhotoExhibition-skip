@@ -87,7 +87,7 @@ final class RootStoreTests: XCTestCase {
     XCTAssertTrue(store.isSignedIn)
     XCTAssertNotNil(store.exhibitionsStore)
     XCTAssertNotNil(store.settingsStore)
-    XCTAssertFalse(store.isProfileSetupShown)
+    XCTAssertNil(store.profileSetupStore)
   }
 
   func testTaskWithUserAndMemberWithoutName() async throws {
@@ -122,7 +122,6 @@ final class RootStoreTests: XCTestCase {
     // Assert
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
     XCTAssertTrue(store.isSignedIn)
-    XCTAssertTrue(store.isProfileSetupShown)
     XCTAssertNotNil(store.profileSetupStore)
   }
 
@@ -195,7 +194,7 @@ final class RootStoreTests: XCTestCase {
     XCTAssertTrue(store.isSignedIn)
     XCTAssertNotNil(store.exhibitionsStore)
     XCTAssertNotNil(store.settingsStore)
-    XCTAssertFalse(store.isProfileSetupShown)
+    XCTAssertNil(store.profileSetupStore)
   }
 
   func testDidSignInSuccessfullyWithoutName() {
@@ -220,7 +219,6 @@ final class RootStoreTests: XCTestCase {
     XCTAssertTrue(store.isSignedIn)
     XCTAssertNotNil(store.exhibitionsStore)
     XCTAssertNotNil(store.settingsStore)
-    XCTAssertTrue(store.isProfileSetupShown)
     XCTAssertNotNil(store.profileSetupStore)
   }
 }

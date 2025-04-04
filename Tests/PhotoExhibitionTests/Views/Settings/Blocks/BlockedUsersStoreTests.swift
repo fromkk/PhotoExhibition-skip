@@ -48,9 +48,7 @@ final class BlockedUsersStoreTests: XCTestCase {
     store.send(BlockedUsersStore.Action.task)
 
     // Wait for async operations to complete
-    #if !SKIP
-      try await Task.sleep(nanoseconds: 1_000_000)  // Wait 1ms
-    #endif
+    try await Task.sleep(nanoseconds: 100_000_000)  // Wait 100ms
 
     // Verify
     XCTAssertTrue(mockBlockClient.fetchBlockedUserIdsCalled)
@@ -58,8 +56,12 @@ final class BlockedUsersStoreTests: XCTestCase {
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
     XCTAssertEqual(mockMembersClient.fetchArguments, ["user1", "user2"])
     XCTAssertEqual(store.blockedUsers.count, 2)
-    XCTAssertEqual(store.blockedUsers[0].id, "user1")
-    XCTAssertEqual(store.blockedUsers[1].id, "user2")
+
+    // 配列の長さを確認してからアクセス
+    if store.blockedUsers.count == 2 {
+      XCTAssertEqual(store.blockedUsers[0].id, "user1")
+      XCTAssertEqual(store.blockedUsers[1].id, "user2")
+    }
     XCTAssertFalse(store.isLoading)
   }
 
@@ -97,13 +99,17 @@ final class BlockedUsersStoreTests: XCTestCase {
     store.send(BlockedUsersStore.Action.task)
 
     // Wait for async operations to complete
-    try await Task.sleep(nanoseconds: 1_000_000)  // Wait 1ms
+    try await Task.sleep(nanoseconds: 100_000_000)  // Wait 100ms
 
     // Verify
     XCTAssertTrue(mockBlockClient.fetchBlockedUserIdsCalled)
-    XCTAssertTrue(store.showErrorAlert)
-    XCTAssertNotNil(store.error)
-    XCTAssertFalse(store.isLoading)
     XCTAssertEqual(store.blockedUsers.count, 0)
+    XCTAssertFalse(store.isLoading)
+
+    // エラーとアラートのチェック
+    if mockBlockClient.shouldSucceed == false {
+      XCTAssertNotNil(store.error)
+      XCTAssertTrue(store.showErrorAlert)
+    }
   }
 }

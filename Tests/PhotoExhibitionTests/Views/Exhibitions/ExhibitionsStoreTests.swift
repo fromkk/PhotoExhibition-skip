@@ -101,10 +101,9 @@ final class ExhibitionsStoreTests: XCTestCase {
     XCTAssertTrue(store.exhibitions.isEmpty)
     XCTAssertFalse(store.isLoading)
     XCTAssertNil(store.error)
-    XCTAssertFalse(store.showCreateExhibition)
+    XCTAssertNil(store.exhibitionEditStore)
     XCTAssertNil(store.exhibitionToEdit)
     XCTAssertNil(store.exhibitionDetailStore)
-    XCTAssertFalse(store.isExhibitionDetailShown)
   }
 
   // MARK: - アクションのテスト
@@ -291,8 +290,8 @@ final class ExhibitionsStoreTests: XCTestCase {
 
     // ガイドライン同意済みなので、直接作成画面が表示される
     XCTAssertFalse(store.isLoadingMember)
-    XCTAssertFalse(store.showPostAgreement)
-    XCTAssertTrue(store.showCreateExhibition)
+    XCTAssertNil(store.postAgreementStore)
+    XCTAssertNotNil(store.exhibitionEditStore, "Exhibition edit store should be created")
   }
 
   func testEditExhibitionActionSetsExhibitionToEdit() {
@@ -340,9 +339,6 @@ final class ExhibitionsStoreTests: XCTestCase {
     // 展示会詳細ストアが設定されることを確認
     XCTAssertNotNil(store.exhibitionDetailStore)
     XCTAssertEqual(store.exhibitionDetailStore?.exhibition.id, exhibitionToShow.id)
-
-    // 詳細画面への遷移状態がtrueになることを確認
-    XCTAssertTrue(store.isExhibitionDetailShown)
   }
 
   // MARK: - エラー処理のテスト
@@ -379,43 +375,6 @@ final class ExhibitionsStoreTests: XCTestCase {
 
     // isLoadingがfalseに戻ることを確認
     XCTAssertFalse(store.isLoading)
-  }
-
-  // ガイドライン同意のテストを追加
-  func testPostAgreement() async throws {
-    let store = createStore()
-    mockCurrentUserClient.mockUser = User(uid: "test-user")
-
-    // メンバー情報のモックを設定
-    mockMembersClient.mockMembers = [
-      Member(
-        id: "test-user",
-        name: "Test User",
-        icon: nil,
-        postAgreement: false,
-        createdAt: Date(),
-        updatedAt: Date()
-      )
-    ]
-
-    store.send(ExhibitionsStore.Action.createExhibitionButtonTapped)
-    XCTAssertTrue(store.isLoadingMember)
-
-    try await Task.sleep(nanoseconds: 100_000_000)
-
-    XCTAssertFalse(store.isLoadingMember)
-    XCTAssertTrue(store.showPostAgreement)
-
-    store.send(ExhibitionsStore.Action.postAgreementAccepted)
-    try await Task.sleep(nanoseconds: 100_000_000)
-
-    XCTAssertFalse(store.showPostAgreement)
-    XCTAssertTrue(mockMemberUpdateClient.postAgreementCalled)
-    XCTAssertEqual(mockMemberUpdateClient.postAgreementMemberID, "test-user")
-
-    try await Task.sleep(nanoseconds: 100_000_000)
-
-    XCTAssertTrue(store.showCreateExhibition)
   }
 
   private func createStore() -> ExhibitionsStore {

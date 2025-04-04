@@ -22,20 +22,19 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   var exhibitions: [Exhibition] = []
   var isLoading: Bool = false
   var error: Error? = nil
-  var showCreateExhibition: Bool = false
   var exhibitionToEdit: Exhibition? = nil
   private var nextCursor: String? = nil
   var hasMore: Bool = true
 
   var isLoadingMember: Bool = false
-  var showPostAgreement: Bool = false
 
   // 選択された展示会の詳細画面用のストアを保持
-  private(set) var exhibitionDetailStore: ExhibitionDetailStore?
-  // 詳細画面への遷移状態
-  var isExhibitionDetailShown: Bool = false
+  var exhibitionDetailStore: ExhibitionDetailStore?
   // 展示会編集画面用のストアを保持
-  private(set) var exhibitionEditStore: ExhibitionEditStore?
+  var exhibitionEditStore: ExhibitionEditStore?
+
+  // PostAgreement表示用の状態
+  var showPostAgreement: Bool = false
 
   private let exhibitionsClient: any ExhibitionsClient
   private let currentUserClient: any CurrentUserClient
@@ -121,14 +120,12 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
         imageCache: imageCache,
         photoClient: photoClient
       )
-      isExhibitionDetailShown = true
     case .loadMore:
       if !isLoading && hasMore {
         fetchMoreExhibitions()
       }
     case .exhibitionCreated(let exhibition):
       exhibitions.insert(exhibition, at: 0)
-      showCreateExhibition = false
       exhibitionEditStore = nil
     case .exhibitionUpdated(let exhibition):
       if let index = exhibitions.firstIndex(where: { $0.id == exhibition.id }) {
@@ -168,7 +165,6 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       storageClient: storageClient,
       imageCache: imageCache
     )
-    showCreateExhibition = true
   }
 
   // MARK: - ExhibitionEditStoreDelegate
@@ -178,7 +174,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   }
 
   func didCancelExhibition() {
-    showCreateExhibition = false
+    exhibitionEditStore = nil
     exhibitionToEdit = nil
   }
 
@@ -250,7 +246,6 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
             imageCache: imageCache,
             photoClient: photoClient
           )
-          isExhibitionDetailShown = true
         }
       } catch {
         print("Failed to fetch exhibition: \(error.localizedDescription)")

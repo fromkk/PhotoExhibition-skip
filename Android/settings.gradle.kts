@@ -18,7 +18,11 @@ pluginManagement {
     val outputExt = if (skipOutput != null) ".output" else "" // Xcode saves output in package-name.output; SPM has no suffix
     val skipOutputs: File = if (skipOutput != null) {
         // BUILT_PRODUCTS_DIR is set when building from Xcode, in which case we will use Xcode's DerivedData plugin output
-        file(skipOutput).resolve("../../../SourcePackages/plugins/")
+        var outputs = file(skipOutput).resolve("../../../Build/Intermediates.noindex/BuildToolPluginIntermediates/") // Xcode 16.3+
+        if (!outputs.isDirectory) {
+            outputs = file(skipOutput).resolve("../../../SourcePackages/plugins/") // Xcode 16.2-
+        }
+        outputs
     } else {
         exec {
             // create transpiled Kotlin and generate Gradle projects from SwiftPM modules

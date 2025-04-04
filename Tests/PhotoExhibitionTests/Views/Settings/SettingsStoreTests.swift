@@ -39,7 +39,7 @@ final class SettingsStoreTests: XCTestCase {
     XCTAssertNil(store.error)
     XCTAssertFalse(store.isLogoutConfirmationPresented)
     XCTAssertNil(store.member)
-    XCTAssertFalse(store.isProfileEditPresented)
+    XCTAssertNil(store.profileSetupStore)
   }
 
   func testLogoutSuccess() {
@@ -129,18 +129,34 @@ final class SettingsStoreTests: XCTestCase {
     XCTAssertEqual(store.member?.name, testMember.name)
   }
 
-  func testEditProfileButtonTapped() {
+  func testEditProfileButtonTapped() async throws {
     // Arrange
+    let userId = "test-user-id"
+    let testMember = Member(
+      id: userId,
+      name: "Test User",
+      icon: nil,
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+
+    mockCurrentUserClient.mockUser = User(uid: userId)
+    try await mockMembersClient.addMockMember(testMember)
+
     let store = SettingsStore(
       currentUserClient: mockCurrentUserClient,
       membersClient: mockMembersClient
     )
 
+    // memberが取得できるように非同期処理を待つ
+    store.send(SettingsStore.Action.task)
+    try await Task.sleep(nanoseconds: 100_000_000)
+
     // Act
     store.send(SettingsStore.Action.editProfileButtonTapped)
 
     // Assert
-    XCTAssertTrue(store.isProfileEditPresented)
+    XCTAssertNotNil(store.profileSetupStore)
   }
 
   func testDidCompleteProfileSetup() async throws {
@@ -162,14 +178,22 @@ final class SettingsStoreTests: XCTestCase {
       membersClient: mockMembersClient
     )
 
+    // memberが取得できるように非同期処理を待つ
+    store.send(SettingsStore.Action.task)
+    try await Task.sleep(nanoseconds: 100_000_000)
+
+    // プロフィール編集画面を表示する
+    store.send(SettingsStore.Action.editProfileButtonTapped)
+    XCTAssertNotNil(store.profileSetupStore)
+
     // Act
     store.didCompleteProfileSetup()
 
     // 非同期処理が完了するのを待つ
-    await Task.yield()
+    try await Task.sleep(nanoseconds: 100_000_000)
 
     // Assert
-    XCTAssertFalse(store.isProfileEditPresented)
+    XCTAssertNil(store.profileSetupStore)
     XCTAssertTrue(mockMembersClient.fetchWasCalled)
   }
 
@@ -187,7 +211,7 @@ final class SettingsStoreTests: XCTestCase {
     XCTAssertTrue(store.isDeleteAccountConfirmationPresented)
   }
 
-  func testDeleteAccountSuccess() async {
+  func testDeleteAccountSuccess() async throws {
     // Arrange
     let store = SettingsStore(
       currentUserClient: mockCurrentUserClient,
@@ -200,7 +224,7 @@ final class SettingsStoreTests: XCTestCase {
     store.send(SettingsStore.Action.deleteAccountButtonTapped)
 
     // 非同期処理が完了するのを待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // Assert
     XCTAssertTrue(mockCurrentUserClient.deleteAccountWasCalled)
@@ -209,7 +233,7 @@ final class SettingsStoreTests: XCTestCase {
     XCTAssertNil(store.error)
   }
 
-  func testDeleteAccountFailure() async {
+  func testDeleteAccountFailure() async throws {
     // Arrange
     mockCurrentUserClient.shouldSucceed = false
     mockCurrentUserClient.errorToThrow = NSError(
@@ -226,7 +250,7 @@ final class SettingsStoreTests: XCTestCase {
     store.send(SettingsStore.Action.deleteAccountButtonTapped)
 
     // 非同期処理が完了するのを待つ
-    try? await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
+    try await Task.sleep(nanoseconds: 100_000_000)  // 0.1秒
 
     // Assert
     XCTAssertTrue(mockCurrentUserClient.deleteAccountWasCalled)
