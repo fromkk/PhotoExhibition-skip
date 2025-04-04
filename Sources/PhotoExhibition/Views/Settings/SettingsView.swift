@@ -18,26 +18,19 @@ protocol SettingsStoreDelegate: AnyObject {
   private let analyticsClient: any AnalyticsClient
 
   var member: Member?
-  var isProfileEditPresented: Bool = false
-  var showMyExhibitions: Bool = false
-  var showContact: Bool = false
-  var showBlockedUsers: Bool = false
-  #if !SKIP
-    var showLicenseList: Bool = false
-  #endif
   let deviceInfo: any DeviceInfo
 
   // プロフィール編集画面用のストア
-  private(set) var profileSetupStore: ProfileSetupStore?
+  var profileSetupStore: ProfileSetupStore?
   // マイ展示会画面用のストア
-  private(set) var myExhibitionsStore: MyExhibitionsStore?
+  var myExhibitionsStore: MyExhibitionsStore?
   // 問い合わせ画面用のストア
-  private(set) var contactStore: ContactStore?
+  var contactStore: ContactStore?
   // ブロックユーザー一覧画面用のストア
-  private(set) var blockedUsersStore: BlockedUsersStore?
+  var blockedUsersStore: BlockedUsersStore?
   #if !SKIP
     // ライセンス画面のストア
-    private(set) var licenseStore: LicenseListStore?
+    var licenseStore: LicenseListStore?
   #endif
 
   init(
@@ -95,16 +88,13 @@ protocol SettingsStoreDelegate: AnyObject {
         profileSetupStore = ProfileSetupStore(member: member)
         profileSetupStore?.delegate = self
       }
-      isProfileEditPresented = true
     case .profileEditCompleted:
-      isProfileEditPresented = false
       profileSetupStore = nil
       Task {
         await fetchMember()
       }
     case .myExhibitionsButtonTapped:
       myExhibitionsStore = MyExhibitionsStore()
-      showMyExhibitions = true
     case .deleteAccountButtonTapped:
       Task { @MainActor in
         do {
@@ -119,14 +109,11 @@ protocol SettingsStoreDelegate: AnyObject {
       isDeleteAccountConfirmationPresented = true
     case .contactButtonTapped:
       contactStore = ContactStore()
-      showContact = true
     case .blockedUsersButtonTapped:
       blockedUsersStore = BlockedUsersStore()
-      showBlockedUsers = true
     #if !SKIP
       case .licenseButtonTapped:
         licenseStore = LicenseListStore()
-        showLicenseList = true
     #endif
     }
   }
@@ -170,10 +157,14 @@ struct SettingsView: View {
               if let iconPath = member.iconPath {
                 AsyncImageWithIconPath(iconPath: iconPath)
               } else {
-                Image(systemName: SystemImageMapping.getIconName(from: "person.crop.circle.fill"))
-                  .resizable()
-                  .frame(width: 40, height: 40)
-                  .foregroundStyle(Color.gray)
+                Image(
+                  systemName: SystemImageMapping.getIconName(
+                    from: "person.crop.circle.fill"
+                  )
+                )
+                .resizable()
+                .frame(width: 40, height: 40)
+                .foregroundStyle(Color.gray)
               }
 
               Text("Edit Profile")
@@ -297,7 +288,8 @@ struct SettingsView: View {
           Text("Delete Account")
         }
       } footer: {
-        if let version = store.deviceInfo.appVersion, let buildNumber = store.deviceInfo.buildNumber
+        if let version = store.deviceInfo.appVersion,
+          let buildNumber = store.deviceInfo.buildNumber
         {
           Text("\(version) (\(buildNumber))")
             .font(.footnote)
@@ -306,7 +298,12 @@ struct SettingsView: View {
       }
     }
     .navigationTitle(Text("Settings"))
-    .sheet(isPresented: $store.isProfileEditPresented) {
+    .sheet(
+      isPresented: Binding(
+        get: { store.profileSetupStore != nil },
+        set: { if !$0 { store.profileSetupStore = nil } }
+      )
+    ) {
       if let profileSetupStore = store.profileSetupStore {
         NavigationStack {
           ProfileSetupView(store: profileSetupStore)
@@ -314,18 +311,33 @@ struct SettingsView: View {
         }
       }
     }
-    .navigationDestination(isPresented: $store.showMyExhibitions) {
+    .navigationDestination(
+      isPresented: Binding(
+        get: { store.myExhibitionsStore != nil },
+        set: { if !$0 { store.myExhibitionsStore = nil } }
+      )
+    ) {
       if let myExhibitionsStore = store.myExhibitionsStore {
         MyExhibitionsView(store: myExhibitionsStore)
           .navigationTitle(Text("My Exhibitions"))
       }
     }
-    .navigationDestination(isPresented: $store.showContact) {
+    .navigationDestination(
+      isPresented: Binding(
+        get: { store.contactStore != nil },
+        set: { if !$0 { store.contactStore = nil } }
+      )
+    ) {
       if let contactStore = store.contactStore {
         ContactView(store: contactStore)
       }
     }
-    .navigationDestination(isPresented: $store.showBlockedUsers) {
+    .navigationDestination(
+      isPresented: Binding(
+        get: { store.blockedUsersStore != nil },
+        set: { if !$0 { store.blockedUsersStore = nil } }
+      )
+    ) {
       if let blockedUsersStore = store.blockedUsersStore {
         BlockedUsersView(store: blockedUsersStore)
           .navigationTitle(Text("Blocked Users"))
@@ -333,12 +345,16 @@ struct SettingsView: View {
     }
     #if !SKIP
       .navigationDestination(
-        isPresented: $store.showLicenseList,
+        isPresented: Binding(
+          get: { store.licenseStore != nil },
+          set: { if !$0 { store.licenseStore = nil } }
+        ),
         destination: {
           if let store = store.licenseStore {
             LicenseListView(store: store)
           }
-        })
+        }
+      )
     #endif
     .task {
       store.send(.task)
@@ -373,7 +389,9 @@ struct SettingsView: View {
         }
       },
       message: {
-        Text("This action cannot be undone. All your data will be permanently deleted.")
+        Text(
+          "This action cannot be undone. All your data will be permanently deleted."
+        )
       }
     )
   }
@@ -384,7 +402,8 @@ private struct AsyncImageWithIconPath: View {
   let iconPath: String
   @State private var iconURL: URL? = nil
   @State private var isLoading: Bool = true
-  private let imageCache: any StorageImageCacheProtocol = StorageImageCache.shared
+  private let imageCache: any StorageImageCacheProtocol = StorageImageCache
+    .shared
 
   var body: some View {
     AsyncImage(url: iconURL) { image in
