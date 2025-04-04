@@ -9,7 +9,7 @@ struct RootView: View {
   var body: some View {
     Group {
       if store.isSignedIn {
-        if store.isProfileSetupShown, let profileSetupStore = store.profileSetupStore {
+        if let profileSetupStore = store.profileSetupStore {
           // Display profile setup screen
           NavigationStack {
             ProfileSetupView(store: profileSetupStore)

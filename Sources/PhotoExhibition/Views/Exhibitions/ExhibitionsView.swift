@@ -59,7 +59,12 @@ struct ExhibitionsView: View {
           BannerContentainerView(adUnitId: Constants.adMobHomeFooterUnitID)
         }
         .navigationTitle(Text("Exhibitions"))
-        .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
+        .navigationDestination(
+          isPresented: Binding(
+            get: { store.exhibitionDetailStore != nil },
+            set: { if !$0 { store.exhibitionDetailStore = nil } }
+          )
+        ) {
           if let detailStore = store.exhibitionDetailStore {
             ExhibitionDetailView(store: detailStore)
           }
@@ -78,7 +83,12 @@ struct ExhibitionsView: View {
             }
           }
         }
-        .sheet(isPresented: $store.showCreateExhibition) {
+        .sheet(
+          isPresented: Binding(
+            get: { store.exhibitionEditStore != nil && store.exhibitionToEdit == nil },
+            set: { if !$0 { store.exhibitionEditStore = nil } }
+          )
+        ) {
           if let editStore = store.exhibitionEditStore {
             ExhibitionEditView(store: editStore)
           }
@@ -89,12 +99,12 @@ struct ExhibitionsView: View {
           }
         }
       }
-      .disabled(store.showPostAgreement)
+      .disabled(store.postAgreementStore != nil)
       .task {
         store.send(.task)
       }
 
-      if store.showPostAgreement {
+      if store.postAgreementStore != nil {
         PostAgreementView(
           onAgree: {
             store.send(.postAgreementAccepted)

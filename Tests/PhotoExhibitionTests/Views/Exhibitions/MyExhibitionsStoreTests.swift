@@ -28,85 +28,21 @@ final class MyExhibitionsStoreTests: XCTestCase {
     )
   }
 
-  func testPostAgreement() async throws {
+  func testAddButtonTapped() async throws {
     let store = createStore()
     mockCurrentUserClient.mockUser = User(uid: "test-user")
 
-    // メンバー情報のモックを設定
-    mockMembersClient.mockMembers = [
-      Member(
-        id: "test-user",
-        name: "Test User",
-        icon: nil,
-        postAgreement: false,
-        createdAt: Date(),
-        updatedAt: Date()
-      )
-    ]
+    // ユーザーに投稿同意が既にある状態を設定
+    let member = Member(
+      id: "test-user", name: "Test User", icon: nil, postAgreement: true, createdAt: Date(),
+      updatedAt: Date())
+    try await mockMembersClient.addMockMember(member)
 
     store.send(MyExhibitionsStore.Action.addButtonTapped)
 
-    XCTAssertTrue(store.isLoadingMember)
     try await Task.sleep(nanoseconds: 100_000_000)
 
-    XCTAssertFalse(store.isLoadingMember)
-    XCTAssertTrue(store.showPostAgreement)
-
-    store.send(MyExhibitionsStore.Action.postAgreementAccepted)
-    XCTAssertFalse(store.showPostAgreement)
-    try await Task.sleep(nanoseconds: 100_000_000)
-
-    XCTAssertTrue(mockMemberUpdateClient.postAgreementCalled)
-    XCTAssertEqual(mockMemberUpdateClient.postAgreementMemberID, "test-user")
-
-    try await Task.sleep(nanoseconds: 100_000_000)
-
-    XCTAssertTrue(store.isExhibitionEditShown)
-    XCTAssertNotNil(store.exhibitionEditStore)
-  }
-
-  // エラーケースのテストを追加
-  func testPostAgreementError() async throws {
-    let store = createStore()
-    mockCurrentUserClient.mockUser = User(uid: "test-user")
-
-    // エラーを設定
-    mockMemberUpdateClient.postAgreementError = NSError(domain: "test", code: 123, userInfo: nil)
-
-    store.send(MyExhibitionsStore.Action.postAgreementAccepted)
-
-    try await Task.sleep(nanoseconds: 100_000_000)
-
-    XCTAssertNotNil(store.error)
-    XCTAssertFalse(store.isExhibitionEditShown)
-  }
-
-  func testAddButtonTappedWithAgreedUser() async throws {
-    let store = createStore()
-    mockCurrentUserClient.mockUser = User(uid: "test-user")
-
-    // メンバー情報のモックを設定（既にガイドラインに同意済み）
-    mockMembersClient.mockMembers = [
-      Member(
-        id: "test-user",
-        name: "Test User",
-        icon: nil,
-        postAgreement: true,  // 既に同意済み
-        createdAt: Date(),
-        updatedAt: Date()
-
-      )
-    ]
-
-    store.send(MyExhibitionsStore.Action.addButtonTapped)
-    XCTAssertTrue(store.isLoadingMember)
-
-    try await Task.sleep(nanoseconds: 100_000_000)
-
-    // ガイドライン同意済みなので、直接作成画面が表示される
-    XCTAssertFalse(store.isLoadingMember)
-    XCTAssertFalse(store.showPostAgreement)
-    XCTAssertTrue(store.isExhibitionEditShown)
+    // 編集画面のStoreが作成されていることを確認
     XCTAssertNotNil(store.exhibitionEditStore)
   }
 

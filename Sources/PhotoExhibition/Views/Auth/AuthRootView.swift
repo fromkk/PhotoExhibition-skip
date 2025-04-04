@@ -73,12 +73,12 @@ struct AuthRootView: View {
         }
       }
       .padding(16)
-      .navigationDestination(isPresented: $store.showSignIn) {
-        if let authStore = store.authStore {
-          AuthView(store: authStore)
-        }
-      }
-      .navigationDestination(isPresented: $store.showSignUp) {
+      .navigationDestination(
+        isPresented: Binding(
+          get: { store.authStore != nil },
+          set: { if !$0 { store.authStore = nil } }
+        )
+      ) {
         if let authStore = store.authStore {
           AuthView(store: authStore)
         }

@@ -34,8 +34,6 @@ final class AuthRootStoreTests: XCTestCase {
 
     // Assert
     XCTAssertNil(store.authStore)
-    XCTAssertFalse(store.showSignIn)
-    XCTAssertFalse(store.showSignUp)
   }
 
   func testSignInButtonTapped() {
@@ -52,8 +50,6 @@ final class AuthRootStoreTests: XCTestCase {
     // Assert
     XCTAssertNotNil(store.authStore)
     XCTAssertEqual(store.authStore?.authMode, .signIn)
-    XCTAssertTrue(store.showSignIn)
-    XCTAssertFalse(store.showSignUp)
   }
 
   func testSignUpButtonTapped() {
@@ -70,8 +66,6 @@ final class AuthRootStoreTests: XCTestCase {
     // Assert
     XCTAssertNotNil(store.authStore)
     XCTAssertEqual(store.authStore?.authMode, .signUp)
-    XCTAssertFalse(store.showSignIn)
-    XCTAssertTrue(store.showSignUp)
   }
 
   func testTask() async throws {
@@ -175,8 +169,10 @@ final class AuthRootStoreTests: XCTestCase {
       analyticsClient: mockAnalyticsClient
     )
     store.delegate = mockDelegate
-    store.showSignIn = true
-    store.showSignUp = true
+
+    // 認証ストアを設定
+    store.authStore = AuthStore(authMode: AuthMode.signIn)
+
     let testMember = Member(
       id: "test-id",
       createdAt: Date(),
@@ -187,8 +183,7 @@ final class AuthRootStoreTests: XCTestCase {
     store.send(AuthRootStore.Action.didSignInSuccessfully(testMember))
 
     // Assert
-    XCTAssertFalse(store.showSignIn)
-    XCTAssertFalse(store.showSignUp)
+    XCTAssertNil(store.authStore)
     XCTAssertTrue(mockDelegate.didSignInSuccessfullyCalled)
     XCTAssertEqual(mockDelegate.lastSignedInMember?.id, testMember.id)
   }

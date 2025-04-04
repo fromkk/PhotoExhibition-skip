@@ -53,7 +53,10 @@ struct MyExhibitionsView: View {
         }
       }
       .navigationDestination(
-        isPresented: $store.isExhibitionShown
+        isPresented: Binding(
+          get: { store.exhibitionDetailStore != nil },
+          set: { if !$0 { store.exhibitionDetailStore = nil } }
+        )
       ) {
         if let detailStore = store.exhibitionDetailStore {
           ExhibitionDetailView(store: detailStore)
@@ -72,14 +75,19 @@ struct MyExhibitionsView: View {
           .accessibilityLabel(Text("Add Exhibition"))
         }
       }
-      .sheet(isPresented: $store.isExhibitionEditShown) {
+      .sheet(
+        isPresented: Binding(
+          get: { store.exhibitionEditStore != nil },
+          set: { if !$0 { store.exhibitionEditStore = nil } }
+        )
+      ) {
         if let store = store.exhibitionEditStore {
           ExhibitionEditView(store: store)
         }
       }
-      .disabled(store.showPostAgreement)
+      .disabled(store.postAgreementStore != nil)
 
-      if store.showPostAgreement {
+      if store.postAgreementStore != nil {
         PostAgreementView(
           onAgree: {
             store.send(.postAgreementAccepted)

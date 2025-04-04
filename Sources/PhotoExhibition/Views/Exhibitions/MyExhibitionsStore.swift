@@ -23,7 +23,7 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   var hasMore: Bool = true
 
   var isLoadingMember: Bool = false
-  var showPostAgreement: Bool = false
+  var postAgreementStore: PostAgreementStore?
 
   private let exhibitionsClient: any ExhibitionsClient
   private let currentUserClient: any CurrentUserClient
@@ -31,12 +31,9 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   private let memberUpdateClient: any MemberUpdateClient
   private let analyticsClient: any AnalyticsClient
 
-  var isExhibitionShown: Bool = false
-  // 選択された展示会の詳細画面用のストアを保持
-  private(set) var exhibitionDetailStore: ExhibitionDetailStore?
+  var exhibitionDetailStore: ExhibitionDetailStore?
 
-  var isExhibitionEditShown: Bool = false
-  private(set) var exhibitionEditStore: ExhibitionEditStore?
+  var exhibitionEditStore: ExhibitionEditStore?
 
   init(
     exhibitionsClient: any ExhibitionsClient = DefaultExhibitionsClient(),
@@ -67,7 +64,6 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       }
     case let .exhibitionSelected(exhibition):
       exhibitionDetailStore = createExhibitionDetailStore(for: exhibition)
-      isExhibitionShown = true
     case .addButtonTapped:
       guard let uid = currentUserClient.currentUser()?.uid else {
         return
@@ -86,7 +82,7 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
             showCreateExhibitionView()
           } else {
             withAnimation {
-              showPostAgreement = true
+              postAgreementStore = PostAgreementStore()
             }
           }
         } catch {
@@ -95,7 +91,7 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       }
     case .postAgreementAccepted:
       withAnimation {
-        showPostAgreement = false
+        postAgreementStore = nil
       }
       guard let uid = currentUserClient.currentUser()?.uid else {
         return
@@ -110,7 +106,7 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
       }
     case .postAgreementDismissed:
       withAnimation {
-        showPostAgreement = false
+        postAgreementStore = nil
       }
     }
   }
@@ -118,7 +114,6 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   @MainActor
   private func showCreateExhibitionView() {
     exhibitionEditStore = ExhibitionEditStore(mode: .create, delegate: self)
-    isExhibitionEditShown = true
   }
 
   // 展示会詳細画面用のストアを作成するメソッド
@@ -176,6 +171,6 @@ final class MyExhibitionsStore: Store, ExhibitionEditStoreDelegate {
   }
 
   func didCancelExhibition() {
-    isExhibitionEditShown = false
+    exhibitionEditStore = nil
   }
 }

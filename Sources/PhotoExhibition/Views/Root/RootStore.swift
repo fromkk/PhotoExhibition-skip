@@ -28,7 +28,7 @@ final class RootStore: Store {
     case addExhibitionRequestReceived
   }
 
-  private(set) var isSignedIn: Bool = false {
+  var isSignedIn: Bool = false {
     didSet {
       if isSignedIn {
         // クライアントの生成
@@ -48,12 +48,11 @@ final class RootStore: Store {
     }
   }
 
-  var isProfileSetupShown: Bool = false
   var selectedTab: Tab = .exhibitions
 
-  private(set) var exhibitionsStore: ExhibitionsStore?
-  private(set) var settingsStore: SettingsStore?
-  private(set) var profileSetupStore: ProfileSetupStore?
+  var exhibitionsStore: ExhibitionsStore?
+  var settingsStore: SettingsStore?
+  var profileSetupStore: ProfileSetupStore?
   private var pendingUniversalLink: URL?
   private var pendingAddExhibitionRequestReceived: Bool = false
 
@@ -149,7 +148,6 @@ final class RootStore: Store {
     let store = ProfileSetupStore(member: member)
     store.delegate = self
     profileSetupStore = store
-    isProfileSetupShown = true
   }
 
   private func showAddExhibition() {
@@ -169,7 +167,6 @@ extension RootStore: SettingsStoreDelegate {
 
 extension RootStore: ProfileSetupStoreDelegate {
   func didCompleteProfileSetup() {
-    isProfileSetupShown = false
     profileSetupStore = nil
   }
 }
