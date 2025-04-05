@@ -39,7 +39,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case reportButtonTapped
     case moveCompleted
     case showOrganizerProfile
-    case dismissError
     case loadFootprints
     case toggleFootprint
     case showFootprintsListTapped
@@ -54,7 +53,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var isOrganizer: Bool = false
   var coverImageURL: URL? = nil
   var isLoadingCoverImage: Bool = false
-  var isErrorAlertPresented: Bool = false
 
   // 写真関連
   var photos: [Photo] = []
@@ -65,7 +63,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var isUploadingPhoto: Bool = false
   var photoToDelete: String? = nil
   var selectedPhoto: Photo? = nil
-  var showPhotoDetail: Bool = false
   var uploadedPhoto: Photo? = nil
   var showPhotoEditSheet: Bool = false
 
@@ -76,14 +73,12 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var isTogglingFootprint: Bool = false
 
   // PhotoDetailStoreを保持
-  private(set) var photoDetailStore: PhotoDetailStore?
+  var photoDetailStore: PhotoDetailStore?
 
   // 主催者プロフィール
-  private(set) var organizerProfileStore: OrganizerProfileStore?
-  var isOrganizerProfileShown: Bool = false
+  var organizerProfileStore: OrganizerProfileStore?
 
-  var showReport: Bool = false
-  private(set) var reportStore: ReportStore?
+  var reportStore: ReportStore?
 
   private let exhibitionsClient: any ExhibitionsClient
   private let currentUserClient: any CurrentUserClient
@@ -182,7 +177,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
             try await uploadPhoto(from: url, shouldShowEditSheet: true)
           } catch {
             self.error = error
-            self.isErrorAlertPresented = true
           }
           isUploadingPhoto = false
         }
@@ -196,7 +190,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
             try await uploadPhoto(from: url, shouldShowEditSheet: urls.count == 1)
           } catch {
             self.error = error
-            self.isErrorAlertPresented = true
           }
         }
         isUploadingPhoto = false
@@ -215,7 +208,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
         imageCache: imageCache,
         photoClient: photoClient
       )
-      showPhotoDetail = true
     case .updateUploadedPhoto(let title, let description):
       updateUploadedPhoto(title: title, description: description)
     case .cancelPhotoEdit:
@@ -225,14 +217,10 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       reloadExhibition()
     case .reportButtonTapped:
       reportStore = ReportStore(type: .exhibition, id: exhibition.id)
-      showReport = true
     case .moveCompleted:
       movePhoto()
     case .showOrganizerProfile:
       showOrganizerProfile()
-    case .dismissError:
-      error = nil
-      isErrorAlertPresented = false
     case .loadFootprints:
       loadFootprints()
     case .toggleFootprint:
@@ -480,7 +468,6 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       currentUserClient: currentUserClient,
       storageClient: storageClient
     )
-    isOrganizerProfileShown = true
   }
 
   #if !SKIP
@@ -910,12 +897,22 @@ struct ExhibitionDetailView: View {
         )
       }
     }
-    .fullScreenCover(isPresented: $store.showPhotoDetail) {
+    .fullScreenCover(
+      isPresented: Binding(
+        get: { store.photoDetailStore != nil },
+        set: { if !$0 { store.photoDetailStore = nil } }
+      )
+    ) {
       if let store = store.photoDetailStore {
         PhotoDetailView(store: store)
       }
     }
-    .sheet(isPresented: $store.showPhotoEditSheet) {
+    .sheet(
+      isPresented: Binding(
+        get: { store.uploadedPhoto != nil },
+        set: { if !$0 { store.uploadedPhoto = nil } }
+      )
+    ) {
       if let photo = store.uploadedPhoto {
         PhotoEditView(
           title: photo.title ?? "",
@@ -949,7 +946,18 @@ struct ExhibitionDetailView: View {
         dismiss()
       }
     }
-    .navigationDestination(isPresented: $store.isOrganizerProfileShown) {
+    .navigationDestination(
+      isPresented: Binding(
+        get: {
+          store.organizerProfileStore != nil
+        },
+        set: {
+          if !$0 {
+            store.organizerProfileStore = nil
+          }
+        }
+      )
+    ) {
       if let organizerProfileStore = store.organizerProfileStore {
         OrganizerProfileView(store: organizerProfileStore)
       }
@@ -980,7 +988,6 @@ struct ExhibitionDetailView: View {
                   }
                 } catch {
                   store.error = error
-                  store.isErrorAlertPresented = true
                 }
               }
               store.isMovingPhotos = false
@@ -992,15 +999,24 @@ struct ExhibitionDetailView: View {
         matching: .images
       )
     #endif
-    .sheet(isPresented: $store.showReport) {
+    .sheet(
+      isPresented: Binding(
+        get: { store.reportStore != nil },
+        set: { if !$0 { store.reportStore = nil } }
+      )
+    ) {
       if let reportStore = store.reportStore {
         ReportView(store: reportStore)
       }
     }
-    .alert("Error", isPresented: $store.isErrorAlertPresented) {
-      Button("OK", role: .cancel) {
-        store.send(.dismissError)
-      }
+    .alert(
+      "Error",
+      isPresented: Binding(
+        get: { store.error != nil },
+        set: { if !$0 { store.error = nil } }
+      )
+    ) {
+      Button("OK", role: .cancel) {}
     } message: {
       Text(store.error?.localizedDescription ?? "An error occurred")
     }

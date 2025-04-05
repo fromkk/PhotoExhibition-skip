@@ -14,7 +14,6 @@ protocol AuthStoreDelegate: AnyObject {
     case task
     case signInButtonTapped
     case signUpButtonTapped
-    case dismissError
   }
 
   var authMode: AuthMode
@@ -90,9 +89,6 @@ protocol AuthStoreDelegate: AnyObject {
 
         isLoading = false
       }
-
-    case .dismissError:
-      isErrorAlertPresented = false
     }
   }
 }
@@ -151,10 +147,12 @@ struct AuthView: View {
     .navigationTitle(Text(store.authMode.titleLocalizedKey))
     .alert(
       "Error",
-      isPresented: $store.isErrorAlertPresented,
+      isPresented: Binding(
+        get: { store.error != nil },
+        set: { if !$0 { store.error = nil } }
+      ),
       actions: {
         Button {
-          store.send(.dismissError)
         } label: {
           Text("OK")
         }

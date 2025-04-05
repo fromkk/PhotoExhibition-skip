@@ -153,7 +153,10 @@ struct BlockedUsersView: View {
     }
     .alert(
       "Error",
-      isPresented: $store.showErrorAlert
+      isPresented: Binding(
+        get: { store.error != nil },
+        set: { if !$0 { store.error = nil } }
+      )
     ) {
       Button("OK") {
         store.error = nil

@@ -35,7 +35,13 @@ struct ReportView: View {
           .disabled(store.reason.isEmpty || store.isLoading)
         }
       }
-      .alert("Error", isPresented: $store.isErrorAlertPresented) {
+      .alert(
+        "Error",
+        isPresented: Binding(
+          get: { store.error != nil },
+          set: { if !$0 { store.error = nil } }
+        )
+      ) {
         Button("OK") {}
       } message: {
         if let errorMessage = store.error?.localizedDescription {

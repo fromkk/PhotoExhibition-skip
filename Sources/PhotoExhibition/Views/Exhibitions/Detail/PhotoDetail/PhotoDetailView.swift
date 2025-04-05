@@ -58,12 +58,10 @@ final class PhotoDetailStore: Store {
   private let photoClient: any PhotoClient
   private let analyticsClient: any AnalyticsClient
 
-  var showReport: Bool = false
-  private(set) var reportStore: ReportStore?
+  var reportStore: ReportStore?
 
   #if !SKIP
-    var showExif: Bool = false
-    private(set) var exifStore: ExifStore?
+    var exifStore: ExifStore?
   #endif
 
   init(
@@ -141,13 +139,11 @@ final class PhotoDetailStore: Store {
       }
     case .reportButtonTapped:
       reportStore = ReportStore(type: .photo, id: photo.id)
-      showReport = true
     case .toggleUIVisible:
       isUIVisible = !isUIVisible
     #if !SKIP
       case .infoButtonTapped:
         exifStore = ExifStore(photo: photo)
-        showExif = true
     #endif
     }
   }
@@ -643,7 +639,16 @@ struct PhotoDetailView: View {
     }
     #if !SKIP
       .sheet(
-        isPresented: $store.showExif,
+        isPresented: Binding(
+          get: {
+            store.exifStore != nil
+          },
+          set: {
+            if !$0 {
+              store.exifStore = nil
+            }
+          }
+        ),
         content: {
           if let store = store.exifStore {
             ExifView(store: store)
@@ -659,6 +664,24 @@ struct PhotoDetailView: View {
     } message: {
       Text("Are you sure you want to delete this photo? This action cannot be undone.")
     }
+    .alert(
+      "Error",
+      isPresented: Binding(
+        get: { store.error != nil },
+        set: { if !$0 { store.error = nil } }
+      ),
+      actions: {
+        Button {
+        } label: {
+          Text("OK")
+        }
+      },
+      message: {
+        if let message = store.error?.localizedDescription {
+          Text(message)
+        }
+      }
+    )
     .onChange(of: store.isDeleted) { _, isDeleted in
       if isDeleted {
         dismiss()
@@ -685,7 +708,18 @@ struct PhotoDetailView: View {
     .task {
       store.send(.task)
     }
-    .sheet(isPresented: $store.showReport) {
+    .sheet(
+      isPresented: Binding(
+        get: {
+          store.reportStore != nil
+        },
+        set: {
+          if !$0 {
+            store.reportStore = nil
+          }
+        }
+      )
+    ) {
       if let reportStore = store.reportStore {
         ReportView(store: reportStore)
       }

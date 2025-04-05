@@ -87,7 +87,7 @@ struct AuthRootView: View {
       }
       .alert(
         "Error",
-        isPresented: .init(
+        isPresented: Binding(
           get: { store.error != nil },
           set: { if !$0 { store.error = nil } }
         )

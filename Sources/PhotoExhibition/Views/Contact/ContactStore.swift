@@ -15,8 +15,6 @@ import SwiftUI
   var title: String = ""
   var content: String = ""
   var isLoading: Bool = false
-  var error: (any Error)?
-  var isErrorAlertPresented: Bool = false
   var shouldDismiss: Bool = false
 
   private let contactClient: any ContactClient

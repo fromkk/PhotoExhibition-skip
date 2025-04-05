@@ -85,15 +85,10 @@ struct ExhibitionsView: View {
         }
         .sheet(
           isPresented: Binding(
-            get: { store.exhibitionEditStore != nil && store.exhibitionToEdit == nil },
+            get: { store.exhibitionEditStore != nil },
             set: { if !$0 { store.exhibitionEditStore = nil } }
           )
         ) {
-          if let editStore = store.exhibitionEditStore {
-            ExhibitionEditView(store: editStore)
-          }
-        }
-        .sheet(item: $store.exhibitionToEdit) { exhibition in
           if let editStore = store.exhibitionEditStore {
             ExhibitionEditView(store: editStore)
           }

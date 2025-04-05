@@ -495,7 +495,13 @@ struct ExhibitionEditView: View {
           }
         }
       }
-      .alert("Error", isPresented: $store.showError) {
+      .alert(
+        "Error",
+        isPresented: Binding(
+          get: { store.error != nil },
+          set: { if !$0 { store.error = nil } }
+        )
+      ) {
         Button("OK") {
           store.send(.dismissError)
         }

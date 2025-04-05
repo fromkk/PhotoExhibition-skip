@@ -31,13 +31,6 @@ struct ContactView: View {
           .disabled(store.title.isEmpty || store.content.isEmpty || store.isLoading)
         }
       }
-      .alert("Error", isPresented: $store.isErrorAlertPresented) {
-        Button("OK") {}
-      } message: {
-        if let errorMessage = store.error?.localizedDescription {
-          Text(errorMessage)
-        }
-      }
       .onChange(of: store.shouldDismiss) { _, shouldDismiss in
         if shouldDismiss {
           dismiss()

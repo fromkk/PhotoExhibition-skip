@@ -35,9 +35,7 @@ final class OrganizerProfileStore: Store {
   }
 
   // 選択された展示会の詳細画面用のストアを保持
-  private(set) var exhibitionDetailStore: ExhibitionDetailStore?
-  // 詳細画面への遷移状態
-  var isExhibitionDetailShown: Bool = false
+  var exhibitionDetailStore: ExhibitionDetailStore?
 
   private let exhibitionsClient: any ExhibitionsClient
   private let imageCache: any StorageImageCacheProtocol
@@ -94,7 +92,6 @@ final class OrganizerProfileStore: Store {
         imageCache: imageCache,
         photoClient: photoClient
       )
-      isExhibitionDetailShown = true
 
     case .blockButtonTapped:
       blockUser()

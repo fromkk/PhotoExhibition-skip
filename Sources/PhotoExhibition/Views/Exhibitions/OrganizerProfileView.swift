@@ -115,7 +115,18 @@ struct OrganizerProfileView: View {
       }
     }
     .navigationTitle("Organizer Profile")
-    .navigationDestination(isPresented: $store.isExhibitionDetailShown) {
+    .navigationDestination(
+      isPresented: Binding(
+        get: {
+          store.exhibitionDetailStore != nil
+        },
+        set: {
+          if !$0 {
+            store.exhibitionDetailStore = nil
+          }
+        }
+      )
+    ) {
       if let detailStore = store.exhibitionDetailStore {
         ExhibitionDetailView(store: detailStore)
       }

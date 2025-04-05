@@ -361,7 +361,10 @@ struct SettingsView: View {
     }
     .alert(
       "Error",
-      isPresented: $store.isErrorAlertPresented,
+      isPresented: Binding(
+        get: { store.error != nil },
+        set: { if !$0 { store.error = nil } }
+      ),
       actions: {
         Button("OK") {}
       },
