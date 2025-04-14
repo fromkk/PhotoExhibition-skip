@@ -9,6 +9,8 @@
   final class ExhibitionDetailARViewController: UIViewController,
     ARSCNViewDelegate
   {
+    var image: UIImage?  // 表示する画像を保持するプロパティ
+    private var imageNode: SCNNode?  // 画像ノードを保持
 
     var sceneView: ARSCNView = {
       let view = ARSCNView()
@@ -121,31 +123,104 @@
     func createCanvas() -> SCNNode {
       let canvas = SCNPlane(width: 0.6, height: 0.6)
 
-      let material = SCNMaterial()
-      material.diffuse.contents = UIImage(resource: .canvas)
-      material.transparency = 1
-      material.isDoubleSided = true
-      material.writesToDepthBuffer = true  // 深度バッファへの書き込みを有効化
-      material.readsFromDepthBuffer = true  // 深度バッファからの読み込みを有効化
+      // キャンバスの背景
+      let backgroundMaterial = SCNMaterial()
+      backgroundMaterial.diffuse.contents = UIImage(resource: .canvas)
+      backgroundMaterial.transparency = 1
+      backgroundMaterial.isDoubleSided = true
+      backgroundMaterial.writesToDepthBuffer = true
+      backgroundMaterial.readsFromDepthBuffer = true
 
-      canvas.materials = [material]
+      // 画像を表示するための平面
+      let imagePlane = SCNPlane(width: 0.5, height: 0.5)  // キャンバスより少し小さく
+      let imageMaterial = SCNMaterial()
 
-      let boxNode = SCNNode(geometry: canvas)
-      return boxNode
+      if let image = image {
+        updateImagePlane(imagePlane, with: image)
+        imageMaterial.diffuse.contents = image
+      }
+      imageMaterial.isDoubleSided = true
+      imageMaterial.writesToDepthBuffer = true
+      imageMaterial.readsFromDepthBuffer = true
+
+      // 背景と画像の平面を組み合わせる
+      let backgroundNode = SCNNode(geometry: canvas)
+      backgroundNode.geometry?.materials = [backgroundMaterial]
+
+      let imageNode = SCNNode(geometry: imagePlane)
+      imageNode.geometry?.materials = [imageMaterial]
+
+      // 画像を背景の前面に配置
+      imageNode.position = SCNVector3(0, 0, 0.001)  // わずかに前面に配置
+
+      backgroundNode.addChildNode(imageNode)
+      self.imageNode = imageNode  // 画像ノードを保持
+      return backgroundNode
+    }
+
+    // 画像を更新するメソッド
+    func replaceImage(with newImage: UIImage) {
+      guard let imageNode = imageNode,
+        let imagePlane = imageNode.geometry as? SCNPlane
+      else { return }
+
+      // 画像のアスペクト比に合わせて平面のサイズを更新
+      updateImagePlane(imagePlane, with: newImage)
+
+      // マテリアルの画像を更新
+      if let material = imagePlane.materials.first {
+        material.diffuse.contents = newImage
+      }
+    }
+
+    // 画像のアスペクト比に合わせて平面のサイズを更新するヘルパーメソッド
+    private func updateImagePlane(_ plane: SCNPlane, with image: UIImage) {
+      let imageAspect = image.size.width / image.size.height
+      let planeAspect = plane.width / plane.height
+
+      if imageAspect > planeAspect {
+        // 画像が横長の場合
+        plane.width = 0.5
+        plane.height = 0.5 / imageAspect
+      } else {
+        // 画像が縦長の場合
+        plane.height = 0.5
+        plane.width = 0.5 * imageAspect
+      }
     }
   }
 
   struct ExhibitionDetailARView: UIViewControllerRepresentable {
+    let image: UIImage? = nil
+
+    func makeCoordinator() -> Coordinator {
+      Coordinator(self)
+    }
+
     func makeUIViewController(context: Context)
       -> ExhibitionDetailARViewController
     {
-      return ExhibitionDetailARViewController()
+      let viewController = ExhibitionDetailARViewController()
+      viewController.image = image  // 画像を設定
+      return viewController
     }
 
     func updateUIViewController(
       _ uiViewController: ExhibitionDetailARViewController,
       context: Context
-    ) {}
+    ) {
+      if let image = image {
+        uiViewController.replaceImage(with: image)
+      }
+    }
+
+    class Coordinator: NSObject {
+      var parent: ExhibitionDetailARView
+
+      init(_ parent: ExhibitionDetailARView) {
+        self.parent = parent
+      }
+    }
   }
 
 #endif
