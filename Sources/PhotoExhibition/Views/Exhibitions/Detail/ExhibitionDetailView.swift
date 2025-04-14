@@ -27,6 +27,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 {
   enum Action {
     case arButtonTapped
+    case arCloseButtonTapped
     case checkPermissions
     case editExhibition
     case deleteExhibition
@@ -156,6 +157,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     switch action {
     case .arButtonTapped:
       isARViewPresented = true
+    case .arCloseButtonTapped:
+      isARViewPresented = false
     case .checkPermissions:
       checkIfUserIsOrganizer()
     case .editExhibition:
@@ -858,8 +861,21 @@ struct ExhibitionDetailView: View {
                     .buttonStyle(.plain)
                     .tint(Color.accentColor)
                     .fullScreenCover(isPresented: $store.isARViewPresented) {
-                      ExhibitionDetailARView()
-                        .ignoresSafeArea()
+                      NavigationStack {
+                        ExhibitionDetailARView()
+                          .ignoresSafeArea()
+                          .toolbar {
+                            ToolbarItem(placement: .primaryAction) {
+                              Button {
+                                store.send(.arCloseButtonTapped)
+                              } label: {
+                                Image(systemName: "xmark")
+                              }
+                              .accessibilityLabel(Text("Close"))
+                              .tint(Color.accentColor)
+                            }
+                          }
+                      }
                     }
                   }
                 #endif

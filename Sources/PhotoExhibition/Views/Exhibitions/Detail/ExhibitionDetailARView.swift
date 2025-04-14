@@ -1,10 +1,11 @@
 #if !SKIP
-  import ARKit
+  @preconcurrency import ARKit
   import UIKit
   import SceneKit
   import SwiftUI
 
-  @MainActor
+  extension SCNNode: @unchecked @retroactive Sendable {}
+
   final class ExhibitionDetailARViewController: UIViewController,
     ARSCNViewDelegate
   {
@@ -46,10 +47,26 @@
 
       // Create and configure session configuration
       let configuration = ARWorldTrackingConfiguration()
-      configuration.planeDetection = [.horizontal, .vertical]  // 垂直と水平の平面検出を有効にする
+      configuration.sceneReconstruction = .meshWithClassification
+      configuration.planeDetection = [.vertical]
+      configuration.isLightEstimationEnabled = true
+
+      // メッシュ化とオブジェクトの分類
+      configuration.sceneReconstruction = .meshWithClassification
+
+      // オクルージョンを有効化
+      if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
+        // People Occlusionを適用
+        configuration.frameSemantics = [.personSegmentationWithDepth]
+      }
 
       // Run the view's session
-      sceneView.session.run(configuration)
+      sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+      super.viewWillDisappear(animated)
+      sceneView.session.pause()
     }
 
     // MARK: - ARSCNViewDelegate
@@ -59,40 +76,63 @@
       didAdd node: SCNNode,
       for anchor: ARAnchor
     ) {
-      if let planeAnchor = anchor as? ARPlaneAnchor {
-        switch planeAnchor.alignment {  // 平面の方向性を確認
-        case .horizontal:
-          print("Found a floor/ceiling")
-        case .vertical:
-          print("Found a wall")
-
-          // 壁を見つけたら、何らかのアクションを取る
-          let box = SCNBox(
-            width: CGFloat(planeAnchor.planeExtent.width),
-            height: 0.001,
-            length: CGFloat(planeAnchor.planeExtent.height),
-            chamferRadius: 0
-          )
-
-          let material = SCNMaterial()
-          material.diffuse.contents = UIColor.green
-
-          box.materials = [material]
-
-          let boxNode = SCNNode(geometry: box)
-          boxNode.position = SCNVector3(
-            planeAnchor.center.x,
-            planeAnchor.center.y,
-            planeAnchor.center.z
-          )
-
-          node.addChildNode(boxNode)  // シーンに追加
-        @unknown default:
-          fatalError()
-        }
+      guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
+      Task {
+        await addCanvasIfNeeded(node, planeAnchor: planeAnchor)
       }
     }
 
+    private var canvasNode: SCNNode?
+
+    private func addCanvasIfNeeded(_ node: SCNNode, planeAnchor: ARPlaneAnchor) {
+      guard canvasNode == nil else { return }
+      // 壁の中心に配置する
+      let canvasNode = createCanvas()
+
+      // 壁の中心位置を取得
+      let center = SCNVector3(
+        planeAnchor.center.x,
+        planeAnchor.center.y,
+        planeAnchor.center.z
+      )
+
+      // 壁の向きを取得
+      let transform = SCNMatrix4(planeAnchor.transform)
+
+      // 壁の法線ベクトルを取得
+      let normal = SCNVector3(transform.m31, transform.m32, transform.m33)
+
+      // 壁に沿った向きを計算
+      let rotation = SCNVector3(
+        atan2(normal.y, normal.z),
+        atan2(-normal.x, sqrt(normal.y * normal.y + normal.z * normal.z)),
+        0  // Z軸の回転は0に固定
+      )
+
+      // 位置と向きを設定
+      canvasNode.position = center
+      canvasNode.eulerAngles = rotation
+
+      node.addChildNode(canvasNode)
+      self.canvasNode = canvasNode
+    }
+
+    // キャンバスを作成するメソッド
+    func createCanvas() -> SCNNode {
+      let canvas = SCNPlane(width: 1, height: 1)  // 1m四方のキャンバス
+
+      let material = SCNMaterial()
+      material.diffuse.contents = UIColor.white  // フィルターカラーを白色にする（透明な場合はUIColor.clear）
+      material.transparency = 1
+      material.isDoubleSided = true
+      material.writesToDepthBuffer = true  // 深度バッファへの書き込みを有効化
+      material.readsFromDepthBuffer = true  // 深度バッファからの読み込みを有効化
+
+      canvas.materials = [material]
+
+      let boxNode = SCNNode(geometry: canvas)
+      return boxNode
+    }
   }
 
   struct ExhibitionDetailARView: UIViewControllerRepresentable {
