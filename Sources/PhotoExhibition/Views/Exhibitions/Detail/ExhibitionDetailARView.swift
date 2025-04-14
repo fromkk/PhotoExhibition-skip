@@ -119,10 +119,10 @@
 
     // キャンバスを作成するメソッド
     func createCanvas() -> SCNNode {
-      let canvas = SCNPlane(width: 1, height: 1)  // 1m四方のキャンバス
+      let canvas = SCNPlane(width: 0.6, height: 0.6)
 
       let material = SCNMaterial()
-      material.diffuse.contents = UIColor.white  // フィルターカラーを白色にする（透明な場合はUIColor.clear）
+      material.diffuse.contents = UIImage(resource: .canvas)
       material.transparency = 1
       material.isDoubleSided = true
       material.writesToDepthBuffer = true  // 深度バッファへの書き込みを有効化
