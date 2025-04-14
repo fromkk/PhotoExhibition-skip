@@ -93,6 +93,9 @@
         }
       }
     },
+    "AR" : {
+
+    },
     "Are you sure you want to delete this exhibition? This action cannot be undone." : {
       "localizations" : {
         "ja" : {

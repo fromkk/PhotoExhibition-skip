@@ -3,6 +3,10 @@ import OSLog
 import SkipKit
 import SwiftUI
 
+#if !SKIP
+  import ARKit
+#endif
+
 #if canImport(Photos)
   import Photos
   import PhotosUI
@@ -22,6 +26,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   ExhibitionEditStoreDelegate, FootprintsListStoreDelegate
 {
   enum Action {
+    case arButtonTapped
     case checkPermissions
     case editExhibition
     case deleteExhibition
@@ -99,6 +104,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   private(set) var footprintsListStore: FootprintsListStore?
   var isShowFootprintsList: Bool = false
 
+  // AR
+  var isARViewPresented: Bool = false
+
   var shareURL: URL {
     URL(string: "https://\(Constants.hostingDomain)/exhibition/\(exhibition.id)")!
   }
@@ -146,6 +154,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
   func send(_ action: Action) {
     switch action {
+    case .arButtonTapped:
+      isARViewPresented = true
     case .checkPermissions:
       checkIfUserIsOrganizer()
     case .editExhibition:
@@ -834,6 +844,25 @@ struct ExhibitionDetailView: View {
                 #endif
 
                 Spacer()
+
+                #if !SKIP
+                  if ARConfiguration.isSupported {
+                    Button {
+                      store.send(.arButtonTapped)
+                    } label: {
+                      HStack(spacing: 4) {
+                        Image(systemName: "cube.transparent")
+                        Text("AR")
+                      }
+                    }
+                    .buttonStyle(.plain)
+                    .tint(Color.accentColor)
+                    .fullScreenCover(isPresented: $store.isARViewPresented) {
+                      ExhibitionDetailARView()
+                        .ignoresSafeArea()
+                    }
+                  }
+                #endif
 
                 if store.isOrganizer {
                   if store.isUploadingPhoto || store.isMovingPhotos {
