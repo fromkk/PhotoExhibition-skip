@@ -858,23 +858,23 @@ struct ExhibitionDetailView: View {
                         Text("AR")
                       }
                     }
-                    .buttonStyle(.plain)
-                    .tint(Color.accentColor)
                     .fullScreenCover(isPresented: $store.isARViewPresented) {
                       NavigationStack {
-                        ExhibitionDetailARView(photos: store.photos, imageCache: store.imageCache)
-                          .ignoresSafeArea()
-                          .toolbar {
-                            ToolbarItem(placement: .primaryAction) {
-                              Button {
-                                store.send(.arCloseButtonTapped)
-                              } label: {
-                                Image(systemName: "xmark")
-                              }
-                              .accessibilityLabel(Text("Close"))
-                              .tint(Color.accentColor)
+                        ExhibitionDetailARViewContainer(
+                          photos: store.photos, imageCache: store.imageCache
+                        )
+                        .ignoresSafeArea()
+                        .toolbar {
+                          ToolbarItem(placement: .primaryAction) {
+                            Button {
+                              store.send(.arCloseButtonTapped)
+                            } label: {
+                              Image(systemName: "xmark")
                             }
+                            .accessibilityLabel(Text("Close"))
+                            .tint(Color.accentColor)
                           }
+                        }
                       }
                     }
                   }

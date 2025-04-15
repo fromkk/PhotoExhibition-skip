@@ -34,7 +34,7 @@
 
       // Show statistics such as fps and timing information
       #if DEBUG
-        sceneView.showsStatistics = true
+        // sceneView.showsStatistics = true
       #endif
 
       // Create a new scene
@@ -161,19 +161,24 @@
     // 画像を更新するメソッド
     func replaceImage(with newImage: UIImage) {
       self.image = newImage
-      guard let imageNode = imageNode,
-        let imagePlane = imageNode.geometry as? SCNPlane
-      else {
-        return
-      }
-
-      // 画像のアスペクト比に合わせて平面のサイズを更新
+      // imageNodeがなければreturn
+      guard let parent = imageNode?.parent else { return }
+      // 新しいSCNPlaneを作成し、アスペクト比を更新
+      let imagePlane = SCNPlane(width: 0.5, height: 0.5)
       updateImagePlane(imagePlane, with: newImage)
-
-      // マテリアルの画像を更新
-      if let material = imagePlane.materials.first {
-        material.diffuse.contents = newImage
-      }
+      let imageMaterial = SCNMaterial()
+      imageMaterial.diffuse.contents = newImage
+      imageMaterial.isDoubleSided = true
+      imageMaterial.writesToDepthBuffer = true
+      imageMaterial.readsFromDepthBuffer = true
+      imagePlane.materials = [imageMaterial]
+      // 新しいノードを作成
+      let newNode = SCNNode(geometry: imagePlane)
+      newNode.position = SCNVector3(0, 0, 0.001)
+      // 古いノードを削除して新しいノードを追加
+      parent.childNodes.forEach { $0.removeFromParentNode() }
+      parent.addChildNode(newNode)
+      self.imageNode = newNode
     }
 
     // 画像のアスペクト比に合わせて平面のサイズを更新するヘルパーメソッド
@@ -193,28 +198,91 @@
     }
   }
 
-  struct ExhibitionDetailARView: UIViewControllerRepresentable {
+  struct ExhibitionDetailARViewContainer: View {
     let photos: [Photo]
     let imageCache: any StorageImageCacheProtocol
 
-    func makeUIViewController(context: Context) -> ExhibitionDetailARViewController {
-      ExhibitionDetailARViewController()
+    @State private var currentIndex: Int = 0
+    @State private var currentImage: UIImage?
+    @State private var isLoading: Bool = false
+
+    var body: some View {
+      ZStack {
+        ExhibitionDetailARView(image: currentImage)
+          .toolbar {
+            ToolbarItem(placement: .bottomBar) {
+              HStack {
+                Button(action: showPrevious) {
+                  Image(systemName: "chevron.backward")
+                    .font(.body)
+                    .foregroundStyle(Color.accentColor)
+                    .accessibilityLabel("Backward")
+                }
+                .disabled(photos.count <= 1)
+                Spacer()
+                Button(action: showNext) {
+                  Image(systemName: "chevron.forward")
+                    .font(.body)
+                    .foregroundStyle(Color.accentColor)
+                    .accessibilityLabel("Forward")
+                }
+                .disabled(photos.count <= 1)
+              }
+            }
+          }
+          .ignoresSafeArea()
+
+        if isLoading {
+          ProgressView()
+        }
+      }
+      .onAppear { loadImage(for: currentIndex) }
+      .onChange(of: currentIndex) { _, index in loadImage(for: index) }
     }
 
-    func updateUIViewController(
-      _ uiViewController: ExhibitionDetailARViewController,
-      context: Context
-    ) {
-      guard let first = photos.first, let path = first.imagePath else { return }
+    private func loadImage(for index: Int) {
+      guard photos.indices.contains(index), let path = photos[index].imagePath else { return }
+      isLoading = true
       Task {
+        defer { isLoading = false }
         do {
           let url = try await imageCache.getImageURL(for: path)
           if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
-            uiViewController.replaceImage(with: image)
+            currentImage = image
+          } else {
+            currentImage = nil
           }
         } catch {
-          // エラー時は何もしない
+          currentImage = nil
         }
+      }
+    }
+
+    private func showPrevious() {
+      guard !photos.isEmpty else { return }
+      currentIndex = (currentIndex - 1 + photos.count) % photos.count
+    }
+
+    private func showNext() {
+      guard !photos.isEmpty else { return }
+      currentIndex = (currentIndex + 1) % photos.count
+    }
+  }
+
+  struct ExhibitionDetailARView: UIViewControllerRepresentable {
+    let image: UIImage?
+
+    func makeUIViewController(context: Context) -> ExhibitionDetailARViewController {
+      let vc = ExhibitionDetailARViewController()
+      vc.image = image
+      return vc
+    }
+
+    func updateUIViewController(
+      _ uiViewController: ExhibitionDetailARViewController, context: Context
+    ) {
+      if let image = image {
+        uiViewController.replaceImage(with: image)
       }
     }
   }
