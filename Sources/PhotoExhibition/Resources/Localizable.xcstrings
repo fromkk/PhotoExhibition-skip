@@ -93,6 +93,16 @@
         }
       }
     },
+    "AR" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AR"
+          }
+        }
+      }
+    },
     "Are you sure you want to delete this exhibition? This action cannot be undone." : {
       "localizations" : {
         "ja" : {
@@ -139,6 +149,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "展示を公開するには少なくとも1枚の写真が必要です"
+          }
+        }
+      }
+    },
+    "Backward" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前へ"
           }
         }
       }
@@ -541,6 +561,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "足跡"
+          }
+        }
+      }
+    },
+    "Forward" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次へ"
           }
         }
       }
