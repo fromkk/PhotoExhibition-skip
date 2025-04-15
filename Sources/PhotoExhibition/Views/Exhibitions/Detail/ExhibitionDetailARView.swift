@@ -230,7 +230,6 @@
               }
             }
           }
-          .ignoresSafeArea()
 
         if isLoading {
           ProgressView()
