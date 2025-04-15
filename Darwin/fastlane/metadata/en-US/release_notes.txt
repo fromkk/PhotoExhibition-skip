@@ -1,4 +1,2 @@
-- Added lock screen widget for quick access to add exhibitions
-- Added support for adding exhibitions through App Intents (iOS 18.0 or later)
-- Added version information display in the app
-- Bug fixes and improvements
+- Added and improved AR (Augmented Reality) view features
+- Other bug fixes and minor improvements
