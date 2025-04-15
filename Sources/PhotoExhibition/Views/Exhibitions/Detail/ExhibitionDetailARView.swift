@@ -230,6 +230,10 @@
               }
             }
           }
+          .navigationBarBackgroundVisiblity(.visible)
+          .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+          .toolbarBackGroundVisiblity(.visible)
+          .toolbarBackground(.ultraThinMaterial, for: .bottomBar)
 
         if isLoading {
           ProgressView()
@@ -265,6 +269,24 @@
     private func showNext() {
       guard !photos.isEmpty else { return }
       currentIndex = (currentIndex + 1) % photos.count
+    }
+  }
+
+  extension View {
+    fileprivate func navigationBarBackgroundVisiblity(_ visibility: Visibility) -> some View {
+      if #available(iOS 18.0, *) {
+        return toolbarBackgroundVisibility(visibility, for: .navigationBar)
+      } else {
+        return self
+      }
+    }
+
+    fileprivate func toolbarBackGroundVisiblity(_ visibility: Visibility) -> some View {
+      if #available(iOS 18.0, *) {
+        return toolbarBackgroundVisibility(visibility, for: .bottomBar)
+      } else {
+        return self
+      }
     }
   }
 
