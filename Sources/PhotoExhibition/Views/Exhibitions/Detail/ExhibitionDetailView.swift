@@ -862,7 +862,7 @@ struct ExhibitionDetailView: View {
                     .tint(Color.accentColor)
                     .fullScreenCover(isPresented: $store.isARViewPresented) {
                       NavigationStack {
-                        ExhibitionDetailARView()
+                        ExhibitionDetailARView(photos: store.photos, imageCache: store.imageCache)
                           .ignoresSafeArea()
                           .toolbar {
                             ToolbarItem(placement: .primaryAction) {

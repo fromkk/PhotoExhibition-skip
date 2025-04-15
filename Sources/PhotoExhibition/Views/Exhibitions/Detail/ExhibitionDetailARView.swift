@@ -160,9 +160,12 @@
 
     // 画像を更新するメソッド
     func replaceImage(with newImage: UIImage) {
+      self.image = newImage
       guard let imageNode = imageNode,
         let imagePlane = imageNode.geometry as? SCNPlane
-      else { return }
+      else {
+        return
+      }
 
       // 画像のアスペクト比に合わせて平面のサイズを更新
       updateImagePlane(imagePlane, with: newImage)
@@ -191,34 +194,27 @@
   }
 
   struct ExhibitionDetailARView: UIViewControllerRepresentable {
-    let image: UIImage? = nil
+    let photos: [Photo]
+    let imageCache: any StorageImageCacheProtocol
 
-    func makeCoordinator() -> Coordinator {
-      Coordinator(self)
-    }
-
-    func makeUIViewController(context: Context)
-      -> ExhibitionDetailARViewController
-    {
-      let viewController = ExhibitionDetailARViewController()
-      viewController.image = image  // 画像を設定
-      return viewController
+    func makeUIViewController(context: Context) -> ExhibitionDetailARViewController {
+      ExhibitionDetailARViewController()
     }
 
     func updateUIViewController(
       _ uiViewController: ExhibitionDetailARViewController,
       context: Context
     ) {
-      if let image = image {
-        uiViewController.replaceImage(with: image)
-      }
-    }
-
-    class Coordinator: NSObject {
-      var parent: ExhibitionDetailARView
-
-      init(_ parent: ExhibitionDetailARView) {
-        self.parent = parent
+      guard let first = photos.first, let path = first.imagePath else { return }
+      Task {
+        do {
+          let url = try await imageCache.getImageURL(for: path)
+          if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+            uiViewController.replaceImage(with: image)
+          }
+        } catch {
+          // エラー時は何もしない
+        }
       }
     }
   }
