@@ -64,7 +64,7 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
         .limit(to: pageSize)
       #endif
 
-    if let cursor = cursor {
+    if let cursor {
       let cursorDocument = try await firestore.collection("exhibitions").document(cursor)
         .getDocument()
       query = query.start(afterDocument: cursorDocument)

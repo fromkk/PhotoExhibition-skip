@@ -1,14 +1,12 @@
-//
-//  PhotoExhibitionViewerApp.swift
-//  PhotoExhibitionViewer
-//
-//  Created by Kazuya Ueoka on 2025/04/18.
-//
-
+import FirebaseCore
 import SwiftUI
 
 @main
 struct PhotoExhibitionViewerApp: App {
+  init() {
+    FirebaseApp.configure()
+  }
+
   var body: some Scene {
     WindowGroup {
       ContentView()
