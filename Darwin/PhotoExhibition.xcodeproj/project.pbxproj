@@ -23,7 +23,6 @@
 		ADA8856B2D97BECF00230226 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
 		ADA8856C2D97BECF00230226 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
 		ADC1F27F2DB22BB3003A8288 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
-		ADE219732DB1C36200744774 /* RealityKitContent in Frameworks */ = {isa = PBXBuildFile; productRef = ADE219722DB1C36200744774 /* RealityKitContent */; };
 		ADE890492DB1D7CC00FFC79F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = ADE890482DB1D7CC00FFC79F /* FirebaseAuth */; };
 		ADE8904B2DB1D7CC00FFC79F /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = ADE8904A2DB1D7CC00FFC79F /* FirebaseCore */; };
 		ADE8904D2DB1D7CC00FFC79F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = ADE8904C2DB1D7CC00FFC79F /* FirebaseFirestore */; };
@@ -145,7 +144,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ADE219732DB1C36200744774 /* RealityKitContent in Frameworks */,
 				ADE8904D2DB1D7CC00FFC79F /* FirebaseFirestore in Frameworks */,
 				ADE8904B2DB1D7CC00FFC79F /* FirebaseCore in Frameworks */,
 				ADE8904F2DB1D7CC00FFC79F /* FirebaseStorage in Frameworks */,
@@ -327,7 +325,6 @@
 			);
 			name = PhotoExhibitionViewer;
 			packageProductDependencies = (
-				ADE219722DB1C36200744774 /* RealityKitContent */,
 				ADE890482DB1D7CC00FFC79F /* FirebaseAuth */,
 				ADE8904A2DB1D7CC00FFC79F /* FirebaseCore */,
 				ADE8904C2DB1D7CC00FFC79F /* FirebaseFirestore */,
@@ -1072,10 +1069,6 @@
 		ADA885692D97BE2E00230226 /* WidgetClients */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WidgetClients;
-		};
-		ADE219722DB1C36200744774 /* RealityKitContent */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = RealityKitContent;
 		};
 		ADE890482DB1D7CC00FFC79F /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;

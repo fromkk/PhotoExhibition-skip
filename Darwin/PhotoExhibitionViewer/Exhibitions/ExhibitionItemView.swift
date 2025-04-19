@@ -44,6 +44,11 @@ struct ExhibitionItemView: View {
         }
       }
 
+      LinearGradient(stops: [
+        .init(color: .black.opacity(0), location: 0.7),
+        .init(color: .black.opacity(0.5), location: 1)
+      ], startPoint: .top, endPoint: .bottom)
+
       VStack(spacing: 8) {
         Text(store.item.name)
           .frame(maxWidth: .infinity, alignment: .leading)
