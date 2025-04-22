@@ -1,8 +1,7 @@
-import RealityKit
 import SwiftUI
 
 @Observable
-final class ExhibitionDetailStore: Hashable {
+final class ExhibitionDetailStore: Store, Hashable {
   var exhibition: Exhibition
   let photosClient: PhotosClient
   let imageClient: any StorageImageCacheProtocol
@@ -21,7 +20,6 @@ final class ExhibitionDetailStore: Hashable {
 
   enum Action {
     case task
-    case photoSelected(Photo)
   }
 
   func send(_ action: Action) {
@@ -40,8 +38,6 @@ final class ExhibitionDetailStore: Hashable {
           self.error = error
         }
       }
-    case let .photoSelected(photo):
-      return
     }
   }
 
@@ -63,12 +59,23 @@ final class ExhibitionDetailStore: Hashable {
 struct ExhibitionDetailView: View {
   @Bindable var store: ExhibitionDetailStore
 
+  @Environment(\.openWindow) var openWindow
+
   var body: some View {
     ScrollView {
       LazyVGrid(columns: Array(repeating: GridItem(), count: 3)) {
         ForEach(store.photos, id: \.self) { itemStore in
           PhotoItemView(store: itemStore) {
-            store.send(.photoSelected(itemStore.photo))
+            guard let exhibitionId = store.exhibition.id, let photoId = itemStore.photo.id else {
+              return
+            }
+            openWindow(
+              id: "PhotoDetail",
+              value: WindowPhoto(
+                exhibitionId: exhibitionId,
+                photoId: photoId
+              )
+            )
           }
           .frame(maxHeight: .infinity)
           .aspectRatio(1, contentMode: .fill)

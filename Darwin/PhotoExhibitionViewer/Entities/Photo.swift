@@ -19,3 +19,19 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     return path_1024x1024 ?? path_512x512 ?? path_256x256 ?? path
   }
 }
+
+extension Photo {
+  static let test = Self(
+    id: "id",
+    path: nil,
+    path_256x256: nil,
+    path_512x512: nil,
+    path_1024x1024: nil,
+    title: "title",
+    description: "description",
+    metadata: nil,
+    sort: 1,
+    createdAt: Date(),
+    updatedAt: Date()
+  )
+}

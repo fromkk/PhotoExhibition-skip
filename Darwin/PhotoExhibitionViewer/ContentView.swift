@@ -5,7 +5,6 @@
 //  Created by Kazuya Ueoka on 2025/04/18.
 //
 
-import RealityKit
 import SwiftUI
 
 struct ContentView: View {

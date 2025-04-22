@@ -92,7 +92,6 @@
 		ADA885552D97B92C00230226 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		ADA885572D97B92C00230226 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		ADE2196E2DB1C36200744774 /* PhotoExhibitionViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoExhibitionViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		ADE219712DB1C36200744774 /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
 		ADE2197F2DB1C36300744774 /* PhotoExhibitionViewerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhotoExhibitionViewerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADE219AA2DB1C67900744774 /* PhotoExhibitionViewer.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = PhotoExhibitionViewer.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -196,7 +195,6 @@
 				ADE2196F2DB1C36200744774 /* PhotoExhibitionViewer */,
 				ADE219822DB1C36300744774 /* PhotoExhibitionViewerTests */,
 				ADA885542D97B92C00230226 /* Frameworks */,
-				ADE219702DB1C36200744774 /* Packages */,
 				496BDBEC2B89A47800C09264 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -247,14 +245,6 @@
 				ADA885572D97B92C00230226 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		ADE219702DB1C36200744774 /* Packages */ = {
-			isa = PBXGroup;
-			children = (
-				ADE219712DB1C36200744774 /* RealityKitContent */,
-			);
-			path = Packages;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

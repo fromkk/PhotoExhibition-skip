@@ -71,7 +71,7 @@ struct PhotoItemView: View {
             }
           }
           .clipShape(RoundedRectangle(cornerRadius: 8))
-        
+
         LinearGradient(
           stops: [
             .init(color: .black.opacity(0), location: 0.7),
@@ -96,6 +96,7 @@ struct PhotoItemView: View {
         .padding()
       }
     }
+    .buttonStyle(.plain)
     .task {
       store.send(.task)
     }
