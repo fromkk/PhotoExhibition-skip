@@ -81,10 +81,7 @@ struct ExhibitionsView: View {
             LazyHStack {
               ForEach(store.exhibitions) { itemStore in
                 ExhibitionItemView(store: itemStore) {
-                  store.send(.selected(itemStore.item))
-                }
-                .navigationDestination(item: $store.selectedExhibitionStore) { store in
-                  ExhibitionDetailView(store: store)
+                  store.send(.selected(itemStore.exhibition))
                 }
               }
               if store.hasMore {
@@ -97,6 +94,9 @@ struct ExhibitionsView: View {
           }
           .refreshable {
             store.send(.refreshed)
+          }
+          .navigationDestination(item: $store.selectedExhibitionStore) { store in
+            ExhibitionDetailView(store: store)
           }
         }
       }

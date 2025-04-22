@@ -7,18 +7,21 @@ final class ExhibitionDetailStore: Hashable {
   let photosClient: PhotosClient
   let imageClient: any StorageImageCacheProtocol
   init(
-    exhibition: Exhibition, photosClient: PhotosClient, imageClient: any StorageImageCacheProtocol
+    exhibition: Exhibition,
+    photosClient: PhotosClient,
+    imageClient: any StorageImageCacheProtocol
   ) {
     self.exhibition = exhibition
     self.photosClient = photosClient
     self.imageClient = imageClient
   }
 
-  var photos: [Photo] = []
+  var photos: [PhotoItemStore] = []
   var error: (any Error)?
 
   enum Action {
     case task
+    case photoSelected(Photo)
   }
 
   func send(_ action: Action) {
@@ -27,16 +30,24 @@ final class ExhibitionDetailStore: Hashable {
       Task {
         guard let exhibitionId = exhibition.id else { return }
         do {
-          photos = try await photosClient.fetch(exhibitionId)
+          let photos = try await photosClient.fetch(exhibitionId)
+          await MainActor.run {
+            self.photos = photos.map {
+              PhotoItemStore(photo: $0, imageCache: StorageImageCache.shared)
+            }
+          }
         } catch {
           self.error = error
         }
       }
+    case let .photoSelected(photo):
       return
     }
   }
 
-  static func == (lhs: ExhibitionDetailStore, rhs: ExhibitionDetailStore) -> Bool {
+  static func == (lhs: ExhibitionDetailStore, rhs: ExhibitionDetailStore)
+    -> Bool
+  {
     lhs.exhibition.id == rhs.exhibition.id
   }
 
@@ -53,10 +64,14 @@ struct ExhibitionDetailView: View {
   @Bindable var store: ExhibitionDetailStore
 
   var body: some View {
-    ScrollView(.horizontal) {
-      LazyHStack {
-        ForEach(store.photos, id: \.self) { photo in
-
+    ScrollView {
+      LazyVGrid(columns: Array(repeating: GridItem(), count: 3)) {
+        ForEach(store.photos, id: \.self) { itemStore in
+          PhotoItemView(store: itemStore) {
+            store.send(.photoSelected(itemStore.photo))
+          }
+          .frame(maxHeight: .infinity)
+          .aspectRatio(1, contentMode: .fill)
         }
       }
     }
