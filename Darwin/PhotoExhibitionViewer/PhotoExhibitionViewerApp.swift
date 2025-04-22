@@ -18,7 +18,8 @@ struct PhotoExhibitionViewerApp: App {
           store: PhotoDetailStore(
             exhibitionid: exhibitionId,
             photoId: photoId,
-            imageCache: StorageImageCache.shared
+            imageCache: StorageImageCache.shared,
+            photoClient: .liveValue
           )
         )
       } else {
