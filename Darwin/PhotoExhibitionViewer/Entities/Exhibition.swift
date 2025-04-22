@@ -36,3 +36,21 @@ struct Exhibition: Hashable, Identifiable, Codable {
     return cover_1024x1024 ?? cover_512x512 ?? cover_256x256 ?? coverImagePath
   }
 }
+
+extension Exhibition {
+  static let test: Exhibition = .init(
+    id: "id",
+    name: "name",
+    description: "description",
+    from: Date(),
+    to: Date(),
+    organizer: "organizer",
+    coverImagePath: nil,
+    cover_256x256: nil,
+    cover_512x512: nil,
+    cover_1024x1024: nil,
+    status: .published,
+    createdAt: Date(),
+    updatedAt: Date()
+  )
+}

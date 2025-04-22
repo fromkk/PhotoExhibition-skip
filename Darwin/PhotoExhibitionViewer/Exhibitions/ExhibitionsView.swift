@@ -1,7 +1,7 @@
 import SwiftUI
 
 @Observable
-final class ExhibitionsStore {
+final class ExhibitionsStore: Store {
   let exhibitionsClient: ExhibitionsClient
   init(exhibitionsClient: ExhibitionsClient, imageClient: any StorageImageCacheProtocol) {
     self.exhibitionsClient = exhibitionsClient
@@ -15,6 +15,29 @@ final class ExhibitionsStore {
   var error: (any Error)?
   var hasMore: Bool {
     cursor != nil
+  }
+
+  var selectedExhibitionStore: ExhibitionDetailStore?
+
+  enum Action {
+    case refreshed
+    case nextCalled
+    case selected(Exhibition)
+  }
+
+  func send(_ action: Action) {
+    switch action {
+    case .refreshed:
+      refresh()
+    case .nextCalled:
+      next()
+    case let .selected(exhibition):
+      selectedExhibitionStore = ExhibitionDetailStore(
+        exhibition: exhibition,
+        photosClient: .liveValue,
+        imageClient: StorageImageCache.shared
+      )
+    }
   }
 
   func refresh() {
@@ -47,7 +70,7 @@ struct ExhibitionsView: View {
   @Bindable var store: ExhibitionsStore
 
   var body: some View {
-    Group {
+    NavigationStack {
       if store.exhibitions.isEmpty, store.isLoading {
         ProgressView()
       } else {
@@ -57,21 +80,37 @@ struct ExhibitionsView: View {
           ScrollView(.horizontal) {
             LazyHStack {
               ForEach(store.exhibitions) { itemStore in
-                ExhibitionItemView(store: itemStore)
+                ExhibitionItemView(store: itemStore) {
+                  store.send(.selected(itemStore.item))
+                }
+                .navigationDestination(item: $store.selectedExhibitionStore) { store in
+                  ExhibitionDetailView(store: store)
+                }
               }
               if store.hasMore {
                 ProgressView()
+                  .task {
+                    store.send(.nextCalled)
+                  }
               }
             }
           }
           .refreshable {
-            store.refresh()
+            store.send(.refreshed)
           }
         }
       }
     }
     .task {
-      store.next()
+      store.send(.refreshed)
     }
   }
+}
+
+#Preview {
+  ExhibitionsView(
+    store: ExhibitionsStore(
+      exhibitionsClient: ExhibitionsClient(fetch: { _, _ in ([], nil) }),
+      imageClient: StorageImageCache.shared
+    ))
 }

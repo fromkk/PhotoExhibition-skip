@@ -30,33 +30,39 @@ final class ExhibitionItemStore: Identifiable {
 
 struct ExhibitionItemView: View {
   @Bindable var store: ExhibitionItemStore
+  let tapAction: () -> Void
 
   var body: some View {
-    ZStack(alignment: .bottomLeading) {
-      AsyncImage(url: store.imageURL) { phase in
-        switch phase {
-        case let .success(image):
-          image
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-        default:
-          ProgressView()
+    Button {
+      tapAction()
+    } label: {
+      ZStack(alignment: .bottomLeading) {
+        AsyncImage(url: store.imageURL) { phase in
+          switch phase {
+          case let .success(image):
+            image
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+          default:
+            ProgressView()
+          }
         }
-      }
 
-      LinearGradient(stops: [
-        .init(color: .black.opacity(0), location: 0.7),
-        .init(color: .black.opacity(0.5), location: 1)
-      ], startPoint: .top, endPoint: .bottom)
+        LinearGradient(
+          stops: [
+            .init(color: .black.opacity(0), location: 0.7),
+            .init(color: .black.opacity(0.5), location: 1),
+          ], startPoint: .top, endPoint: .bottom)
 
-      VStack(spacing: 8) {
-        Text(store.item.name)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .multilineTextAlignment(.leading)
+        VStack(spacing: 8) {
+          Text(store.item.name)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .multilineTextAlignment(.leading)
+        }
+        .padding()
       }
-      .padding()
+      .clipShape(RoundedRectangle(cornerRadius: 16))
     }
-    .clipShape(RoundedRectangle(cornerRadius: 16))
     .task {
       await store.fetch()
     }
