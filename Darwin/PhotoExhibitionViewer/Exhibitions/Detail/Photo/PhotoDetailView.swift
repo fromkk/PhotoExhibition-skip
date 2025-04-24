@@ -41,6 +41,7 @@ final class PhotoDetailStore: Store {
 }
 
 struct PhotoDetailView: View {
+  @Environment(\.dismissWindow) var dismissWindow
   @Bindable var store: PhotoDetailStore
 
   var body: some View {
@@ -49,15 +50,25 @@ struct PhotoDetailView: View {
       let material = SimpleMaterial(color: .white, isMetallic: false)
       let boxEntity = ModelEntity(mesh: mesh, materials: [material])
       content.add(boxEntity)
-      if let sceneAttachment = attachment.entity(for: store.photoId) {
-        sceneAttachment.position = [0, 0, 0.006]  // Z座標を調整して手前に移動
-        sceneAttachment.scale = [0.6, 0.6, 1.0]  // Boxの前面の幅と高さに合わせるスケール
-        content.add(sceneAttachment)
+      if let photo = attachment.entity(for: "photo") {
+        photo.position = [0, 0, 0.006]  // Z座標を調整して手前に移動
+        photo.scale = [0.6, 0.6, 1.0]  // Boxの前面の幅と高さに合わせるスケール
+        content.add(photo)
+      }
+
+      if let buttons = attachment.entity(for: "button") {
+        buttons.position = [0, 0, 0.01]
+        content.add(buttons)
+      }
+
+      if let close = attachment.entity(for: "close") {
+        close.position = [0.3, 0, 0.02]
+        content.add(close)
       }
     } placeholder: {
       ProgressView()
     } attachments: {
-      Attachment(id: store.photoId) {
+      Attachment(id: "photo") {
         AsyncImage(url: store.imageURL) { phase in
           switch phase {
           case let .success(image):
@@ -68,6 +79,50 @@ struct PhotoDetailView: View {
             ProgressView()
           }
         }
+      }
+
+      Attachment(id: "button") {
+        VStack {
+          Spacer()
+
+          HStack {
+            Button {
+
+            } label: {
+              Image(systemName: "chevron.backward")
+            }
+            .buttonStyle(.primaryButtonStyle)
+            .accessibilityLabel(Text("Backward"))
+
+            Spacer()
+              .frame(width: 300)
+
+            Button {
+
+            } label: {
+              Image(systemName: "chevron.forward")
+            }
+            .buttonStyle(.primaryButtonStyle)
+            .accessibilityLabel(Text("Forward"))
+          }
+        }
+        .padding()
+      }
+
+      Attachment(id: "close") {
+        VStack(alignment: .trailing) {
+          Button {
+            Task {
+              dismissWindow()
+            }
+          } label: {
+            Image(systemName: "xmark")
+          }
+          .buttonStyle(.secondaryButtonStyle)
+
+          Spacer()
+        }
+        .padding()
       }
     }
     .task {
