@@ -1,11 +1,14 @@
 import FirebaseFirestore
 
-struct PhotoClient {
-  var fetch: (String, String) async throws -> Photo
+public struct PhotoClient: Sendable {
+  public init(fetch: @escaping @Sendable (String, String) async throws -> Photo) {
+    self.fetch = fetch
+  }
+  public var fetch: @Sendable (String, String) async throws -> Photo
 }
 
 extension PhotoClient {
-  static let liveValue: PhotoClient = Self(
+  public static let liveValue: PhotoClient = Self(
     fetch: { exhibitionId, photoId in
       let firestore = Firestore.firestore()
       return try await firestore.collection("exhibitions")

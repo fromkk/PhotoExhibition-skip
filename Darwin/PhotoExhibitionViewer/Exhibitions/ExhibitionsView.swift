@@ -1,4 +1,5 @@
 import SwiftUI
+import Viewer
 
 @Observable
 final class ExhibitionsStore: Store {

@@ -1,12 +1,16 @@
 import FirebaseFirestore
 
-struct ExhibitionsClient {
-  var fetch: @Sendable (_ now: Date, _ cursor: String?) async throws -> ([Exhibition], String?)
+public struct ExhibitionsClient: Sendable {
+  public init(fetch: @escaping @Sendable (Date, String?) async throws -> ([Exhibition], String?)) {
+    self.fetch = fetch
+  }
+  public var fetch:
+    @Sendable (_ now: Date, _ cursor: String?) async throws -> ([Exhibition], String?)
 }
 
 extension ExhibitionsClient {
   static private let pageSize = 30
-  static let liveValue: ExhibitionsClient = Self(
+  public static let liveValue: ExhibitionsClient = Self(
     fetch: { now, cursor in
       let firestore = Firestore.firestore()
       var query = firestore.collection("exhibitions")

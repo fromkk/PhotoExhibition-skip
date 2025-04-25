@@ -1,24 +1,26 @@
 @preconcurrency import FirebaseStorage
 import Foundation
 
-protocol StorageClient: Sendable {
+public protocol StorageClient: Sendable {
   func url(_ path: String) async throws -> URL
   @discardableResult
   func upload(from url: URL, to path: String) async throws -> URL
   func delete(path: String) async throws
 }
 
-actor DefaultStorageClient: StorageClient {
-  static let shared = DefaultStorageClient()
+public actor DefaultStorageClient: StorageClient {
+  public static let shared = DefaultStorageClient()
 
-  func url(_ path: String) async throws -> URL {
+  public init() {}
+
+  public func url(_ path: String) async throws -> URL {
     let storage = Storage.storage()
     let reference = storage.reference().child(path)
     return try await reference.downloadURL()
   }
 
   @discardableResult
-  func upload(from url: URL, to path: String) async throws -> URL {
+  public func upload(from url: URL, to path: String) async throws -> URL {
     let storage = Storage.storage()
     let reference = storage.reference().child(path)
     let metadata = StorageMetadata()
@@ -31,7 +33,7 @@ actor DefaultStorageClient: StorageClient {
     return try await reference.downloadURL()
   }
 
-  func delete(path: String) async throws {
+  public func delete(path: String) async throws {
     let storage = Storage.storage()
     let reference = storage.reference().child(path)
     try await reference.delete()

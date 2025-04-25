@@ -1,5 +1,6 @@
 import RealityKit
 import SwiftUI
+import Viewer
 
 @Observable
 final class PhotoDetailStore: Store {

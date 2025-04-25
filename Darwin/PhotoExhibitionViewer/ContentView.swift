@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Viewer
 
 struct ContentView: View {
   let exhibitionsStore: ExhibitionsStore = .init(

@@ -1,5 +1,6 @@
 import FirebaseCore
 import SwiftUI
+import Viewer
 
 @main
 struct PhotoExhibitionViewerApp: App {
