@@ -16,7 +16,6 @@
 		AD19F2E32D9E0000008138B6 /* AddExhibitionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD19F2DD2D9D65C9008138B6 /* AddExhibitionIntent.swift */; };
 		AD19F2E52D9E05CA008138B6 /* IntentHelper in Frameworks */ = {isa = PBXBuildFile; productRef = AD19F2E42D9E05CA008138B6 /* IntentHelper */; };
 		AD4DA0682DBB7D7E0053BD27 /* Viewer in Frameworks */ = {isa = PBXBuildFile; productRef = AD4DA0672DBB7D7E0053BD27 /* Viewer */; };
-		AD4DA06A2DBB7D860053BD27 /* Viewer in Frameworks */ = {isa = PBXBuildFile; productRef = AD4DA0692DBB7D860053BD27 /* Viewer */; };
 		AD5536DE2D86CBCA001D3896 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AD5536DD2D86CBCA001D3896 /* InfoPlist.xcstrings */; };
 		ADA885562D97B92C00230226 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ADA885552D97B92C00230226 /* WidgetKit.framework */; };
 		ADA885582D97B92C00230226 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ADA885572D97B92C00230226 /* SwiftUI.framework */; };
@@ -25,7 +24,6 @@
 		ADA8856B2D97BECF00230226 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
 		ADA8856C2D97BECF00230226 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
 		ADC1F27F2DB22BB3003A8288 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
-		ADC27CAB2DBB778D003FF85A /* PhotoExhibition-watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = ADC27CA12DBB778B003FF85A /* PhotoExhibition-watch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,13 +33,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = ADA885522D97B92C00230226;
 			remoteInfo = ExhibitionWidgetExtension;
-		};
-		ADC27CA92DBB778D003FF85A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 49F90C202A52156200F06D93 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = ADC27CA02DBB778B003FF85A;
-			remoteInfo = "PhotoExhibition-watch Watch App";
 		};
 		ADE219802DB1C36300744774 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -81,7 +72,6 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				ADC27CAB2DBB778D003FF85A /* PhotoExhibition-watch.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -108,7 +98,6 @@
 		ADA885532D97B92C00230226 /* ExhibitionWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ExhibitionWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADA885552D97B92C00230226 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		ADA885572D97B92C00230226 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		ADC27CA12DBB778B003FF85A /* PhotoExhibition-watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PhotoExhibition-watch.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADE2196E2DB1C36200744774 /* PhotoExhibitionViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoExhibitionViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADE2197F2DB1C36300744774 /* PhotoExhibitionViewerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhotoExhibitionViewerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADE219AA2DB1C67900744774 /* PhotoExhibitionViewer.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = PhotoExhibitionViewer.xcconfig; sourceTree = "<group>"; };
@@ -133,7 +122,6 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		ADA885592D97B92C00230226 /* ExhibitionWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (ADA885642D97B92D00230226 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ExhibitionWidget; sourceTree = "<group>"; };
-		ADC27CA22DBB778B003FF85A /* PhotoExhibition-watch  */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "PhotoExhibition-watch "; sourceTree = "<group>"; };
 		ADE2196F2DB1C36200744774 /* PhotoExhibitionViewer */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (ADE219852DB1C36300744774 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PhotoExhibitionViewer; sourceTree = "<group>"; };
 		ADE219822DB1C36300744774 /* PhotoExhibitionViewerTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PhotoExhibitionViewerTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -155,14 +143,6 @@
 				ADA8856A2D97BE2E00230226 /* WidgetClients in Frameworks */,
 				AD19F2E52D9E05CA008138B6 /* IntentHelper in Frameworks */,
 				ADA885562D97B92C00230226 /* WidgetKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		ADC27C9E2DBB778B003FF85A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AD4DA06A2DBB7D860053BD27 /* Viewer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,7 +171,6 @@
 				ADA885532D97B92C00230226 /* ExhibitionWidgetExtension.appex */,
 				ADE2196E2DB1C36200744774 /* PhotoExhibitionViewer.app */,
 				ADE2197F2DB1C36300744774 /* PhotoExhibitionViewerTests.xctest */,
-				ADC27CA12DBB778B003FF85A /* PhotoExhibition-watch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -219,7 +198,6 @@
 				ADA885592D97B92C00230226 /* ExhibitionWidget */,
 				ADE2196F2DB1C36200744774 /* PhotoExhibitionViewer */,
 				ADE219822DB1C36300744774 /* PhotoExhibitionViewerTests */,
-				ADC27CA22DBB778B003FF85A /* PhotoExhibition-watch  */,
 				ADA885542D97B92C00230226 /* Frameworks */,
 				496BDBEC2B89A47800C09264 /* Products */,
 			);
@@ -292,7 +270,6 @@
 			);
 			dependencies = (
 				ADA885622D97B92D00230226 /* PBXTargetDependency */,
-				ADC27CAA2DBB778D003FF85A /* PBXTargetDependency */,
 			);
 			name = PhotoExhibition;
 			packageProductDependencies = (
@@ -325,29 +302,6 @@
 			productName = ExhibitionWidgetExtension;
 			productReference = ADA885532D97B92C00230226 /* ExhibitionWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
-		};
-		ADC27CA02DBB778B003FF85A /* PhotoExhibition-watch */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = ADC27CAF2DBB778D003FF85A /* Build configuration list for PBXNativeTarget "PhotoExhibition-watch" */;
-			buildPhases = (
-				ADC27C9D2DBB778B003FF85A /* Sources */,
-				ADC27C9E2DBB778B003FF85A /* Frameworks */,
-				ADC27C9F2DBB778B003FF85A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				ADC27CA22DBB778B003FF85A /* PhotoExhibition-watch  */,
-			);
-			name = "PhotoExhibition-watch";
-			packageProductDependencies = (
-				AD4DA0692DBB7D860053BD27 /* Viewer */,
-			);
-			productName = "PhotoExhibition-watch Watch App";
-			productReference = ADC27CA12DBB778B003FF85A /* PhotoExhibition-watch.app */;
-			productType = "com.apple.product-type.application";
 		};
 		ADE2196D2DB1C36200744774 /* PhotoExhibitionViewer */ = {
 			isa = PBXNativeTarget;
@@ -408,9 +362,6 @@
 					ADA885522D97B92C00230226 = {
 						CreatedOnToolsVersion = 16.2;
 					};
-					ADC27CA02DBB778B003FF85A = {
-						CreatedOnToolsVersion = 16.3;
-					};
 					ADE2196D2DB1C36200744774 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -439,7 +390,6 @@
 				ADA885522D97B92C00230226 /* ExhibitionWidgetExtension */,
 				ADE2196D2DB1C36200744774 /* PhotoExhibitionViewer */,
 				ADE2197E2DB1C36300744774 /* PhotoExhibitionViewerTests */,
-				ADC27CA02DBB778B003FF85A /* PhotoExhibition-watch */,
 			);
 		};
 /* End PBXProject section */
@@ -461,13 +411,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				ADA8856C2D97BECF00230226 /* GoogleService-Info.plist in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		ADC27C9F2DBB778B003FF85A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -528,13 +471,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		ADC27C9D2DBB778B003FF85A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		ADE2196A2DB1C36200744774 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -556,11 +492,6 @@
 			isa = PBXTargetDependency;
 			target = ADA885522D97B92C00230226 /* ExhibitionWidgetExtension */;
 			targetProxy = ADA885612D97B92D00230226 /* PBXContainerItemProxy */;
-		};
-		ADC27CAA2DBB778D003FF85A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = ADC27CA02DBB778B003FF85A /* PhotoExhibition-watch */;
-			targetProxy = ADC27CA92DBB778D003FF85A /* PBXContainerItemProxy */;
 		};
 		ADE219812DB1C36300744774 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -793,148 +724,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		ADC27CAD2DBB778D003FF85A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = ADE219AA2DB1C67900744774 /* PhotoExhibitionViewer.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = K84E4S7G4C;
-				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "PhotoExhibition-watch";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = me.fromkk.PhotoExhibition;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.fromkk.PhotoExhibition.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.6;
-			};
-			name = Debug;
-		};
-		ADC27CAE2DBB778D003FF85A /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = ADE219AA2DB1C67900744774 /* PhotoExhibitionViewer.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = K84E4S7G4C;
-				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "PhotoExhibition-watch";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = me.fromkk.PhotoExhibition;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.fromkk.PhotoExhibition.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 10.6;
 			};
 			name = Release;
 		};
@@ -1230,15 +1019,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		ADC27CAF2DBB778D003FF85A /* Build configuration list for PBXNativeTarget "PhotoExhibition-watch" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				ADC27CAD2DBB778D003FF85A /* Debug */,
-				ADC27CAE2DBB778D003FF85A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		ADE219862DB1C36300744774 /* Build configuration list for PBXNativeTarget "PhotoExhibitionViewer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1269,10 +1049,6 @@
 			productName = IntentHelper;
 		};
 		AD4DA0672DBB7D7E0053BD27 /* Viewer */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Viewer;
-		};
-		AD4DA0692DBB7D860053BD27 /* Viewer */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Viewer;
 		};
