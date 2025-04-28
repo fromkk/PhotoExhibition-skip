@@ -8,7 +8,9 @@ final class PhotoDetailStore: Store {
   let imagePaths: [String]
   let imageCache: any StorageImageCacheProtocol
   init(
-    imagePath: String, imagePaths: [String], imageCache: any StorageImageCacheProtocol
+    imagePath: String,
+    imagePaths: [String],
+    imageCache: any StorageImageCacheProtocol
   ) {
     self.imagePath = imagePath
     self.imagePaths = imagePaths
@@ -138,6 +140,9 @@ struct PhotoDetailView: View {
             .buttonStyle(.primaryButtonStyle)
             .accessibilityLabel(Text("Backward"))
             .disabled(!store.canShowPreviousPhoto)
+            .hoverEffect { effect, isActive, _ in
+              effect.scaleEffect(!isActive ? 1 : 1.5)
+            }
 
             Spacer()
               .frame(width: 300)
@@ -150,6 +155,9 @@ struct PhotoDetailView: View {
             .buttonStyle(.primaryButtonStyle)
             .accessibilityLabel(Text("Forward"))
             .disabled(!store.canShowNextPhoto)
+            .hoverEffect { effect, isActive, _ in
+              effect.scaleEffect(!isActive ? 1 : 1.5)
+            }
           }
         }
         .padding()
@@ -165,6 +173,9 @@ struct PhotoDetailView: View {
             Image(systemName: "xmark")
           }
           .buttonStyle(.secondaryButtonStyle)
+          .hoverEffect { effect, isActive, _ in
+            effect.scaleEffect(!isActive ? 1 : 1.5)
+          }
 
           Spacer()
         }
