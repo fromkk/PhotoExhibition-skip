@@ -10,7 +10,9 @@ let package = Package(
   name: "photo-exhibition",
   defaultLocalization: "en",
   platforms: [
-    .iOS(.v17)
+    .iOS(.v17),
+    .watchOS(.v10),
+    .visionOS(.v1),
   ],
   products: [
     .library(name: "IntentHelper", targets: ["IntentHelper"]),
@@ -19,6 +21,10 @@ let package = Package(
       type: .dynamic,
       targets: ["PhotoExhibition"]
     ),
+    .library(
+      name: "Viewer",
+      targets: ["Viewer"]
+    ),
     .library(name: "WidgetClients", targets: ["WidgetClients"]),
   ],
   dependencies: [
@@ -26,7 +32,10 @@ let package = Package(
     .package(url: "https://source.skip.tools/skip-ui.git", from: "1.26.7"),
     .package(url: "https://source.skip.tools/skip-kit.git", from: "0.3.1"),
     .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.7.3"),
-    .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.10.0"),
+    .package(
+      url: "https://github.com/firebase/firebase-ios-sdk.git",
+      from: "11.10.0"
+    ),
     .package(
       url:
         "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
@@ -78,6 +87,15 @@ let package = Package(
         .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
         .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
         .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
-      ]),
+      ]
+    ),
+    .target(
+      name: "Viewer",
+      dependencies: [
+        .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
+        .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
+        .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
+      ]
+    ),
   ]
 )
