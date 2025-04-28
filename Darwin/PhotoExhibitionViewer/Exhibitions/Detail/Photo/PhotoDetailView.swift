@@ -18,6 +18,8 @@ final class PhotoDetailStore: Store {
 
   enum Action {
     case task
+    case showPreviousPhoto
+    case showNextPhoto
   }
 
   func send(_ action: Action) {
@@ -28,7 +30,37 @@ final class PhotoDetailStore: Store {
           imageURL = try await imageCache.getImageURL(for: imagePath)
         }
       }
+    case .showPreviousPhoto:
+      guard let currentIndex = imagePaths.firstIndex(of: imagePath), currentIndex > 0 else {
+        return
+      }
+      imagePath = imagePaths[currentIndex - 1]
+      Task {
+        do {
+          imageURL = try await imageCache.getImageURL(for: imagePath)
+        }
+      }
+    case .showNextPhoto:
+      guard let currentIndex = imagePaths.firstIndex(of: imagePath),
+        currentIndex < imagePaths.count - 1
+      else { return }
+      imagePath = imagePaths[currentIndex + 1]
+      Task {
+        do {
+          imageURL = try await imageCache.getImageURL(for: imagePath)
+        }
+      }
     }
+  }
+
+  var canShowPreviousPhoto: Bool {
+    guard let currentIndex = imagePaths.firstIndex(of: imagePath) else { return false }
+    return currentIndex > 0
+  }
+
+  var canShowNextPhoto: Bool {
+    guard let currentIndex = imagePaths.firstIndex(of: imagePath) else { return false }
+    return currentIndex < imagePaths.count - 1
   }
 }
 
@@ -78,23 +110,25 @@ struct PhotoDetailView: View {
 
           HStack {
             Button {
-
+              store.send(.showPreviousPhoto)
             } label: {
               Image(systemName: "chevron.backward")
             }
             .buttonStyle(.primaryButtonStyle)
             .accessibilityLabel(Text("Backward"))
+            .disabled(!store.canShowPreviousPhoto)
 
             Spacer()
               .frame(width: 300)
 
             Button {
-
+              store.send(.showNextPhoto)
             } label: {
               Image(systemName: "chevron.forward")
             }
             .buttonStyle(.primaryButtonStyle)
             .accessibilityLabel(Text("Forward"))
+            .disabled(!store.canShowNextPhoto)
           }
         }
         .padding()
