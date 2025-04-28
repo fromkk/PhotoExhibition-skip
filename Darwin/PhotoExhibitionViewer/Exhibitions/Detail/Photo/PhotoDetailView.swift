@@ -31,20 +31,40 @@ final class PhotoDetailStore: Store {
         }
       }
     case .showPreviousPhoto:
-      guard let currentIndex = imagePaths.firstIndex(of: imagePath), currentIndex > 0 else {
-        return
+      guard !imagePaths.isEmpty else { return }
+
+      if let currentIndex = imagePaths.firstIndex(of: imagePath) {
+        // If at the first photo, go to the last photo
+        if currentIndex == 0 {
+          imagePath = imagePaths[imagePaths.count - 1]
+        } else {
+          imagePath = imagePaths[currentIndex - 1]
+        }
+      } else if !imagePaths.isEmpty {
+        // If current image not in paths, show the first one
+        imagePath = imagePaths[0]
       }
-      imagePath = imagePaths[currentIndex - 1]
+
       Task {
         do {
           imageURL = try await imageCache.getImageURL(for: imagePath)
         }
       }
     case .showNextPhoto:
-      guard let currentIndex = imagePaths.firstIndex(of: imagePath),
-        currentIndex < imagePaths.count - 1
-      else { return }
-      imagePath = imagePaths[currentIndex + 1]
+      guard !imagePaths.isEmpty else { return }
+
+      if let currentIndex = imagePaths.firstIndex(of: imagePath) {
+        // If at the last photo, go to the first photo
+        if currentIndex == imagePaths.count - 1 {
+          imagePath = imagePaths[0]
+        } else {
+          imagePath = imagePaths[currentIndex + 1]
+        }
+      } else if !imagePaths.isEmpty {
+        // If current image not in paths, show the first one
+        imagePath = imagePaths[0]
+      }
+
       Task {
         do {
           imageURL = try await imageCache.getImageURL(for: imagePath)
@@ -54,13 +74,11 @@ final class PhotoDetailStore: Store {
   }
 
   var canShowPreviousPhoto: Bool {
-    guard let currentIndex = imagePaths.firstIndex(of: imagePath) else { return false }
-    return currentIndex > 0
+    return imagePaths.count > 1
   }
 
   var canShowNextPhoto: Bool {
-    guard let currentIndex = imagePaths.firstIndex(of: imagePath) else { return false }
-    return currentIndex < imagePaths.count - 1
+    return imagePaths.count > 1
   }
 }
 
