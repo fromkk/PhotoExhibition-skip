@@ -15,6 +15,7 @@ final class PhotoDetailStore: Store {
     self.imageCache = imageCache
   }
   var imageURL: URL?
+  var isLoading: Bool = false
 
   enum Action {
     case task
@@ -45,6 +46,7 @@ final class PhotoDetailStore: Store {
         imagePath = imagePaths[0]
       }
 
+      imageURL = nil
       Task {
         do {
           imageURL = try await imageCache.getImageURL(for: imagePath)
@@ -65,6 +67,7 @@ final class PhotoDetailStore: Store {
         imagePath = imagePaths[0]
       }
 
+      imageURL = nil
       Task {
         do {
           imageURL = try await imageCache.getImageURL(for: imagePath)
