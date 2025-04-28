@@ -4,18 +4,15 @@ import Viewer
 
 @Observable
 final class PhotoDetailStore: Store {
-  let exhibitionId: String
-  let photoId: String
+  var imagePath: String
+  let imagePaths: [String]
   let imageCache: any StorageImageCacheProtocol
-  let photoClient: PhotoClient
   init(
-    exhibitionid: String, photoId: String, imageCache: any StorageImageCacheProtocol,
-    photoClient: PhotoClient
+    imagePath: String, imagePaths: [String], imageCache: any StorageImageCacheProtocol
   ) {
-    self.exhibitionId = exhibitionid
-    self.photoId = photoId
+    self.imagePath = imagePath
+    self.imagePaths = imagePaths
     self.imageCache = imageCache
-    self.photoClient = photoClient
   }
   var imageURL: URL?
 
@@ -28,12 +25,6 @@ final class PhotoDetailStore: Store {
     case .task:
       Task {
         do {
-          guard
-            let imagePath = try await photoClient.fetch(exhibitionId, photoId)
-              .imagePath
-          else {
-            return
-          }
           imageURL = try await imageCache.getImageURL(for: imagePath)
         }
       }
@@ -134,10 +125,9 @@ struct PhotoDetailView: View {
 #Preview {
   PhotoDetailView(
     store: PhotoDetailStore(
-      exhibitionid: "exhibitionId",
-      photoId: "photoId",
-      imageCache: StorageImageCache.shared,
-      photoClient: PhotoClient(fetch: { _, _ in .test })
+      imagePath: "",
+      imagePaths: [],
+      imageCache: StorageImageCache.shared
     )
   )
 }

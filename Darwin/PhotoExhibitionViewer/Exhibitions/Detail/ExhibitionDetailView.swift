@@ -67,15 +67,16 @@ struct ExhibitionDetailView: View {
       LazyVGrid(columns: Array(repeating: GridItem(), count: 3)) {
         ForEach(store.photos, id: \.self) { itemStore in
           PhotoItemView(store: itemStore) {
-            guard let exhibitionId = store.exhibition.id, let photoId = itemStore.photo.id else {
+            guard let imagePath = itemStore.photo.imagePath else {
               return
             }
             openWindow(
               id: "PhotoDetail",
-              value: WindowPhoto(
-                exhibitionId: exhibitionId,
-                photoId: photoId
-              )
+              value: ImagePaths(
+                imagePath: imagePath,
+                imagePaths: store.photos.compactMap {
+                  $0.photo.imagePath
+                })
             )
           }
           .frame(maxHeight: .infinity)

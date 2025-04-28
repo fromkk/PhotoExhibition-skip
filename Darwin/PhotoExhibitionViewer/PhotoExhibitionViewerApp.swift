@@ -13,14 +13,13 @@ struct PhotoExhibitionViewerApp: App {
       ContentView()
     }
 
-    WindowGroup(id: "PhotoDetail", for: WindowPhoto.self) { $photo in
-      if let exhibitionId = photo?.exhibitionId, let photoId = photo?.photoId {
+    WindowGroup(id: "PhotoDetail", for: ImagePaths.self) { $imagePaths in
+      if let imagePath = imagePaths?.imagePath, let imagePaths = imagePaths?.imagePaths {
         PhotoDetailView(
           store: PhotoDetailStore(
-            exhibitionid: exhibitionId,
-            photoId: photoId,
-            imageCache: StorageImageCache.shared,
-            photoClient: .liveValue
+            imagePath: imagePath,
+            imagePaths: imagePaths,
+            imageCache: StorageImageCache.shared
           )
         )
       } else {
