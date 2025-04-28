@@ -47,13 +47,12 @@ struct PhotoDetailView: View {
 
   var body: some View {
     RealityView { content, attachment in
-      let mesh = MeshResource.generateBox(width: 0.6, height: 0.6, depth: 0.01)
+      let mesh = MeshResource.generateBox(width: 1, height: 1, depth: 0.01)
       let material = SimpleMaterial(color: .white, isMetallic: false)
       let boxEntity = ModelEntity(mesh: mesh, materials: [material])
       content.add(boxEntity)
       if let photo = attachment.entity(for: "photo") {
         photo.position = [0, 0, 0.006]  // Z座標を調整して手前に移動
-        photo.scale = [0.6, 0.6, 1.0]  // Boxの前面の幅と高さに合わせるスケール
         content.add(photo)
       }
 
@@ -63,7 +62,7 @@ struct PhotoDetailView: View {
       }
 
       if let close = attachment.entity(for: "close") {
-        close.position = [0.3, 0, 0.02]
+        close.position = [0.4, 0, 0.02]
         content.add(close)
       }
     } placeholder: {
@@ -135,6 +134,10 @@ struct PhotoDetailView: View {
 #Preview {
   PhotoDetailView(
     store: PhotoDetailStore(
-      exhibitionid: "exhibitionId", photoId: "photoId", imageCache: StorageImageCache.shared,
-      photoClient: PhotoClient(fetch: { _, _ in .test })))
+      exhibitionid: "exhibitionId",
+      photoId: "photoId",
+      imageCache: StorageImageCache.shared,
+      photoClient: PhotoClient(fetch: { _, _ in .test })
+    )
+  )
 }
