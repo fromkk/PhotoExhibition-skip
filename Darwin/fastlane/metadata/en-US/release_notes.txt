@@ -1,2 +1,1 @@
-- Added and improved AR (Augmented Reality) view features
-- Other bug fixes and minor improvements
+- Add support keyboard shortcut on photo detail view
