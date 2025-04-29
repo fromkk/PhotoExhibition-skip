@@ -9,7 +9,10 @@ import SwiftUI
 @MainActor
 protocol PhotoDetailStoreDelegate: AnyObject {
   func photoDetailStore(_ store: PhotoDetailStore, didUpdatePhoto photo: Photo)
-  func photoDetailStore(_ store: PhotoDetailStore, didDeletePhoto photoId: String)
+  func photoDetailStore(
+    _ store: PhotoDetailStore,
+    didDeletePhoto photoId: String
+  )
 }
 
 @Observable
@@ -82,7 +85,8 @@ final class PhotoDetailStore: Store {
     self.photoClient = photoClient
     self.analyticsClient = analyticsClient
     self.photos = photos
-    self.currentPhotoIndex = photos.firstIndex(where: { $0.id == photo.id }) ?? 0
+    self.currentPhotoIndex =
+      photos.firstIndex(where: { $0.id == photo.id }) ?? 0
   }
 
   func send(_ action: Action) {
@@ -97,7 +101,8 @@ final class PhotoDetailStore: Store {
           parameters: [
             "photo_id": photo.id,
             "exhibition_id": exhibitionId,
-          ])
+          ]
+        )
       }
     case .closeButtonTapped:
       // 閉じるアクションはViewで処理
@@ -208,7 +213,9 @@ final class PhotoDetailStore: Store {
     Task {
       do {
         try await photoClient.deletePhoto(
-          exhibitionId: exhibitionId, photoId: photo.id)
+          exhibitionId: exhibitionId,
+          photoId: photo.id
+        )
         isDeleted = true
 
         // デリゲートに通知
@@ -242,7 +249,8 @@ final class PhotoDetailStore: Store {
             parameters: [
               "photo_id": photos[nextIndex].id,
               "exhibition_id": exhibitionId,
-            ])
+            ]
+          )
         } catch {
           print("Failed to load next image: \(error.localizedDescription)")
           self.error = error
@@ -272,7 +280,8 @@ final class PhotoDetailStore: Store {
             parameters: [
               "photo_id": photos[previousIndex].id,
               "exhibition_id": exhibitionId,
-            ])
+            ]
+          )
         } catch {
           print("Failed to load previous image: \(error.localizedDescription)")
           self.error = error
@@ -286,6 +295,7 @@ final class PhotoDetailStore: Store {
 struct PhotoDetailView: View {
   @Bindable var store: PhotoDetailStore
   @Environment(\.dismiss) private var dismiss
+  @FocusState private var isFocused: Bool
 
   // ズームとパン用の状態変数
   @State private var scale: CGFloat = 1.0
@@ -425,9 +435,13 @@ struct PhotoDetailView: View {
                       if scale <= CGFloat(1.0) {
                         // 下方向のスワイプを検出
                         if value.translation.height > 0
-                          && abs(value.translation.width) < abs(value.translation.height)
+                          && abs(value.translation.width)
+                            < abs(value.translation.height)
                         {
-                          offset = CGSize(width: 0, height: value.translation.height)
+                          offset = CGSize(
+                            width: 0,
+                            height: value.translation.height
+                          )
                         }
                       }
                     }
@@ -436,7 +450,8 @@ struct PhotoDetailView: View {
                       if scale <= CGFloat(1.0) {
                         let threshold: CGFloat = 100
                         if value.translation.height > threshold
-                          && abs(value.translation.width) < abs(value.translation.height)
+                          && abs(value.translation.width)
+                            < abs(value.translation.height)
                         {
                           dismiss()
                         } else {
@@ -455,10 +470,14 @@ struct PhotoDetailView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .failure:
-              Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
-                .font(.largeTitle)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+              Image(
+                systemName: SystemImageMapping.getIconName(
+                  from: "exclamationmark.triangle"
+                )
+              )
+              .font(.largeTitle)
+              .foregroundStyle(.white)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
               ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -500,7 +519,8 @@ struct PhotoDetailView: View {
 
               // 下部のタイトルと説明
               if let title = store.photos.isEmpty
-                ? store.photo.title : store.photos[store.currentPhotoIndex].title
+                ? store.photo.title
+                : store.photos[store.currentPhotoIndex].title
               {
                 Text(title)
                   .font(.subheadline)
@@ -508,7 +528,8 @@ struct PhotoDetailView: View {
               }
 
               if let description = store.photos.isEmpty
-                ? store.photo.description : store.photos[store.currentPhotoIndex].description
+                ? store.photo.description
+                : store.photos[store.currentPhotoIndex].description
               {
                 Text(description)
                   .font(.body)
@@ -536,6 +557,9 @@ struct PhotoDetailView: View {
               .foregroundStyle(.white)
               .accessibilityLabel("Close")
           }
+          #if !SKIP
+            .keyboardShortcut("w", modifiers: [.command])
+          #endif
         }
 
         ToolbarItem(placement: .primaryAction) {
@@ -548,6 +572,7 @@ struct PhotoDetailView: View {
                   Image(systemName: "info.circle")
                 }
                 .accessibilityLabel(Text("Information"))
+                .keyboardShortcut("i", modifiers: [.command])
               }
             #endif
 
@@ -555,20 +580,32 @@ struct PhotoDetailView: View {
               Button {
                 resetZoom()
               } label: {
-                Image(systemName: SystemImageMapping.getIconName(from: "arrow.counterclockwise"))
-                  .foregroundStyle(.white)
-                  .accessibilityLabel("Reset zoom")
+                Image(
+                  systemName: SystemImageMapping.getIconName(
+                    from: "arrow.counterclockwise"
+                  )
+                )
+                .foregroundStyle(.white)
+                .accessibilityLabel("Reset zoom")
               }
+              #if !SKIP
+                .keyboardShortcut("0", modifiers: [.command])
+              #endif
             }
 
             if store.isOrganizer {
               Button {
                 store.send(.editButtonTapped)
               } label: {
-                Image(systemName: SystemImageMapping.getIconName(from: "pencil"))
-                  .foregroundStyle(.white)
-                  .accessibilityLabel("Edit photo")
+                Image(
+                  systemName: SystemImageMapping.getIconName(from: "pencil")
+                )
+                .foregroundStyle(.white)
+                .accessibilityLabel("Edit photo")
               }
+              #if !SKIP
+                .keyboardShortcut("e", modifiers: [.command])
+              #endif
 
               Button {
                 store.send(.deleteButtonTapped)
@@ -577,14 +614,24 @@ struct PhotoDetailView: View {
                   .foregroundStyle(.white)
                   .accessibilityLabel("Delete photo")
               }
+              #if !SKIP
+                .keyboardShortcut("d", modifiers: [.command])
+              #endif
             } else {
               Button {
                 store.send(.reportButtonTapped)
               } label: {
-                Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
-                  .foregroundStyle(.white)
-                  .accessibilityLabel("Report photo")
+                Image(
+                  systemName: SystemImageMapping.getIconName(
+                    from: "exclamationmark.triangle"
+                  )
+                )
+                .foregroundStyle(.white)
+                .accessibilityLabel("Report photo")
               }
+              #if !SKIP
+                .keyboardShortcut("r", modifiers: [.command])
+              #endif
             }
           }
         }
@@ -597,10 +644,14 @@ struct PhotoDetailView: View {
               Button {
                 store.send(.showPreviousPhoto)
               } label: {
-                Image(systemName: SystemImageMapping.getIconName(from: "chevron.left"))
-                  .foregroundStyle(.white)
-                  .padding(16)
-                  .accessibilityLabel("Previous photo")
+                Image(
+                  systemName: SystemImageMapping.getIconName(
+                    from: "chevron.left"
+                  )
+                )
+                .foregroundStyle(.white)
+                .padding(16)
+                .accessibilityLabel("Previous photo")
               }
               .padding(.leading)
 
@@ -610,10 +661,14 @@ struct PhotoDetailView: View {
               Button {
                 store.send(.showNextPhoto)
               } label: {
-                Image(systemName: SystemImageMapping.getIconName(from: "chevron.right"))
-                  .foregroundStyle(.white)
-                  .padding(16)
-                  .accessibilityLabel("Next photo")
+                Image(
+                  systemName: SystemImageMapping.getIconName(
+                    from: "chevron.right"
+                  )
+                )
+                .foregroundStyle(.white)
+                .padding(16)
+                .accessibilityLabel("Next photo")
               }
               .padding(.trailing)
             }
@@ -624,12 +679,39 @@ struct PhotoDetailView: View {
       .toolbarBackground(Color.black.opacity(0), for: .navigationBar)
       .toolbarBackground(.visible, for: .navigationBar)
       .toolbarColorScheme(.dark)
+      #if !SKIP
+        .focusable()
+        .focused($isFocused)
+        .focusEffectDisabled(true)
+        .onKeyPress(.leftArrow) {
+          guard !store.photos.isEmpty else {
+            return .ignored
+          }
+          store.send(.showPreviousPhoto)
+          return .handled
+        }
+        .onKeyPress(.rightArrow) {
+          guard !store.photos.isEmpty else {
+            return .ignored
+          }
+          store.send(.showNextPhoto)
+          return .handled
+        }
+        .onAppear {
+          isFocused = true
+        }
+        .onDisappear {
+          isFocused = false
+        }
+      #endif
     }
     #if !SKIP && os(iOS)
       .statusBar(hidden: true)
     #endif
     .sheet(isPresented: $store.showEditSheet) {
-      let currentPhoto = store.photos.isEmpty ? store.photo : store.photos[store.currentPhotoIndex]
+      let currentPhoto =
+        store.photos.isEmpty
+        ? store.photo : store.photos[store.currentPhotoIndex]
       PhotoEditView(
         title: currentPhoto.title ?? "",
         description: currentPhoto.description ?? ""
@@ -662,7 +744,9 @@ struct PhotoDetailView: View {
         store.send(.confirmDeletePhoto)
       }
     } message: {
-      Text("Are you sure you want to delete this photo? This action cannot be undone.")
+      Text(
+        "Are you sure you want to delete this photo? This action cannot be undone."
+      )
     }
     .alert(
       "Error",
@@ -744,7 +828,11 @@ struct PhotoEditView: View {
 
   let onSave: (String, String) -> Void
 
-  init(title: String, description: String, onSave: @escaping (String, String) -> Void) {
+  init(
+    title: String,
+    description: String,
+    onSave: @escaping (String, String) -> Void
+  ) {
     self._title = State(initialValue: title)
     self._description = State(initialValue: description)
     self.onSave = onSave
