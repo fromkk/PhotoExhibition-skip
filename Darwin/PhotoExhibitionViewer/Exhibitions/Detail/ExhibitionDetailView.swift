@@ -64,25 +64,41 @@ struct ExhibitionDetailView: View {
 
   var body: some View {
     ScrollView {
-      LazyVGrid(columns: Array(repeating: GridItem(), count: 3)) {
-        ForEach(store.photos, id: \.self) { itemStore in
-          PhotoItemView(store: itemStore) {
-            guard let imagePath = itemStore.photo.imagePath else {
-              return
+      VStack(spacing: 16) {
+        Text(store.exhibition.name)
+          .font(.headline.bold())
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .multilineTextAlignment(.leading)
+
+        if let description = store.exhibition.description {
+          Text(description)
+            .font(.caption)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .multilineTextAlignment(.leading)
+        }
+
+        LazyVGrid(columns: Array(repeating: GridItem(), count: 3)) {
+          ForEach(store.photos, id: \.self) { itemStore in
+            PhotoItemView(store: itemStore) {
+              guard let imagePath = itemStore.photo.imagePath else {
+                return
+              }
+              openWindow(
+                id: "PhotoDetail",
+                value: ImagePaths(
+                  imagePath: imagePath,
+                  imagePaths: store.photos.compactMap {
+                    $0.photo.imagePath
+                  }
+                )
+              )
             }
-            openWindow(
-              id: "PhotoDetail",
-              value: ImagePaths(
-                imagePath: imagePath,
-                imagePaths: store.photos.compactMap {
-                  $0.photo.imagePath
-                })
-            )
+            .frame(maxHeight: .infinity)
+            .aspectRatio(1, contentMode: .fill)
           }
-          .frame(maxHeight: .infinity)
-          .aspectRatio(1, contentMode: .fill)
         }
       }
+      .padding()
     }
     .task {
       store.send(.task)

@@ -75,10 +75,16 @@
     },
     "Add Footprint" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watached"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "足跡を追加"
+            "value" : "見ました"
           }
         }
       }
@@ -557,10 +563,16 @@
     },
     "Footprints" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watched"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "足跡"
+            "value" : "見ました"
           }
         }
       }
@@ -894,10 +906,16 @@
     },
     "Remove Footprint" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unwatched"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "足跡を削除"
+            "value" : "見てません"
           }
         }
       }
