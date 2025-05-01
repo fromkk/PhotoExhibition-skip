@@ -72,35 +72,38 @@ struct ExhibitionsView: View {
 
   var body: some View {
     NavigationStack {
-      if store.exhibitions.isEmpty, store.isLoading {
-        ProgressView()
-      } else {
-        if store.exhibitions.isEmpty {
-          ContentUnavailableView("No Exhibitions", systemImage: "photo")
+      Group {
+        if store.exhibitions.isEmpty, store.isLoading {
+          ProgressView()
         } else {
-          ScrollView(.horizontal) {
-            LazyHStack {
-              ForEach(store.exhibitions) { itemStore in
-                ExhibitionItemView(store: itemStore) {
-                  store.send(.selected(itemStore.exhibition))
+          if store.exhibitions.isEmpty {
+            ContentUnavailableView("No Exhibitions", systemImage: "photo")
+          } else {
+            ScrollView(.horizontal) {
+              LazyHStack {
+                ForEach(store.exhibitions) { itemStore in
+                  ExhibitionItemView(store: itemStore) {
+                    store.send(.selected(itemStore.exhibition))
+                  }
+                }
+                if store.hasMore {
+                  ProgressView()
+                    .task {
+                      store.send(.nextCalled)
+                    }
                 }
               }
-              if store.hasMore {
-                ProgressView()
-                  .task {
-                    store.send(.nextCalled)
-                  }
-              }
             }
-          }
-          .refreshable {
-            store.send(.refreshed)
-          }
-          .navigationDestination(item: $store.selectedExhibitionStore) { store in
-            ExhibitionDetailView(store: store)
+            .refreshable {
+              store.send(.refreshed)
+            }
+            .navigationDestination(item: $store.selectedExhibitionStore) { store in
+              ExhibitionDetailView(store: store)
+            }
           }
         }
       }
+      .navigationTitle(Text("Exhibitions"))
     }
     .task {
       store.send(.refreshed)

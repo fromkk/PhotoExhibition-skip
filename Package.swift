@@ -15,7 +15,10 @@ let package = Package(
     .visionOS(.v1),
   ],
   products: [
-    .library(name: "IntentHelper", targets: ["IntentHelper"]),
+    .library(
+      name: "IntentHelper",
+      targets: ["IntentHelper"]
+    ),
     .library(
       name: "PhotoExhibitionApp",
       type: .dynamic,
@@ -25,7 +28,10 @@ let package = Package(
       name: "Viewer",
       targets: ["Viewer"]
     ),
-    .library(name: "WidgetClients", targets: ["WidgetClients"]),
+    .library(
+      name: "WidgetClients",
+      targets: ["WidgetClients"]
+    ),
   ],
   dependencies: [
     .package(url: "https://source.skip.tools/skip.git", from: "1.3.4"),

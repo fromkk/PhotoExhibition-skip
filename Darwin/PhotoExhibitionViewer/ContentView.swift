@@ -13,9 +13,16 @@ struct ContentView: View {
     exhibitionsClient: ExhibitionsClient.liveValue,
     imageClient: StorageImageCache.shared
   )
+  let menuStore: MenuStore = .init()
 
   var body: some View {
-    ExhibitionsView(store: exhibitionsStore)
+    TabView {
+      ExhibitionsView(store: exhibitionsStore)
+        .tag(1)
+
+      MenuView(store: menuStore)
+        .tag(2)
+    }
   }
 }
 
