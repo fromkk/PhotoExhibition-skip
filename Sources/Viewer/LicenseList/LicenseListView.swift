@@ -60,20 +60,9 @@ public struct LicenseListView: View {
     }
     .navigationTitle(Text("Licenses"))
     .navigationDestination(
-      isPresented: Binding(
-        get: {
-          store.detailStore != nil
-        },
-        set: {
-          if !$0 {
-            store.detailStore = nil
-          }
-        }
-      )
-    ) {
-      if let store = store.detailStore {
-        LicenseDetailView(store: store)
-      }
+      item: $store.detailStore
+    ) { detailStore in
+      LicenseDetailView(store: detailStore)
     }
   }
 }

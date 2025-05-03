@@ -9,13 +9,19 @@ final class MenuStore: Store {
   }
 
   enum Action {
+    case contactButtonTapped
     case licenseButtonTapped
   }
 
+  var contactStore: ContactStore?
   var licenseStore: LicenseListStore?
 
   func send(_ action: Action) {
     switch action {
+    case .contactButtonTapped:
+      contactStore = ContactStore(
+        contactClient: DefaultContactClient()
+      )
     case .licenseButtonTapped:
       licenseStore = LicenseListStore()
     }
@@ -54,6 +60,16 @@ struct MenuView: View {
           }
 
           Button {
+            store.send(.contactButtonTapped)
+          } label: {
+            HStack {
+              Text("Contact")
+                .frame(maxWidth: .infinity, alignment: .leading)
+              Image(systemName: "chevron.forward")
+            }
+          }
+
+          Button {
             store.send(.licenseButtonTapped)
           } label: {
             HStack {
@@ -61,9 +77,6 @@ struct MenuView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
               Image(systemName: "chevron.forward")
             }
-          }
-          .navigationDestination(item: $store.licenseStore) { licenstListStore in
-            LicenseListView(store: licenstListStore)
           }
         } footer: {
           if let version = store.deviceInfoClient.appVersion(),
@@ -76,6 +89,12 @@ struct MenuView: View {
         }
       }
       .navigationBarTitle("Menu")
+      .navigationDestination(item: $store.licenseStore) { licenstListStore in
+        LicenseListView(store: licenstListStore)
+      }
+      .navigationDestination(item: $store.contactStore) { contactStore in
+        ContactView(store: contactStore)
+      }
     }
   }
 }
