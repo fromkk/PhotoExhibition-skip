@@ -733,9 +733,9 @@ struct ExhibitionDetailView: View {
                   HStack {
                     HStack(spacing: 4) {
                       #if SKIP
-                        Image("shoeprints.fill", bundle: .module)
+                        Image("eyes", bundle: .module)
                       #else
-                        Image(systemName: "shoeprints.fill")
+                        Image(systemName: "eyes")
                       #endif
                       Text("Footprints")
                     }
@@ -770,9 +770,9 @@ struct ExhibitionDetailView: View {
                 HStack {
                   HStack(spacing: 4) {
                     #if SKIP
-                      Image("shoeprints.fill", bundle: .module)
+                      Image("eyes", bundle: .module)
                     #else
-                      Image(systemName: "shoeprints.fill")
+                      Image(systemName: "eyes")
                     #endif
                     Text("Footprints")
                   }
