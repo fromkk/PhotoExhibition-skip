@@ -19,8 +19,11 @@ final class ExhibitionDetailStore: Store, Hashable {
   var photos: [PhotoItemStore] = []
   var error: (any Error)?
 
+  var reportStore: ReportStore?
+
   enum Action {
     case task
+    case reportButtonTapped
   }
 
   func send(_ action: Action) {
@@ -39,6 +42,9 @@ final class ExhibitionDetailStore: Store, Hashable {
           self.error = error
         }
       }
+    case .reportButtonTapped:
+      guard let exhibitionId = exhibition.id else { return }
+      reportStore = ReportStore(type: .exhibition, id: exhibitionId)
     }
   }
 
@@ -99,6 +105,33 @@ struct ExhibitionDetailView: View {
         }
       }
       .padding()
+    }
+    .toolbar {
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          store.send(.reportButtonTapped)
+        } label: {
+          Image(systemName: "exclamationmark.triangle")
+            .accessibilityLabel("Report exhibition")
+        }
+        .accessibilityLabel(Text("Report"))
+      }
+    }
+    .sheet(
+      item: $store.reportStore
+    ) { reportStore in
+      ReportView(store: reportStore)
+    }
+    .alert(
+      "Error",
+      isPresented: Binding(
+        get: { store.error != nil },
+        set: { if !$0 { store.error = nil } }
+      )
+    ) {
+      Button("OK", role: .cancel) {}
+    } message: {
+      Text(store.error?.localizedDescription ?? "An error occurred")
     }
     .task {
       store.send(.task)
