@@ -102,6 +102,9 @@ let package = Package(
         .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
         .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
         .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
+      ],
+      plugins: [
+        .plugin(name: "LicensesPlugin", package: "LicensesPlugin")
       ]
     ),
   ]

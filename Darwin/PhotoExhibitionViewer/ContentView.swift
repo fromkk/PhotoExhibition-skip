@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  PhotoExhibitionViewer
-//
-//  Created by Kazuya Ueoka on 2025/04/18.
-//
-
 import SwiftUI
 import Viewer
 
