@@ -18,9 +18,15 @@ struct ContentView: View {
   var body: some View {
     TabView {
       ExhibitionsView(store: exhibitionsStore)
+        .tabItem {
+          Label("Exhibitions", systemImage: "photo")
+        }
         .tag(1)
 
       MenuView(store: menuStore)
+        .tabItem {
+          Label("Menu", systemImage: "list.bullet")
+        }
         .tag(2)
     }
   }

@@ -2,13 +2,9 @@ import SwiftUI
 
 @Observable
 final class MenuStore: Store {
-  enum Action {
-    case termsOfServiceTapped
-  }
+  enum Action {}
 
-  func send(_ action: Action) {
-
-  }
+  func send(_ action: Action) {}
 }
 
 struct MenuView: View {
