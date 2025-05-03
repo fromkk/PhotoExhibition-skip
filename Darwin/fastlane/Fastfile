@@ -45,4 +45,3 @@ lane :release do |options|
     release_notes: { default: "Fixes and improvements." }
   )
 end
-
