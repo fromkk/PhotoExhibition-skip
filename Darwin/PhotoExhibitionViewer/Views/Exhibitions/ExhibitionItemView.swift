@@ -25,7 +25,7 @@ final class ExhibitionItemStore: Identifiable {
       imageURL = try await imageClient.getImageURL(for: path)
     } catch {
       self.error = error
-    }  //
+    }
   }
 }
 
