@@ -21,6 +21,9 @@
         }
       }
     },
+    "Cancel" : {
+
+    },
     "Close Immersive Space" : {
       "localizations" : {
         "ja" : {
@@ -40,6 +43,9 @@
           }
         }
       }
+    },
+    "Error" : {
+
     },
     "Exhibitions" : {
       "localizations" : {
@@ -91,6 +97,9 @@
         }
       }
     },
+    "OK" : {
+
+    },
     "Open Immersive Space" : {
       "localizations" : {
         "ja" : {
@@ -101,6 +110,9 @@
         }
       }
     },
+    "Please provide a reason for reporting this content." : {
+
+    },
     "Privacy Policy" : {
       "localizations" : {
         "ja" : {
@@ -110,6 +122,15 @@
           }
         }
       }
+    },
+    "Reason" : {
+
+    },
+    "Report" : {
+
+    },
+    "Report exhibition" : {
+
     },
     "Send" : {
       "localizations" : {
