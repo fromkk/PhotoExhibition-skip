@@ -1,7 +1,7 @@
 import Foundation
 
 /// 画像キャッシュのプロトコル
-protocol StorageImageCacheProtocol: Sendable {
+public protocol StorageImageCacheProtocol: Sendable {
   /// 画像URLを取得する（キャッシュがあればキャッシュから、なければStorageClientから）
   func getImageURL(for path: String) async throws -> URL
 
@@ -10,14 +10,14 @@ protocol StorageImageCacheProtocol: Sendable {
 }
 
 /// 画像データをローカルにキャッシュするためのクライアント
-final actor StorageImageCache: StorageImageCacheProtocol {
-  static let shared: any StorageImageCacheProtocol = StorageImageCache()
+public final actor StorageImageCache: StorageImageCacheProtocol {
+  public static let shared: any StorageImageCacheProtocol = StorageImageCache()
 
   private var cache: [String: URL] = [:]
   private let storageClient: StorageClient
   private let fileManager = FileManager.default
 
-  init(storageClient: StorageClient = DefaultStorageClient()) {
+  public init(storageClient: StorageClient = DefaultStorageClient()) {
     self.storageClient = storageClient
     Task {
       await createCacheDirectoryIfNeeded()
@@ -25,7 +25,7 @@ final actor StorageImageCache: StorageImageCacheProtocol {
   }
 
   /// 画像URLを取得する（キャッシュがあればキャッシュから、なければStorageClientから）
-  func getImageURL(for path: String) async throws -> URL {
+  public func getImageURL(for path: String) async throws -> URL {
     // キャッシュにあればそれを返す
     if let cachedURL = cache[path] {
       // ファイルが存在するか確認
@@ -101,7 +101,7 @@ final actor StorageImageCache: StorageImageCacheProtocol {
   }
 
   /// キャッシュをクリアする
-  func clearCache() async {
+  public func clearCache() async {
     cache.removeAll()
 
     do {

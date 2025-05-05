@@ -91,10 +91,6 @@ struct PhotoDetailView: View {
   @Environment(\.dismissWindow) var dismissWindow
   @Bindable var store: PhotoDetailStore
 
-  @Environment(ImmersiveStore.self) private var immersiveStore
-  @Environment(\.openImmersiveSpace) private var openImmersiveSpace
-  @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
-
   var body: some View {
     RealityView { content, attachment in
       let mesh = MeshResource.generateBox(width: 1, height: 1, depth: 0.01)
@@ -112,7 +108,7 @@ struct PhotoDetailView: View {
       }
 
       if let close = attachment.entity(for: "close") {
-        close.position = [0.3, 0, 0.02]
+        close.position = [0.4, 0, 0.02]
         content.add(close)
       }
     } placeholder: {
@@ -170,39 +166,6 @@ struct PhotoDetailView: View {
       Attachment(id: "close") {
         VStack(alignment: .trailing) {
           HStack(spacing: 16) {
-            Button {
-              Task { @MainActor in
-                if immersiveStore.isImmersivePresented {
-                  immersiveStore.send(.toggleIsImmersivePresented)
-                  await dismissImmersiveSpace()
-                } else {
-                  immersiveStore.send(.toggleIsImmersivePresented)
-                  switch await openImmersiveSpace(
-                    id: "ImeersivePhotoDetail",
-                    value: ImagePaths(
-                      imagePath: store.imagePath,
-                      imagePaths: store.imagePaths
-                    )
-                  ) {
-                  case .opened:
-                    break
-                  default:
-                    immersiveStore.isImmersivePresented = false
-                  }
-                }
-              }
-            } label: {
-              if immersiveStore.isImmersivePresented {
-                Text("Close Immersive Space")
-              } else {
-                Text("Open Immersive Space")
-              }
-            }
-            .buttonStyle(.secondaryButtonStyle)
-            .hoverEffect { effect, isActive, _ in
-              effect.scaleEffect(!isActive ? 1 : 1.2)
-            }
-
             Button {
               Task {
                 dismissWindow()

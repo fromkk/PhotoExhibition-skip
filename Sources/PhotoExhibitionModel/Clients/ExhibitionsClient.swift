@@ -8,7 +8,7 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionsClient")
 
-protocol ExhibitionsClient: Sendable {
+public protocol ExhibitionsClient: Sendable {
   func fetch(now: Date, cursor: String?) async throws -> (
     exhibitions: [Exhibition], nextCursor: String?
   )
@@ -25,12 +25,12 @@ protocol ExhibitionsClient: Sendable {
     )
 }
 
-actor DefaultExhibitionsClient: ExhibitionsClient {
+public actor DefaultExhibitionsClient: ExhibitionsClient {
   private let pageSize = 30
   private let blockClient: any BlockClient
   private let currentUserClient: CurrentUserClient
 
-  init(
+  public init(
     blockClient: any BlockClient = DefaultBlockClient.shared,
     currentUserClient: CurrentUserClient = DefaultCurrentUserClient()
   ) {
@@ -38,7 +38,7 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
     self.currentUserClient = currentUserClient
   }
 
-  func fetch(now: Date, cursor: String?) async throws -> (
+  public func fetch(now: Date, cursor: String?) async throws -> (
     exhibitions: [Exhibition], nextCursor: String?
   ) {
     logger.info("fetch cursor: \(String(describing: cursor))")
@@ -128,22 +128,22 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
     return (result, nextCursor)
   }
 
-  func create(id: String, data: [String: any Sendable]) async throws {
+  public func create(id: String, data: [String: any Sendable]) async throws {
     try await Firestore.firestore().collection("exhibitions").document(id)
       .setData(data)
   }
 
-  func update(id: String, data: [String: any Sendable]) async throws {
+  public func update(id: String, data: [String: any Sendable]) async throws {
     try await Firestore.firestore().collection("exhibitions").document(id)
       .updateData(data)
   }
 
-  func delete(id: String) async throws {
+  public func delete(id: String) async throws {
     try await Firestore.firestore().collection("exhibitions").document(id)
       .delete()
   }
 
-  func get(id: String) async throws -> Exhibition {
+  public func get(id: String) async throws -> Exhibition {
     let firestore = Firestore.firestore()
     let document = try await firestore.collection("exhibitions").document(id).getDocument()
 
@@ -188,7 +188,7 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
     }
   }
 
-  func fetchMyExhibitions(organizerID: String, cursor: String?) async throws -> (
+  public func fetchMyExhibitions(organizerID: String, cursor: String?) async throws -> (
     exhibitions: [Exhibition], nextCursor: String?
   ) {
     logger.info("fetchMyExhibitions cursor: \(String(describing: cursor))")
@@ -250,7 +250,8 @@ actor DefaultExhibitionsClient: ExhibitionsClient {
     return (result, nextCursor)
   }
 
-  func fetchPublishedActiveExhibitions(organizerID: String, now: Date, cursor: String?) async throws
+  public func fetchPublishedActiveExhibitions(organizerID: String, now: Date, cursor: String?)
+    async throws
     -> (
       exhibitions: [Exhibition], nextCursor: String?
     )

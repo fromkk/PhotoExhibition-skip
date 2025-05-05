@@ -25,6 +25,7 @@
 
     },
     "Close Immersive Space" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -101,6 +102,7 @@
 
     },
     "Open Immersive Space" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {

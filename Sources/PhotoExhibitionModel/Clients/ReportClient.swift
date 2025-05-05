@@ -8,17 +8,19 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ReportClient")
 
-enum ReportType: String {
+public enum ReportType: String, Sendable {
   case exhibition
   case photo
 }
 
-protocol ReportClient: Sendable {
+public protocol ReportClient: Sendable {
   func report(type: ReportType, id: String, reason: String) async
 }
 
-actor DefaultReportClient: ReportClient {
-  func report(type: ReportType, id: String, reason: String) async {
+public actor DefaultReportClient: ReportClient {
+  public init() {}
+
+  public func report(type: ReportType, id: String, reason: String) async {
     let functions = Functions.functions()
     let data: [String: Any] = [
       "type": type.rawValue,

@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 
 #if SKIP
   import SkipFirebaseFirestore
@@ -8,23 +7,19 @@ import SwiftUI
 #endif
 
 // 展示状態（draft: 下書き, published: 公開, banned: 管理者によるBAN）
-enum ExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable {
+public enum ExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable {
   case draft
   case published
   case banned
 
-  var id: String { rawValue }
+  public var id: String { rawValue }
 
-  static let editableCases: [Self] = [.draft, .published]
-
-  var localizedKey: LocalizedStringKey {
-    LocalizedStringKey(rawValue)
-  }
+  public static let editableCases: [Self] = [.draft, .published]
 }
 
 // 写真展情報
-struct Exhibition: Hashable, Sendable, Identifiable, Codable {
-  init(
+public struct Exhibition: Hashable, Sendable, Identifiable, Codable {
+  public init(
     id: String, name: String, description: String? = nil, from: Date, to: Date,
     organizer: Member, coverImagePath: String? = nil, cover_256x256: String? = nil,
     cover_512x512: String? = nil, cover_1024x1024: String? = nil, status: ExhibitionStatus = .draft,
@@ -45,21 +40,21 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     self.updatedAt = updatedAt
   }
 
-  let id: String
-  let name: String
-  let description: String?
-  let from: Date
-  let to: Date
-  let organizer: Member
-  let coverImagePath: String?
-  let cover_256x256: String?
-  let cover_512x512: String?
-  let cover_1024x1024: String?
-  let status: ExhibitionStatus
-  let createdAt: Date
-  let updatedAt: Date
+  public let id: String
+  public let name: String
+  public let description: String?
+  public let from: Date
+  public let to: Date
+  public let organizer: Member
+  public let coverImagePath: String?
+  public let cover_256x256: String?
+  public let cover_512x512: String?
+  public let cover_1024x1024: String?
+  public let status: ExhibitionStatus
+  public let createdAt: Date
+  public let updatedAt: Date
 
-  init?(documentID: String, data: [String: Any], organizer: Member) {
+  public init?(documentID: String, data: [String: Any], organizer: Member) {
     guard let name = data["name"] as? String,
       let fromTimestamp = data["from"] as? Timestamp,
       let toTimestamp = data["to"] as? Timestamp,
@@ -85,7 +80,7 @@ struct Exhibition: Hashable, Sendable, Identifiable, Codable {
     self.updatedAt = updatedAtTimestamp.dateValue()
   }
 
-  var coverPath: String? {
+  public var coverPath: String? {
     return cover_1024x1024 ?? cover_512x512 ?? cover_256x256 ?? coverImagePath
   }
 }

@@ -6,17 +6,19 @@
   import FirebaseFirestore
 #endif
 
-protocol SignInClient: Sendable {
+public protocol SignInClient: Sendable {
   func signIn(email: String, password: String) async throws -> Member
 }
 
-enum SignInClientError: Error, Sendable {
+public enum SignInClientError: Error, Sendable {
   case memberNotFound
   case invalidData
 }
 
-actor DefaultSignInClient: SignInClient {
-  func signIn(email: String, password: String) async throws -> Member {
+public actor DefaultSignInClient: SignInClient {
+  public init() {}
+
+  public func signIn(email: String, password: String) async throws -> Member {
     let user = try await Auth.auth().signIn(withEmail: email, password: password).user
     let uid = user.uid
 

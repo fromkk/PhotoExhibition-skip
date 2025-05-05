@@ -1,6 +1,7 @@
 #if !SKIP
   import OSLog
   import SwiftUI
+  import PhotoExhibitionModel
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Exif")
 

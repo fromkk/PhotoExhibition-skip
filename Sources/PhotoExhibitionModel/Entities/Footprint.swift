@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 
 #if SKIP
   import SkipFirebaseFirestore
@@ -8,8 +7,8 @@ import SwiftUI
 #endif
 
 /// 展示の足跡（閲覧記録）を表すエンティティ
-struct Footprint: Hashable, Sendable, Identifiable, Codable {
-  init(
+public struct Footprint: Hashable, Sendable, Identifiable, Codable {
+  public init(
     id: String,
     exhibitionId: String,
     userId: String,
@@ -21,12 +20,12 @@ struct Footprint: Hashable, Sendable, Identifiable, Codable {
     self.createdAt = createdAt
   }
 
-  let id: String
-  let exhibitionId: String
-  let userId: String
-  let createdAt: Date
+  public let id: String
+  public let exhibitionId: String
+  public let userId: String
+  public let createdAt: Date
 
-  init?(documentID: String, data: [String: Any]) {
+  public init?(documentID: String, data: [String: Any]) {
     guard let exhibitionId = data["exhibitionId"] as? String,
       let userId = data["userId"] as? String,
       let createdAtTimestamp = data["createdAt"] as? Timestamp

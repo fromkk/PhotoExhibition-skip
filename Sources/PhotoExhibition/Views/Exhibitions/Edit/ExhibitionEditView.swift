@@ -1,4 +1,5 @@
 import OSLog
+import PhotoExhibitionModel
 import SkipKit
 import SwiftUI
 

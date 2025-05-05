@@ -10,7 +10,7 @@ import OSLog
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "PhotoClient")
 
 // 展示会の写真を管理するクライアント
-protocol PhotoClient: Sendable {
+public protocol PhotoClient: Sendable {
   func fetchPhotos(exhibitionId: String) async throws -> [Photo]
   func addPhoto(exhibitionId: String, photoId: String, path: String, sort: Int) async throws
     -> Photo
@@ -21,13 +21,13 @@ protocol PhotoClient: Sendable {
 }
 
 // 展示会の写真モデル
-struct ExhibitionPhoto: Identifiable, Hashable, Sendable {
-  let id: String
-  let path: String?
-  let createdAt: Date
-  let updatedAt: Date
+public struct ExhibitionPhoto: Identifiable, Hashable, Sendable {
+  public let id: String
+  public let path: String?
+  public let createdAt: Date
+  public let updatedAt: Date
 
-  init?(documentID: String, data: [String: Any]) {
+  public init?(documentID: String, data: [String: Any]) {
     guard let createdAtTimestamp = data["createdAt"] as? Timestamp,
       let updatedAtTimestamp = data["updatedAt"] as? Timestamp
     else {
@@ -41,8 +41,10 @@ struct ExhibitionPhoto: Identifiable, Hashable, Sendable {
   }
 }
 
-actor DefaultPhotoClient: PhotoClient {
-  func fetchPhotos(exhibitionId: String) async throws -> [Photo] {
+public actor DefaultPhotoClient: PhotoClient {
+  public init() {}
+
+  public func fetchPhotos(exhibitionId: String) async throws -> [Photo] {
     logger.info("fetchPhotos for exhibition: \(exhibitionId)")
 
     let firestore = Firestore.firestore()
@@ -64,7 +66,7 @@ actor DefaultPhotoClient: PhotoClient {
     return photos
   }
 
-  func addPhoto(exhibitionId: String, photoId: String, path: String, sort: Int) async throws
+  public func addPhoto(exhibitionId: String, photoId: String, path: String, sort: Int) async throws
     -> Photo
   {
     logger.info("addPhoto for exhibition: \(exhibitionId), path: \(path), sort: \(sort)")
@@ -92,7 +94,9 @@ actor DefaultPhotoClient: PhotoClient {
     return photo
   }
 
-  func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?)
+  public func updatePhoto(
+    exhibitionId: String, photoId: String, title: String?, description: String?
+  )
     async throws
   {
     logger.info("updatePhoto for exhibition: \(exhibitionId), photoId: \(photoId)")
@@ -117,7 +121,7 @@ actor DefaultPhotoClient: PhotoClient {
       .updateData(updateData)
   }
 
-  func deletePhoto(exhibitionId: String, photoId: String) async throws {
+  public func deletePhoto(exhibitionId: String, photoId: String) async throws {
     logger.info("deletePhoto for exhibition: \(exhibitionId), photoId: \(photoId)")
 
     let firestore = Firestore.firestore()
@@ -128,7 +132,7 @@ actor DefaultPhotoClient: PhotoClient {
       .delete()
   }
 
-  func updatePhotoSort(exhibitionId: String, photoId: String, sort: Int) async throws {
+  public func updatePhotoSort(exhibitionId: String, photoId: String, sort: Int) async throws {
     logger.info(
       "updatePhotoSort for exhibition: \(exhibitionId), photoId: \(photoId), sort: \(sort)")
 

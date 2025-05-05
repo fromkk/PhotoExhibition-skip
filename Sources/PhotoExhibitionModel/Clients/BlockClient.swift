@@ -9,17 +9,19 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "BlockClient")
 
-protocol BlockClient: Sendable {
+public protocol BlockClient: Sendable {
   func blockUser(currentUserId: String, blockUserId: String) async throws
   func unblockUser(currentUserId: String, blockUserId: String) async throws
   func isBlocked(currentUserId: String, blockUserId: String) async throws -> Bool
   func fetchBlockedUserIds(currentUserId: String) async throws -> [String]
 }
 
-actor DefaultBlockClient: BlockClient {
-  static let shared = DefaultBlockClient()
+public actor DefaultBlockClient: BlockClient {
+  public static let shared = DefaultBlockClient()
 
-  func blockUser(currentUserId: String, blockUserId: String) async throws {
+  public init() {}
+
+  public func blockUser(currentUserId: String, blockUserId: String) async throws {
     logger.info("blockUser: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
     let blockedUser = BlockedUser(userId: blockUserId, createdAt: Date())
@@ -30,7 +32,7 @@ actor DefaultBlockClient: BlockClient {
       .setData(blockedUser.toData())
   }
 
-  func unblockUser(currentUserId: String, blockUserId: String) async throws {
+  public func unblockUser(currentUserId: String, blockUserId: String) async throws {
     logger.info("unblockUser: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
     try await Firestore.firestore().collection("members")
@@ -40,7 +42,7 @@ actor DefaultBlockClient: BlockClient {
       .delete()
   }
 
-  func isBlocked(currentUserId: String, blockUserId: String) async throws -> Bool {
+  public func isBlocked(currentUserId: String, blockUserId: String) async throws -> Bool {
     logger.info("isBlocked checking: currentUser=\(currentUserId), blockUser=\(blockUserId)")
 
     let document = try await Firestore.firestore().collection("members")
@@ -52,7 +54,7 @@ actor DefaultBlockClient: BlockClient {
     return document.exists
   }
 
-  func fetchBlockedUserIds(currentUserId: String) async throws -> [String] {
+  public func fetchBlockedUserIds(currentUserId: String) async throws -> [String] {
     logger.info("fetchBlockedUserIds for user: \(currentUserId)")
 
     let snapshot = try await Firestore.firestore().collection("members")

@@ -1,3 +1,4 @@
+import PhotoExhibitionModel
 import SwiftUI
 
 struct OrganizerProfileView: View {

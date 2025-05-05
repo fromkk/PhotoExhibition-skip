@@ -1,5 +1,6 @@
 import Foundation
 import OSLog
+import PhotoExhibitionModel
 import SwiftUI
 
 #if canImport(Observation)

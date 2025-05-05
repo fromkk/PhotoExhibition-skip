@@ -8,7 +8,7 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FootprintClient")
 
-protocol FootprintClient: Sendable {
+public protocol FootprintClient: Sendable {
   func recordFootprint(
     exhibitionId: String, userId: String
   ) async throws -> Footprint
@@ -26,10 +26,12 @@ protocol FootprintClient: Sendable {
   func hasAddedFootprint(exhibitionId: String, userId: String) async throws -> Bool
 }
 
-actor DefaultFootprintClient: FootprintClient {
+public actor DefaultFootprintClient: FootprintClient {
   private let pageSize = 20
 
-  func recordFootprint(
+  public init() {}
+
+  public func recordFootprint(
     exhibitionId: String, userId: String
   ) async throws -> Footprint {
     logger.info("recordFootprint for exhibition: \(exhibitionId) user: \(userId)")
@@ -52,7 +54,7 @@ actor DefaultFootprintClient: FootprintClient {
     )
   }
 
-  func fetchFootprints(exhibitionId: String, cursor: String?) async throws -> (
+  public func fetchFootprints(exhibitionId: String, cursor: String?) async throws -> (
     footprints: [Footprint], nextCursor: String?
   ) {
     logger.info(
@@ -95,7 +97,7 @@ actor DefaultFootprintClient: FootprintClient {
     return (result, nextCursor)
   }
 
-  func toggleFootprint(
+  public func toggleFootprint(
     exhibitionId: String, userId: String
   ) async throws -> Bool {
     logger.info("toggleFootprint for exhibition: \(exhibitionId) user: \(userId)")
@@ -138,7 +140,7 @@ actor DefaultFootprintClient: FootprintClient {
     }
   }
 
-  func getVisitorCount(exhibitionId: String) async throws -> Int {
+  public func getVisitorCount(exhibitionId: String) async throws -> Int {
     logger.info("getVisitorCount for exhibition: \(exhibitionId)")
 
     let firestore = Firestore.firestore()
@@ -154,7 +156,7 @@ actor DefaultFootprintClient: FootprintClient {
     #endif
   }
 
-  func hasAddedFootprint(exhibitionId: String, userId: String) async throws -> Bool {
+  public func hasAddedFootprint(exhibitionId: String, userId: String) async throws -> Bool {
     logger.info("hasAddedFootprint for exhibition: \(exhibitionId) user: \(userId)")
 
     let firestore = Firestore.firestore()
