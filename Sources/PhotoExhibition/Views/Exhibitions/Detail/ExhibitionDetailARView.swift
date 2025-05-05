@@ -3,6 +3,7 @@
   import UIKit
   import SceneKit
   import SwiftUI
+  import PhotoExhibitionModel
 
   extension SCNNode: @unchecked @retroactive Sendable {}
 

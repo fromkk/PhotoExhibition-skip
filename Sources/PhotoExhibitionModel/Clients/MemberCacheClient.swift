@@ -1,28 +1,28 @@
 import Foundation
 
-protocol MemberCacheClient: Sendable {
+public protocol MemberCacheClient: Sendable {
   func setMember(_ member: Member) async
   func getMember(withID id: String) async -> Member?
   func getAllMembers() async -> [Member]
   func clearCache() async
 }
 
-actor DefaultMemberCacheClient: MemberCacheClient {
-  static let shared = DefaultMemberCacheClient()
+public actor DefaultMemberCacheClient: MemberCacheClient {
+  public static let shared = DefaultMemberCacheClient()
 
   private var cachedMembers: [CachedMember] = []
   private let maxCacheSize: Int
 
-  init(maxCacheSize: Int = 100) {
+  public init(maxCacheSize: Int = 100) {
     self.maxCacheSize = maxCacheSize
   }
 
-  func setMember(_ member: Member) async {
+  public func setMember(_ member: Member) async {
     // Add or update member in cache
     addMemberToCache(member)
   }
 
-  func getMember(withID id: String) async -> Member? {
+  public func getMember(withID id: String) async -> Member? {
     if let cachedMember = cachedMembers.first(where: { $0.member.id == id }) {
       // Update access time - this is critical for LRU to work correctly
       updateMemberAccessTime(cachedMember.member)
@@ -32,11 +32,11 @@ actor DefaultMemberCacheClient: MemberCacheClient {
     return nil
   }
 
-  func getAllMembers() async -> [Member] {
+  public func getAllMembers() async -> [Member] {
     return cachedMembers.map { $0.member }
   }
 
-  func clearCache() async {
+  public func clearCache() async {
     cachedMembers.removeAll()
   }
 

@@ -25,6 +25,11 @@ let package = Package(
       targets: ["PhotoExhibition"]
     ),
     .library(
+      name: "PhotoExhibitionModel",
+      type: .dynamic,
+      targets: ["PhotoExhibitionModel"]
+    ),
+    .library(
       name: "Viewer",
       targets: ["Viewer"]
     ),
@@ -37,6 +42,8 @@ let package = Package(
     .package(url: "https://source.skip.tools/skip.git", from: "1.3.4"),
     .package(url: "https://source.skip.tools/skip-ui.git", from: "1.26.7"),
     .package(url: "https://source.skip.tools/skip-kit.git", from: "0.3.1"),
+    .package(url: "https://source.skip.tools/skip-fuse.git", from: "1.0.0"),
+    .package(url: "https://source.skip.tools/skip-model.git", from: "1.0.0"),
     .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.7.3"),
     .package(
       url: "https://github.com/firebase/firebase-ios-sdk.git",
@@ -60,13 +67,9 @@ let package = Package(
       name: "PhotoExhibition",
       dependencies: [
         "IntentHelper",
+        "PhotoExhibitionModel",
         .product(name: "SkipUI", package: "skip-ui"),
         .product(name: "SkipKit", package: "skip-kit"),
-        .product(name: "SkipFirebaseAnalytics", package: "skip-firebase"),
-        .product(name: "SkipFirebaseAuth", package: "skip-firebase"),
-        .product(name: "SkipFirebaseFirestore", package: "skip-firebase"),
-        .product(name: "SkipFirebaseFunctions", package: "skip-firebase"),
-        .product(name: "SkipFirebaseStorage", package: "skip-firebase"),
         .product(
           name: "GoogleMobileAds",
           package: "swift-package-manager-google-mobile-ads"
@@ -85,6 +88,19 @@ let package = Package(
         .product(name: "SkipTest", package: "skip"),
       ],
       resources: [.process("Resources")],
+      plugins: [.plugin(name: "skipstone", package: "skip")]
+    ),
+    .target(
+      name: "PhotoExhibitionModel",
+      dependencies: [
+        .product(name: "SkipFuse", package: "skip-fuse"),
+        .product(name: "SkipModel", package: "skip-model"),
+        .product(name: "SkipFirebaseAnalytics", package: "skip-firebase"),
+        .product(name: "SkipFirebaseAuth", package: "skip-firebase"),
+        .product(name: "SkipFirebaseFirestore", package: "skip-firebase"),
+        .product(name: "SkipFirebaseFunctions", package: "skip-firebase"),
+        .product(name: "SkipFirebaseStorage", package: "skip-firebase"),
+      ],
       plugins: [.plugin(name: "skipstone", package: "skip")]
     ),
     .target(

@@ -4,16 +4,20 @@
   @preconcurrency import FirebaseAuth
   @preconcurrency import FirebaseFirestore
 
-  protocol AuthClient: Sendable {
+  public protocol AuthClient: Sendable {
     func signInWithApple(authorization: ASAuthorization, nonce: String) async throws -> Member
   }
 
-  enum AuthClientError: Error, Sendable {
+  public enum AuthClientError: Error, Sendable {
     case invalidCredential
   }
 
-  actor DefaultAuthClient: AuthClient {
-    func signInWithApple(authorization: ASAuthorization, nonce: String) async throws -> Member {
+  public actor DefaultAuthClient: AuthClient {
+    public init() {}
+
+    public func signInWithApple(authorization: ASAuthorization, nonce: String) async throws
+      -> Member
+    {
       let auth = Auth.auth()
 
       guard

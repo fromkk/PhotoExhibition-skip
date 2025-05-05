@@ -8,12 +8,14 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ContactClient")
 
-protocol ContactClient: Sendable {
+public protocol ContactClient: Sendable {
   func send(title: String, content: String) async
 }
 
-actor DefaultContactClient: ContactClient {
-  func send(title: String, content: String) async {
+public actor DefaultContactClient: ContactClient {
+  public init() {}
+
+  public func send(title: String, content: String) async {
     let functions = Functions.functions()
     let data: [String: Any] = [
       "title": title,

@@ -1,4 +1,11 @@
+import PhotoExhibitionModel
 import SwiftUI
+
+extension ExhibitionStatus {
+  public var localizedKey: LocalizedStringKey {
+    LocalizedStringKey(rawValue)
+  }
+}
 
 struct ExhibitionRow: View {
   let exhibition: Exhibition

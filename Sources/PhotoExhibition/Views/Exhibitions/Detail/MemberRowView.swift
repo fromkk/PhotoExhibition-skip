@@ -1,4 +1,5 @@
 import OSLog
+import PhotoExhibitionModel
 import SwiftUI
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MemberRowView")

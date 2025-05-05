@@ -6,19 +6,19 @@ import Foundation
   import FirebaseFirestore
 #endif
 
-protocol MemberUpdateClient: Sendable {
+public protocol MemberUpdateClient: Sendable {
   func updateName(memberID: String, name: String) async throws -> Member
   func updateIcon(memberID: String, iconPath: String?) async throws -> Member
   func updateProfile(memberID: String, name: String, iconPath: String?) async throws -> Member
   func postAgreement(memberID: String) async throws -> Member
 }
 
-enum MemberUpdateClientError: Error, Sendable, LocalizedError {
+public enum MemberUpdateClientError: Error, Sendable, LocalizedError {
   case updateFailed
   case memberNotFound
   case invalidData
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
     case .updateFailed:
       return "Failed to update profile"
@@ -30,8 +30,10 @@ enum MemberUpdateClientError: Error, Sendable, LocalizedError {
   }
 }
 
-actor DefaultMemberUpdateClient: MemberUpdateClient {
-  func updateName(memberID: String, name: String) async throws -> Member {
+public actor DefaultMemberUpdateClient: MemberUpdateClient {
+  public init() {}
+
+  public func updateName(memberID: String, name: String) async throws -> Member {
     let db = Firestore.firestore()
     let memberRef = db.collection("members").document(memberID)
 
@@ -58,7 +60,7 @@ actor DefaultMemberUpdateClient: MemberUpdateClient {
     return member
   }
 
-  func updateIcon(memberID: String, iconPath: String?) async throws -> Member {
+  public func updateIcon(memberID: String, iconPath: String?) async throws -> Member {
     let db = Firestore.firestore()
     let memberRef = db.collection("members").document(memberID)
 
@@ -94,7 +96,9 @@ actor DefaultMemberUpdateClient: MemberUpdateClient {
     return member
   }
 
-  func updateProfile(memberID: String, name: String, iconPath: String?) async throws -> Member {
+  public func updateProfile(memberID: String, name: String, iconPath: String?) async throws
+    -> Member
+  {
     let db = Firestore.firestore()
     let memberRef = db.collection("members").document(memberID)
 
@@ -128,7 +132,7 @@ actor DefaultMemberUpdateClient: MemberUpdateClient {
     return member
   }
 
-  func postAgreement(memberID: String) async throws -> Member {
+  public func postAgreement(memberID: String) async throws -> Member {
     let db = Firestore.firestore()
     let memberRef = db.collection("members").document(memberID)
 

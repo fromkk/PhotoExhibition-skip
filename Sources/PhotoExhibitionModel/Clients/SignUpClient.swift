@@ -8,16 +8,18 @@ import Foundation
   @preconcurrency import FirebaseFirestore
 #endif
 
-protocol SignUpClient: Sendable {
+public protocol SignUpClient: Sendable {
   func signUp(email: String, password: String) async throws -> Member
 }
 
-enum SignUpClientError: Error, Sendable {
+public enum SignUpClientError: Error, Sendable {
   case invalidData
 }
 
-actor DefaultSignUpClient: SignUpClient {
-  func signUp(email: String, password: String) async throws -> Member {
+public actor DefaultSignUpClient: SignUpClient {
+  public init() {}
+
+  public func signUp(email: String, password: String) async throws -> Member {
     let user = try await Auth.auth().createUser(withEmail: email, password: password).user
     let uid = user.uid
 

@@ -4,12 +4,14 @@
   @preconcurrency import FirebaseFirestore
 #endif
 
-protocol MembersClient: Sendable {
+public protocol MembersClient: Sendable {
   func fetch(_ UIDs: [String]) async throws -> [Member]
 }
 
-actor DefaultMembersClient: MembersClient {
-  func fetch(_ UIDs: [String]) async throws -> [Member] {
+public actor DefaultMembersClient: MembersClient {
+  public init() {}
+
+  public func fetch(_ UIDs: [String]) async throws -> [Member] {
     let db = Firestore.firestore()
     // Firestoreでは一度に30件までしかin句で検索できないため、バッチ処理を行う
     var allMembers: [Member] = []

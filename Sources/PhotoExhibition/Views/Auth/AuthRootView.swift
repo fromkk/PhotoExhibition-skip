@@ -1,3 +1,4 @@
+import PhotoExhibitionModel
 import SwiftUI
 
 #if !SKIP

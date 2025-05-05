@@ -4,7 +4,7 @@
   import FirebaseAnalytics
 #endif
 
-enum AnalyticsEvents: String, Sendable {
+public enum AnalyticsEvents: String, Sendable {
   case screenView = "screen_view"
   case signUp = "sign_up"
   case signIn = "sign_in"
@@ -18,17 +18,19 @@ enum AnalyticsEvents: String, Sendable {
   case photoViewed = "photo_viewed"
 }
 
-protocol AnalyticsClient: Sendable {
+public protocol AnalyticsClient: Sendable {
   func send(_ event: AnalyticsEvents, parameters: [String: any Sendable]) async
   func analyticsScreen(name: String) async
 }
 
-actor DefaultAnalyticsClient: AnalyticsClient {
-  func send(_ event: AnalyticsEvents, parameters: [String: any Sendable]) async {
+public actor DefaultAnalyticsClient: AnalyticsClient {
+  public init() {}
+
+  public func send(_ event: AnalyticsEvents, parameters: [String: any Sendable]) async {
     Analytics.logEvent(event.rawValue, parameters: parameters)
   }
 
-  func analyticsScreen(name: String) async {
+  public func analyticsScreen(name: String) async {
     Analytics.logEvent(
       AnalyticsEvents.screenView.rawValue,
       parameters: [

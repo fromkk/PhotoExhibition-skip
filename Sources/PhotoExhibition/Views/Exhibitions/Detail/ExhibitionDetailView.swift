@@ -1,5 +1,6 @@
 import Foundation
 import OSLog
+import PhotoExhibitionModel
 import SkipKit
 import SwiftUI
 
@@ -574,7 +575,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
 #if !SKIP
   extension Photo: Transferable {
-    static var transferRepresentation: some TransferRepresentation {
+    public static var transferRepresentation: some TransferRepresentation {
       CodableRepresentation(for: Photo.self, contentType: .photo)
     }
   }

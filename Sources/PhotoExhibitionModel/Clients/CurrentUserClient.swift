@@ -4,28 +4,34 @@
   import FirebaseAuth
 #endif
 
-struct User: Hashable {
-  let uid: String
+public struct User: Hashable {
+  public let uid: String
+
+  public init(uid: String) {
+    self.uid = uid
+  }
 }
 
-protocol CurrentUserClient {
+public protocol CurrentUserClient {
   func currentUser() -> User?
   func logout() throws
   @MainActor func deleteAccount() async throws
 }
 
-final class DefaultCurrentUserClient: CurrentUserClient {
-  func currentUser() -> User? {
+public final class DefaultCurrentUserClient: CurrentUserClient {
+  public init() {}
+
+  public func currentUser() -> User? {
     guard let uid = Auth.auth().currentUser?.uid else { return nil }
     return User(uid: uid)
   }
 
-  func logout() throws {
+  public func logout() throws {
     try Auth.auth().signOut()
   }
 
   @MainActor
-  func deleteAccount() async throws {
+  public func deleteAccount() async throws {
     try await Auth.auth().currentUser?.delete()
   }
 }

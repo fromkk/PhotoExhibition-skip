@@ -7,20 +7,20 @@ import Foundation
 #endif
 
 // 写真情報
-struct Photo: Hashable, Sendable, Identifiable, Codable {
-  let id: String
-  let path: String?
-  let path_256x256: String?
-  let path_512x512: String?
-  let path_1024x1024: String?
-  let title: String?
-  let description: String?
-  let metadata: String?
-  let sort: Int
-  let createdAt: Date
-  let updatedAt: Date
+public struct Photo: Hashable, Sendable, Identifiable, Codable {
+  public let id: String
+  public let path: String?
+  public let path_256x256: String?
+  public let path_512x512: String?
+  public let path_1024x1024: String?
+  public let title: String?
+  public let description: String?
+  public let metadata: String?
+  public let sort: Int
+  public let createdAt: Date
+  public let updatedAt: Date
 
-  init(
+  public init(
     id: String,
     path: String?,
     path_256x256: String? = nil,
@@ -46,7 +46,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.updatedAt = updatedAt
   }
 
-  init?(documentID: String, data: [String: Any]) {
+  public init?(documentID: String, data: [String: Any]) {
     guard let createdAtTimestamp = data["createdAt"] as? Timestamp,
       let updatedAtTimestamp = data["updatedAt"] as? Timestamp
     else {
@@ -66,7 +66,7 @@ struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.updatedAt = updatedAtTimestamp.dateValue()
   }
 
-  var imagePath: String? {
+  public var imagePath: String? {
     return path_1024x1024 ?? path_512x512 ?? path_256x256 ?? path
   }
 }

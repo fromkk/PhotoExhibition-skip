@@ -1,4 +1,5 @@
 import Foundation
+import PhotoExhibitionModel
 import SwiftUI
 
 #if canImport(Observation)
