@@ -1,1 +1,1 @@
-- Add support keyboard shortcut on photo detail view
+- Replace from 'footprint' to 'watched'
