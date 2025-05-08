@@ -627,6 +627,17 @@
         }
       }
     },
+    "limited" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "限定公開"
+          }
+        }
+      }
+    },
     "Load more" : {
       "localizations" : {
         "ja" : {

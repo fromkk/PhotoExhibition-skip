@@ -225,7 +225,7 @@ final class ExhibitionsStore: Store, ExhibitionEditStoreDelegate {
         let exhibition = try await exhibitionsClient.get(id: exhibitionId)
 
         // 展示が非公開の場合は何もしない
-        guard exhibition.status == .published else {
+        guard exhibition.status == .published || exhibition.status == .limited else {
           print("Exhibition is not published: \(exhibitionId)")
           return
         }
