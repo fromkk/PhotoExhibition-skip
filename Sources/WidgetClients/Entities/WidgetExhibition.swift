@@ -2,16 +2,28 @@ import FirebaseFirestore
 import Foundation
 import SwiftUI
 
-// 展示状態（draft: 下書き, published: 公開, banned: 管理者によるBAN）
+// 展示状態（draft: 下書き, published: 公開, limited: 限定公開, banned: 管理者によるBAN）
 public enum WidgetExhibitionStatus: String, Hashable, Sendable, Codable, CaseIterable, Identifiable
 {
   case draft
   case published
+  case limited
   case banned
+  case unknown
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    let stringValue = try container.decode(String.self)
+    if let rawValue = WidgetExhibitionStatus(rawValue: stringValue) {
+      self = rawValue
+    } else {
+      self = .unknown
+    }
+  }
 
   public var id: String { rawValue }
 
-  public static let editableCases: [Self] = [.draft, .published]
+  public static let editableCases: [Self] = [.draft, .published, .limited]
 
   public var localizedKey: LocalizedStringKey {
     LocalizedStringKey(rawValue)
