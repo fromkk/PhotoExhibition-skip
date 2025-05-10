@@ -1,3 +1,4 @@
+import QuickLook
 import SwiftUI
 import Viewer
 
@@ -86,6 +87,14 @@ struct ExhibitionDetailView: View {
         LazyVGrid(columns: Array(repeating: GridItem(), count: 3)) {
           ForEach(store.photos, id: \.self) { itemStore in
             PhotoItemView(store: itemStore) {
+
+              if let imageURL = itemStore.imageURL, imageURL.isSpatialPhoto {
+                let previewItem = PreviewItem(
+                  url: imageURL, displayName: itemStore.photo.title, editingMode: .disabled)
+                let _ = PreviewApplication.open(items: [previewItem])
+                return
+              }
+
               guard let imagePath = itemStore.photo.imagePath else {
                 return
               }
