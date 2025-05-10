@@ -312,7 +312,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
 
     // 一意のIDを生成
     let photoId = UUID().uuidString
-    let photoPath = "exhibitions/\(exhibition.id)/photos/\(photoId)"
+    let ext = url.pathExtension.isEmpty ? "jpg" : url.pathExtension
+    let photoPath = "exhibitions/\(exhibition.id)/photos/\(photoId).\(ext)"
 
     // 先に写真情報をFirestoreに保存（パスのみ）
     let initialPhoto = try await photoClient.addPhoto(
