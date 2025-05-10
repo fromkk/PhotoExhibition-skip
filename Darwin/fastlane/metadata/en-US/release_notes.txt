@@ -1,1 +1,2 @@
-- Replace from 'footprint' to 'watched'
+Added support for uploading 'HEIC' image files.
+Added a 'limited' status to exhibitions.
