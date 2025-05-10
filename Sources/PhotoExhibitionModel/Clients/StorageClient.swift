@@ -29,10 +29,17 @@ public actor DefaultStorageClient: StorageClient {
     let storage = Storage.storage()
     let reference = storage.reference().child(path)
     let metadata = StorageMetadata()
-    if url.pathExtension == "png" {
+    switch url.pathExtension {
+    case "png":
       metadata.contentType = "image/png"
-    } else {
+    case "jpg", "jpeg":
       metadata.contentType = "image/jpeg"
+    case "gif":
+      metadata.contentType = "image/gif"
+    case "heic":
+      metadata.contentType = "image/heic"
+    default:
+      break
     }
     _ = try await reference.putFileAsync(from: url, metadata: metadata)
     return try await reference.downloadURL()
