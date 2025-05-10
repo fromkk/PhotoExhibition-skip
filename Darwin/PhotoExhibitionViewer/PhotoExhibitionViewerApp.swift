@@ -4,13 +4,15 @@ import Viewer
 
 @main
 struct PhotoExhibitionViewerApp: App {
+  @State var contentStore: ContentStore = .init()
+
   init() {
     FirebaseApp.configure()
   }
 
   var body: some Scene {
     WindowGroup {
-      ContentView()
+      ContentView(store: contentStore)
     }
 
     WindowGroup(id: "PhotoDetail", for: ImagePaths.self) { $imagePaths in

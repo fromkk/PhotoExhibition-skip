@@ -65,6 +65,37 @@ final class ExhibitionsStore: Store {
       }
     }
   }
+
+  func showExhibitionDetail(exhibitionId: String) {
+    Task {
+      do {
+        // 展示会の詳細を取得
+        let exhibition = try await exhibitionsClient.get(exhibitionId)
+
+        // 展示が非公開の場合は何もしない
+        guard exhibition.status == .published || exhibition.status == .limited else {
+          print("Exhibition is not published: \(exhibitionId)")
+          return
+        }
+
+        // 展示の期間外の場合は何もしない
+        let now = Date()
+        guard exhibition.from <= now && now <= exhibition.to else {
+          print("Exhibition is not active: \(exhibitionId)")
+          return
+        }
+
+        // メインスレッドで展示会の詳細画面を表示
+        await MainActor.run {
+          selectedExhibitionStore = .init(
+            exhibition: exhibition, photosClient: PhotosClient.liveValue,
+            imageClient: StorageImageCache.shared)
+        }
+      } catch {
+        print("Failed to fetch exhibition: \(error.localizedDescription)")
+      }
+    }
+  }
 }
 
 struct ExhibitionsView: View {
@@ -114,7 +145,7 @@ struct ExhibitionsView: View {
 #Preview {
   ExhibitionsView(
     store: ExhibitionsStore(
-      exhibitionsClient: ExhibitionsClient(fetch: { _, _ in ([], nil) }),
+      exhibitionsClient: ExhibitionsClient(fetch: { _, _ in ([], nil) }, get: { _ in .test }),
       imageClient: StorageImageCache.shared
     ))
 }
