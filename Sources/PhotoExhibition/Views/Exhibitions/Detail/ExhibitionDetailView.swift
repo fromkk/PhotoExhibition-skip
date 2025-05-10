@@ -495,6 +495,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
           ext = "jpg"
         case .png:
           ext = "png"
+        case .heic:
+          ext = "heic"
         default:
           // サポートされていない画像形式のエラーを表示
           throw ImageFormatError.unknownImageFormat

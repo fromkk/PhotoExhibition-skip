@@ -1,8 +1,10 @@
-import Foundation
-
 #if !SKIP
+  import CoreImage
+  import Foundation
+  import UniformTypeIdentifiers
+
   enum ImageFormat {
-    case unknown, png, jpeg, gif
+    case unknown, png, jpeg, gif, heic
   }
 
   enum ImageFormatError: Error {
@@ -14,7 +16,9 @@ import Foundation
       switch self {
       case .unknownImageFormat:
         return String(
-          localized: "Unsupported image format. Please select a JPEG, PNG, or GIF image.")
+          localized:
+            "Unsupported image format. Please select a JPEG, PNG, GIF or HEIC image."
+        )
       }
     }
   }
@@ -40,7 +44,20 @@ import Foundation
       {
         return .gif
       }
-      return .unknown
+
+      guard let src = CGImageSourceCreateWithData(self as CFData, nil) else {
+        return .unknown
+      }
+
+      // HEIC/HEIF であることを確認
+      guard
+        let uti = CGImageSourceGetType(src) as? String,
+        UTType(uti)?.conforms(to: .heic) ?? false
+      else {
+        return .unknown
+      }
+
+      return .heic
     }
   }
 #endif
