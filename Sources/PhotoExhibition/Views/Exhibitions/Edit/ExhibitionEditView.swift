@@ -243,9 +243,10 @@ final class ExhibitionEditStore: Store {
     // カバー画像をアップロードする（新しい画像が選択されている場合のみ）
     if let pickedImageURL = pickedImageURL, let exhibitionId = exhibitionId {
       do {
-        let fileName =
-          "cover." + (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
-        let storagePath = "exhibitions/\(exhibitionId)/\(fileName)"
+        let ext = (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
+        let fileName = "cover.\(ext)"
+        let directoryPath = "exhibitions/\(exhibitionId)"
+        let storagePath = "\(directoryPath)/\(fileName)"
 
         // 画像をアップロード
         try await storageClient.upload(from: pickedImageURL, to: storagePath)
@@ -258,6 +259,14 @@ final class ExhibitionEditStore: Store {
         ]
 
         try await exhibitionsClient.update(id: exhibitionId, data: updateData)
+        // すでにキャッシュがある場合は削除する
+        let paths: [String] = [
+          storagePath,
+          "\(directoryPath)/thumbnails/cover_256x256.\(ext)",
+          "\(directoryPath)/thumbnails/cover_512x512.\(ext)",
+          "\(directoryPath)/thumbnails/cover_1024x1024.\(ext)",
+        ]
+        try await imageCache.removeCache(for: paths)
       } catch {
         logger.error("Failed to upload cover image: \(error.localizedDescription)")
         // 画像アップロードに失敗しても、展示会自体は作成/更新されているので、エラーはスローしない

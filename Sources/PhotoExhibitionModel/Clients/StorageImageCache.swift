@@ -7,6 +7,9 @@ public protocol StorageImageCacheProtocol: Sendable {
 
   /// キャッシュをクリアする
   func clearCache() async
+
+  /// パスのキャッシュを削除する
+  func removeCache(for paths: [String]) async throws
 }
 
 /// 画像データをローカルにキャッシュするためのクライアント
@@ -114,6 +117,19 @@ public final actor StorageImageCache: StorageImageCacheProtocol {
       }
     } catch {
       print("Failed to clear cache: \(error.localizedDescription)")
+    }
+  }
+
+  public func removeCache(for paths: [String]) async throws {
+    // ローカルにファイルが保存済みか確認
+    let cacheDirectory = try getCacheDirectory()
+    for path in paths {
+      let fileName = path.replacingOccurrences(of: "/", with: "_")
+      let fileURL = cacheDirectory.appendingPathComponent(fileName)
+      if fileManager.fileExists(atPath: fileURL.path) {
+        try fileManager.removeItem(at: fileURL)
+      }
+      cache.removeValue(forKey: path)
     }
   }
 }
