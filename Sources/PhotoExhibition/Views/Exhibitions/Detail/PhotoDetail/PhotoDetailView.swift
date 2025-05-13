@@ -16,6 +16,11 @@ protocol PhotoDetailStoreDelegate: AnyObject {
   )
 }
 
+enum SpatialPhotoMode {
+  case `default`
+  case overlay
+}
+
 @Observable
 @MainActor
 final class PhotoDetailStore: Store {
@@ -44,7 +49,17 @@ final class PhotoDetailStore: Store {
   // デリゲートを追加
   weak var delegate: (any PhotoDetailStoreDelegate)?
 
-  var imageURL: URL? = nil
+  var imageURL: URL? = nil {
+    didSet {
+      #if !SKIP
+        if let imageURL {
+          imageData = try? Data(contentsOf: imageURL)
+        } else {
+          imageData = nil
+        }
+      #endif
+    }
+  }
   var isLoading: Bool = false
   var showEditSheet: Bool = false
   var showDeleteConfirmation: Bool = false
@@ -52,6 +67,61 @@ final class PhotoDetailStore: Store {
   var isDeleted: Bool = false
   var shouldResetZoom: Bool = false
   var isUIVisible: Bool = true
+
+  var imageData: Data? {
+    didSet {
+      #if !SKIP
+        let isSpatialPhoto = imageData?.isSpatialPhoto ?? false
+        if isSpatialPhoto {
+          if let (left, right) = imageData?.splitImages {
+            self.leftImage = left
+            self.rightImage = right
+          } else {
+            self.leftImage = nil
+            self.rightImage = nil
+          }
+        } else {
+          self.leftImage = nil
+          self.rightImage = nil
+        }
+        self.isSpatialPhoto = isSpatialPhoto
+        self.orientation =
+          switch imageData?.orientation {
+          case .up:
+            .up
+          case .left:
+            .left
+          case .leftMirrored:
+            .leftMirrored
+          case .right:
+            .right
+          case .rightMirrored:
+            .rightMirrored
+          case .down:
+            .down
+          case .downMirrored:
+            .downMirrored
+          case .upMirrored:
+            .upMirrored
+          case .none:
+            .up
+          }
+      #endif
+    }
+  }
+  #if !SKIP
+    var orientation: Image.Orientation = .up
+    var spatialPhotoMode: SpatialPhotoMode = .default
+    var isSpatialPhoto: Bool = false
+    var leftImage: CGImage?
+    var rightImage: CGImage?
+    var motionManager: MotionManager = .init()
+    var adjustedValue: CGFloat {
+      // value = 0 (左傾き), 0.015 (中央), 0.03 (右傾き) にマッピング
+      let normalizedValue = min(max((motionManager.deviceTilt + .pi / 4) / (.pi / 2), 0), 1)
+      return 0.025 + (normalizedValue - 0.5) * 0.05
+    }
+  #endif
 
   // 複数写真の管理用
   var photos: [Photo] = []
@@ -318,174 +388,42 @@ struct PhotoDetailView: View {
         Color.black.ignoresSafeArea()
 
         // 写真表示
-        if let imageURL = store.imageURL {
-          AsyncImage(url: imageURL) { phase in
-            switch phase {
-            case .success(let image):
-              image
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .scaleEffect(scale)
-                .offset(offset)
-                #if !SKIP
-                  .gesture(
-                    // ピンチジェスチャーで拡大縮小
-                    MagnificationGesture()
-                      .onChanged { value in
-                        // valueをDoubleに明示的に変換してからCGFloatに変換
-                        let magnitudeDouble = Double(value.magnitude)
-                        let magnitudeValue = CGFloat(magnitudeDouble)
-                        let newScale = lastScale * magnitudeValue
-                        // 1.0〜5.0の範囲に制限
-                        scale = min(max(newScale, CGFloat(1.0)), CGFloat(5.0))
-                      }
-                      .onEnded { _ in
-                        lastScale = scale
-                        // スケールが1.0未満なら1.0に戻す
-                        if scale < CGFloat(1.0) {
-                          scale = CGFloat(1.0)
-                          lastScale = CGFloat(1.0)
-                        }
-                        // スケールが5.0を超えたら5.0に制限
-                        if scale > CGFloat(5.0) {
-                          scale = CGFloat(5.0)
-                          lastScale = CGFloat(5.0)
-                        }
-                        // スケールが1.0になったら位置もリセット
-                        if scale <= CGFloat(1.0) {
-                          withAnimation(.spring()) {
-                            offset = .zero
-                            lastOffset = .zero
-                          }
-                        }
-                      }
+        if store.imageURL != nil {
+          #if !SKIP
+            if store.isSpatialPhoto, store.spatialPhotoMode == .overlay,
+              let leftImage = store.leftImage, let rightImage = store.rightImage
+            {
+              ZStack {
+                GeometryReader { proxy in
+                  Image(
+                    decorative: leftImage,
+                    scale: 1,
+                    orientation: store.orientation
                   )
-                  .simultaneousGesture(
-                    // ドラッグジェスチャーでスクロール（拡大時のみ有効）
-                    DragGesture()
-                      .onChanged { value in
-                        // 拡大時のみスクロールを有効にする
-                        if scale > CGFloat(1.0) {
-                          offset = CGSize(
-                            width: lastOffset.width + value.translation.width,
-                            height: lastOffset.height + value.translation.height
-                          )
-                        }
-                      }
-                      .onEnded { _ in
-                        lastOffset = offset
-                      }
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .offset(x: -proxy.size.width * store.adjustedValue)
+
+                  Image(
+                    decorative: rightImage,
+                    scale: 1,
+                    orientation: store.orientation
                   )
-                  // 水平方向のスワイプジェスチャー（拡大していない時のみ有効）
-                  .simultaneousGesture(
-                    DragGesture(minimumDistance: 20, coordinateSpace: .local)
-                      .onChanged { value in
-                        // 拡大していない時のみスワイプを有効にする
-                        if scale <= CGFloat(1.0) {
-                          dragOffset = value.translation.width
-                        }
-                      }
-                      .onEnded { value in
-                        // スワイプの方向と距離に基づいて写真を切り替え
-                        if scale <= CGFloat(1.0) {
-                          let threshold: CGFloat = 50
-                          if dragOffset > threshold {
-                            // 右にスワイプ -> 前の写真
-                            store.send(.showPreviousPhoto)
-                          } else if dragOffset < -threshold {
-                            // 左にスワイプ -> 次の写真
-                            store.send(.showNextPhoto)
-                          }
-                          dragOffset = 0
-                        }
-                      }
-                  )
-                  // ダブルタップでリセット
-                  .onTapGesture(count: 2) {
-                    resetZoom()
-                  }
-                #else
-                  .gesture(
-                    DragGesture(minimumDistance: 20, coordinateSpace: .local)
-                      .onChanged { value in
-                        // 拡大していない時のみスワイプを有効にする
-                        if scale <= CGFloat(1.0) {
-                          dragOffset = value.translation.width
-                        }
-                      }
-                      .onEnded { value in
-                        // スワイプの方向と距離に基づいて写真を切り替え
-                        if scale <= CGFloat(1.0) {
-                          let threshold: CGFloat = 50
-                          if dragOffset > threshold {
-                            // 右にスワイプ -> 前の写真
-                            store.send(.showPreviousPhoto)
-                          } else if dragOffset < -threshold {
-                            // 左にスワイプ -> 次の写真
-                            store.send(.showNextPhoto)
-                          }
-                          dragOffset = 0
-                        }
-                      }
-                  )
-                #endif
-                .gesture(
-                  DragGesture(minimumDistance: 20, coordinateSpace: .global)
-                    .onChanged { value in
-                      // 拡大していない時のみスワイプを有効にする
-                      if scale <= CGFloat(1.0) {
-                        // 下方向のスワイプを検出
-                        if value.translation.height > 0
-                          && abs(value.translation.width)
-                            < abs(value.translation.height)
-                        {
-                          offset = CGSize(
-                            width: 0,
-                            height: value.translation.height
-                          )
-                        }
-                      }
-                    }
-                    .onEnded { value in
-                      // スワイプの方向と距離に基づいて画面を閉じる
-                      if scale <= CGFloat(1.0) {
-                        let threshold: CGFloat = 100
-                        if value.translation.height > threshold
-                          && abs(value.translation.width)
-                            < abs(value.translation.height)
-                        {
-                          dismiss()
-                        } else {
-                          // スワイプが閾値に達していない場合は元の位置に戻す
-                          withAnimation(.spring()) {
-                            offset = .zero
-                          }
-                        }
-                      }
-                    }
-                )
-                .onTapGesture {
-                  withAnimation {
-                    store.send(.toggleUIVisible)
-                  }
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .opacity(0.5)
+                  .offset(x: proxy.size.width * store.adjustedValue)
+                  .blendMode(.normal)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .failure:
-              Image(
-                systemName: SystemImageMapping.getIconName(
-                  from: "exclamationmark.triangle"
-                )
-              )
-              .font(.largeTitle)
-              .foregroundStyle(.white)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .empty:
-              ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            @unknown default:
-              Color.clear
+                .compositingGroup()
+              }
+              .aspectRatio(1, contentMode: .fit)
+            } else {
+              asyncImage
             }
-          }
+          #else
+            asyncImage
+          #endif
         } else if store.isLoading {
           ProgressView()
         } else {
@@ -574,6 +512,27 @@ struct PhotoDetailView: View {
                 }
                 .accessibilityLabel(Text("Information"))
                 .keyboardShortcut("i", modifiers: [.command])
+              }
+            #endif
+
+            #if !SKIP
+              if store.isSpatialPhoto {
+                switch store.spatialPhotoMode {
+                case .default:
+                  Button {
+                    store.spatialPhotoMode = .overlay
+                  } label: {
+                    Image(systemName: "sparkles")
+                  }
+                  .accessibilityLabel("Switch to spatial photo mode")
+                case .overlay:
+                  Button {
+                    store.spatialPhotoMode = .default
+                  } label: {
+                    Image(systemName: "photo")
+                  }
+                  .accessibilityLabel("Switch to default photo mode")
+                }
               }
             #endif
 
@@ -807,6 +766,177 @@ struct PhotoDetailView: View {
     ) {
       if let reportStore = store.reportStore {
         ReportView(store: reportStore)
+      }
+    }
+  }
+
+  var asyncImage: some View {
+    AsyncImage(url: store.imageURL) { phase in
+      switch phase {
+      case .success(let image):
+        image
+          .resizable()
+          .aspectRatio(contentMode: .fit)
+          .scaleEffect(scale)
+          .offset(offset)
+          #if !SKIP
+            .gesture(
+              // ピンチジェスチャーで拡大縮小
+              MagnificationGesture()
+                .onChanged { value in
+                  // valueをDoubleに明示的に変換してからCGFloatに変換
+                  let magnitudeDouble = Double(value.magnitude)
+                  let magnitudeValue = CGFloat(magnitudeDouble)
+                  let newScale = lastScale * magnitudeValue
+                  // 1.0〜5.0の範囲に制限
+                  scale = min(max(newScale, CGFloat(1.0)), CGFloat(5.0))
+                }
+                .onEnded { _ in
+                  lastScale = scale
+                  // スケールが1.0未満なら1.0に戻す
+                  if scale < CGFloat(1.0) {
+                    scale = CGFloat(1.0)
+                    lastScale = CGFloat(1.0)
+                  }
+                  // スケールが5.0を超えたら5.0に制限
+                  if scale > CGFloat(5.0) {
+                    scale = CGFloat(5.0)
+                    lastScale = CGFloat(5.0)
+                  }
+                  // スケールが1.0になったら位置もリセット
+                  if scale <= CGFloat(1.0) {
+                    withAnimation(.spring()) {
+                      offset = .zero
+                      lastOffset = .zero
+                    }
+                  }
+                }
+            )
+            .simultaneousGesture(
+              // ドラッグジェスチャーでスクロール（拡大時のみ有効）
+              DragGesture()
+                .onChanged { value in
+                  // 拡大時のみスクロールを有効にする
+                  if scale > CGFloat(1.0) {
+                    offset = CGSize(
+                      width: lastOffset.width + value.translation.width,
+                      height: lastOffset.height
+                        + value.translation.height
+                    )
+                  }
+                }
+                .onEnded { _ in
+                  lastOffset = offset
+                }
+            )
+            // 水平方向のスワイプジェスチャー（拡大していない時のみ有効）
+            .simultaneousGesture(
+              DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                .onChanged { value in
+                  // 拡大していない時のみスワイプを有効にする
+                  if scale <= CGFloat(1.0) {
+                    dragOffset = value.translation.width
+                  }
+                }
+                .onEnded { value in
+                  // スワイプの方向と距離に基づいて写真を切り替え
+                  if scale <= CGFloat(1.0) {
+                    let threshold: CGFloat = 50
+                    if dragOffset > threshold {
+                      // 右にスワイプ -> 前の写真
+                      store.send(.showPreviousPhoto)
+                    } else if dragOffset < -threshold {
+                      // 左にスワイプ -> 次の写真
+                      store.send(.showNextPhoto)
+                    }
+                    dragOffset = 0
+                  }
+                }
+            )
+            // ダブルタップでリセット
+            .onTapGesture(count: 2) {
+              resetZoom()
+            }
+          #else
+            .gesture(
+              DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                .onChanged { value in
+                  // 拡大していない時のみスワイプを有効にする
+                  if scale <= CGFloat(1.0) {
+                    dragOffset = value.translation.width
+                  }
+                }
+                .onEnded { value in
+                  // スワイプの方向と距離に基づいて写真を切り替え
+                  if scale <= CGFloat(1.0) {
+                    let threshold: CGFloat = 50
+                    if dragOffset > threshold {
+                      // 右にスワイプ -> 前の写真
+                      store.send(.showPreviousPhoto)
+                    } else if dragOffset < -threshold {
+                      // 左にスワイプ -> 次の写真
+                      store.send(.showNextPhoto)
+                    }
+                    dragOffset = 0
+                  }
+                }
+            )
+          #endif
+          .gesture(
+            DragGesture(minimumDistance: 20, coordinateSpace: .global)
+              .onChanged { value in
+                // 拡大していない時のみスワイプを有効にする
+                if scale <= CGFloat(1.0) {
+                  // 下方向のスワイプを検出
+                  if value.translation.height > 0
+                    && abs(value.translation.width)
+                      < abs(value.translation.height)
+                  {
+                    offset = CGSize(
+                      width: 0,
+                      height: value.translation.height
+                    )
+                  }
+                }
+              }
+              .onEnded { value in
+                // スワイプの方向と距離に基づいて画面を閉じる
+                if scale <= CGFloat(1.0) {
+                  let threshold: CGFloat = 100
+                  if value.translation.height > threshold
+                    && abs(value.translation.width)
+                      < abs(value.translation.height)
+                  {
+                    dismiss()
+                  } else {
+                    // スワイプが閾値に達していない場合は元の位置に戻す
+                    withAnimation(.spring()) {
+                      offset = .zero
+                    }
+                  }
+                }
+              }
+          )
+          .onTapGesture {
+            withAnimation {
+              store.send(.toggleUIVisible)
+            }
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+      case .failure:
+        Image(
+          systemName: SystemImageMapping.getIconName(
+            from: "exclamationmark.triangle"
+          )
+        )
+        .font(.largeTitle)
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      case .empty:
+        ProgressView()
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+      @unknown default:
+        Color.clear
       }
     }
   }

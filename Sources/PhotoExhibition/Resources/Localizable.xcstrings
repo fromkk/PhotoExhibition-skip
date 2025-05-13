@@ -1081,6 +1081,12 @@
         }
       }
     },
+    "Switch to default photo mode" : {
+
+    },
+    "Switch to spatial photo mode" : {
+
+    },
     "Terms of Service" : {
       "localizations" : {
         "ja" : {
