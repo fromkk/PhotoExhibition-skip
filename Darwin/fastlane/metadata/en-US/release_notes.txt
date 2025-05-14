@@ -1,1 +1,2 @@
-supported show spatial photo
+- Supported show spatial photos
+- Bug fixes
