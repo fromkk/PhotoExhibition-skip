@@ -119,7 +119,7 @@ final class PhotoDetailStore: Store {
     var adjustedValue: CGFloat {
       // value = 0 (左傾き), 0.015 (中央), 0.03 (右傾き) にマッピング
       let normalizedValue = min(max((motionManager.deviceTilt + .pi / 4) / (.pi / 2), 0), 1)
-      return 0.025 + (normalizedValue - 0.5) * 0.05
+      return 0.015 + (normalizedValue - 0.5) * 0.03
     }
   #endif
 

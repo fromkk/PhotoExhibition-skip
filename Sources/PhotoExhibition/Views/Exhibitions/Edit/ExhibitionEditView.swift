@@ -47,8 +47,8 @@ final class ExhibitionEditStore: Store {
 
   var name: String = ""
   var description: String = ""
-  var from: Date = Date().addingTimeInterval(60 * 60 * 24)  // 1日後
-  var to: Date = Date().addingTimeInterval(60 * 60 * 24 * 8)  // 8日後
+  var from: Date = Date()
+  var to: Date = Date().addingTimeInterval(60 * 60 * 24 * 7)  // 8日後
 
   var status: ExhibitionStatus = .draft
 
