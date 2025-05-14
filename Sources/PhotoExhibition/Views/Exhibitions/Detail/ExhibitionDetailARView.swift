@@ -50,12 +50,13 @@
 
       // Create and configure session configuration
       let configuration = ARWorldTrackingConfiguration()
-      configuration.sceneReconstruction = .meshWithClassification
+      if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {
+        configuration.sceneReconstruction = .meshWithClassification
+      } else if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
+        configuration.sceneReconstruction = .mesh
+      }
       configuration.planeDetection = [.vertical]
       configuration.isLightEstimationEnabled = true
-
-      // メッシュ化とオブジェクトの分類
-      configuration.sceneReconstruction = .meshWithClassification
 
       // オクルージョンを有効化
       if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
