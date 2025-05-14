@@ -1,2 +1,1 @@
-Added support for uploading 'HEIC' image files.
-Added a 'limited' status to exhibitions.
+supported show spatial photo
