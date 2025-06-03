@@ -1228,7 +1228,7 @@ struct PhotoGridItem: View {
               case .success(let image):
                 image
                   .resizable()
-                  .scaledToFill()
+                  .aspectRatio(contentMode: .fill)
               case .failure:
                 ZStack {
                   Rectangle()

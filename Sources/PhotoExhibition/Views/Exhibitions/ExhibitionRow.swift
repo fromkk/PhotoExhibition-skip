@@ -30,9 +30,7 @@ struct ExhibitionRow: View {
             case .success(let image):
               image
                 .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .aspectRatio(contentMode: .fill)
             default:
               ProgressView()
             }
@@ -41,9 +39,9 @@ struct ExhibitionRow: View {
           ProgressView()
         }
       }
-      .frame(width: 60, height: 60)
+      .frame(width: 80, height: 80)
       .background(Color.gray.opacity(0.1))
-      .clipShape(RoundedRectangle(cornerRadius: 8))
+      .clipShape(RoundedRectangle(cornerRadius: 16))
 
       // Exhibition details
       VStack(alignment: .leading, spacing: 8) {
