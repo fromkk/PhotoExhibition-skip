@@ -17,7 +17,10 @@ import SwiftUI
   import Observation
 #endif
 
-private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionDetai")
+private let logger = Logger(
+  subsystem: Bundle.main.bundleIdentifier!,
+  category: "ExhibitionDetai"
+)
 
 // 展示会の写真の最大枚数
 private let maxExhibitionPhotos = 30
@@ -105,7 +108,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   var isARViewPresented: Bool = false
 
   var shareURL: URL {
-    URL(string: "https://\(Constants.hostingDomain)/exhibition/\(exhibition.id)")!
+    URL(
+      string: "https://\(Constants.hostingDomain)/exhibition/\(exhibition.id)"
+    )!
   }
 
   init(
@@ -145,7 +150,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     Task {
       await analyticsClient.analyticsScreen(name: "ExhibitionDetailView")
       await analyticsClient.send(
-        AnalyticsEvents.exhibitionViewed, parameters: ["exhibition_id": exhibition.id])
+        AnalyticsEvents.exhibitionViewed,
+        parameters: ["exhibition_id": exhibition.id]
+      )
     }
   }
 
@@ -201,7 +208,10 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       Task {
         for url in urls {
           do {
-            try await uploadPhoto(from: url, shouldShowEditSheet: urls.count == 1)
+            try await uploadPhoto(
+              from: url,
+              shouldShowEditSheet: urls.count == 1
+            )
           } catch {
             self.error = error
           }
@@ -259,7 +269,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     Task {
       do {
         // 訪問者数を取得
-        visitorCount = try await footprintClient.getVisitorCount(exhibitionId: exhibition.id)
+        visitorCount = try await footprintClient.getVisitorCount(
+          exhibitionId: exhibition.id
+        )
 
         // 現在のユーザーが足跡を残しているか確認
         if let currentUser = currentUserClient.currentUser() {
@@ -269,7 +281,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
           )
         }
       } catch {
-        logger.error("Failed to check footprint status: \(error.localizedDescription)")
+        logger.error(
+          "Failed to check footprint status: \(error.localizedDescription)"
+        )
       }
     }
   }
@@ -297,7 +311,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     Task {
       do {
         self.photos = try await photoClient.fetchPhotos(
-          exhibitionId: exhibition.id)
+          exhibitionId: exhibition.id
+        )
       } catch {
         print("Failed to load photos: \(error.localizedDescription)")
         self.error = error
@@ -307,7 +322,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     }
   }
 
-  private func uploadPhoto(from url: URL, shouldShowEditSheet: Bool) async throws {
+  private func uploadPhoto(from url: URL, shouldShowEditSheet: Bool)
+    async throws
+  {
     guard isOrganizer else { return }
 
     // 一意のIDを生成
@@ -342,7 +359,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
       // 画像アップロードに失敗した場合、Firestoreから写真データを削除
       print("Failed to upload photo: \(error.localizedDescription)")
       try? await photoClient.deletePhoto(
-        exhibitionId: exhibition.id, photoId: initialPhoto.id)
+        exhibitionId: exhibition.id,
+        photoId: initialPhoto.id
+      )
       throw error
     }
   }
@@ -415,7 +434,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   }
 
   func photoDetailStore(
-    _ store: PhotoDetailStore, didDeletePhoto photoId: String
+    _ store: PhotoDetailStore,
+    didDeletePhoto photoId: String
   ) {
     // 写真リストから削除
     photos.removeAll(where: { $0.id == photoId })
@@ -440,7 +460,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     Task {
       do {
         let updatedExhibition = try await exhibitionsClient.get(
-          id: exhibition.id)
+          id: exhibition.id
+        )
         self.exhibition = updatedExhibition
 
         // カバー画像も再読み込み
@@ -488,27 +509,33 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   #if !SKIP
     func moveImageToTempURL(_ item: PhotosPickerItem) async throws -> URL? {
       if let data = try await item.loadTransferable(type: Data.self) {
-        let ext: String
-        switch data.imageFormat {
-        case .gif:
-          ext = "gif"
-        case .jpeg:
-          ext = "jpg"
-        case .png:
-          ext = "png"
-        case .heic:
-          ext = "heic"
-        default:
-          // サポートされていない画像形式のエラーを表示
-          throw ImageFormatError.unknownImageFormat
-        }
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(
-          UUID().uuidString + "." + ext)
-        try data.write(to: tempURL)
-        return tempURL
+        return try moveImageToTempURL(data)
       } else {
         return nil
       }
+    }
+
+    func moveImageToTempURL(_ data: Data) throws -> URL {
+      let ext: String
+      switch data.imageFormat {
+      case .gif:
+        ext = "gif"
+      case .jpeg:
+        ext = "jpg"
+      case .png:
+        ext = "png"
+      case .heic:
+        ext = "heic"
+      default:
+        // サポートされていない画像形式のエラーを表示
+        throw ImageFormatError.unknownImageFormat
+      }
+      let tempURL = FileManager.default.temporaryDirectory
+        .appendingPathComponent(
+          UUID().uuidString + "." + ext
+        )
+      try data.write(to: tempURL)
+      return tempURL
     }
   #endif
 
@@ -520,7 +547,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     Task {
       do {
         // 訪問者数を取得
-        visitorCount = try await footprintClient.getVisitorCount(exhibitionId: exhibition.id)
+        visitorCount = try await footprintClient.getVisitorCount(
+          exhibitionId: exhibition.id
+        )
       } catch {
         logger.error("Failed to load footprints: \(error.localizedDescription)")
         self.error = error
@@ -543,14 +572,18 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
         )
 
         // 足跡の状態が変わったので、訪問者数を更新
-        visitorCount = try await footprintClient.getVisitorCount(exhibitionId: exhibition.id)
+        visitorCount = try await footprintClient.getVisitorCount(
+          exhibitionId: exhibition.id
+        )
 
         // 主催者の場合は足跡リストも更新
         if isOrganizer {
           loadFootprints()
         }
       } catch {
-        logger.error("Failed to toggle footprint: \(error.localizedDescription)")
+        logger.error(
+          "Failed to toggle footprint: \(error.localizedDescription)"
+        )
         self.error = error
       }
 
@@ -602,7 +635,8 @@ struct ExhibitionDetailView: View {
     ScrollView {
       // 写真グリッド表示
       LazyVGrid(
-        columns: [GridItem(.adaptive(minimum: 100, maximum: 150), spacing: 8)], spacing: 8
+        columns: [GridItem(.adaptive(minimum: 100, maximum: 150), spacing: 8)],
+        spacing: 8
       ) {
         Section {
           if store.isLoadingPhotos {
@@ -642,17 +676,25 @@ struct ExhibitionDetailView: View {
                         },
                         isTargeted: { status in
                           if let draggingItem, status, draggingItem != photo {
-                            if let sourceIndex = store.photos.firstIndex(where: {
-                              $0 == draggingItem
-                            }),
-                              let destinationIndex = store.photos.firstIndex(where: { $0 == photo })
+                            if let sourceIndex = store.photos.firstIndex(
+                              where: {
+                                $0 == draggingItem
+                              }),
+                              let destinationIndex = store.photos.firstIndex(
+                                where: { $0 == photo })
                             {
                               withAnimation(
                                 .bouncy,
                                 {
-                                  let sourceItem = store.photos.remove(at: sourceIndex)
-                                  store.photos.insert(sourceItem, at: destinationIndex)
-                                })
+                                  let sourceItem = store.photos.remove(
+                                    at: sourceIndex
+                                  )
+                                  store.photos.insert(
+                                    sourceItem,
+                                    at: destinationIndex
+                                  )
+                                }
+                              )
                             }
                           }
                         }
@@ -702,11 +744,19 @@ struct ExhibitionDetailView: View {
 
             // Date information
             VStack(alignment: .leading, spacing: 8) {
-              Label("Period", systemImage: SystemImageMapping.getIconName(from: "calendar"))
-                .font(.headline)
+              Label(
+                "Period",
+                systemImage: SystemImageMapping.getIconName(from: "calendar")
+              )
+              .font(.headline)
 
-              Text(formatDateRange(from: store.exhibition.from, to: store.exhibition.to))
-                .font(.subheadline)
+              Text(
+                formatDateRange(
+                  from: store.exhibition.from,
+                  to: store.exhibition.to
+                )
+              )
+              .font(.subheadline)
             }
 
             // Organizer information
@@ -716,8 +766,11 @@ struct ExhibitionDetailView: View {
                 store.send(.showOrganizerProfile)
               } label: {
                 VStack(alignment: .leading, spacing: 8) {
-                  Label("Organizer", systemImage: SystemImageMapping.getIconName(from: "person"))
-                    .font(.headline)
+                  Label(
+                    "Organizer",
+                    systemImage: SystemImageMapping.getIconName(from: "person")
+                  )
+                  .font(.headline)
                   Text(name)
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -756,9 +809,13 @@ struct ExhibitionDetailView: View {
                         .foregroundStyle(.secondary)
                     }
 
-                    Image(systemName: SystemImageMapping.getIconName(from: "chevron.right"))
-                      .font(.footnote)
-                      .foregroundStyle(.secondary)
+                    Image(
+                      systemName: SystemImageMapping.getIconName(
+                        from: "chevron.right"
+                      )
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                   }
                   #if !SKIP
                     .contentShape(Rectangle())
@@ -796,13 +853,17 @@ struct ExhibitionDetailView: View {
                         }
                       }
                       .padding(8)
-                      .foregroundStyle(store.hasAddedFootprint ? Color.gray : Color.accentColor)
+                      .foregroundStyle(
+                        store.hasAddedFootprint ? Color.gray : Color.accentColor
+                      )
                       .clipShape(RoundedRectangle(cornerRadius: 8))
                       .overlay {
                         RoundedRectangle(cornerRadius: 8)
                           .stroke(
-                            store.hasAddedFootprint ? Color.gray : Color.accentColor,
-                            style: StrokeStyle(lineWidth: 1))
+                            store.hasAddedFootprint
+                              ? Color.gray : Color.accentColor,
+                            style: StrokeStyle(lineWidth: 1)
+                          )
                       }
                     }
                     .buttonStyle(.plain)
@@ -832,7 +893,9 @@ struct ExhibitionDetailView: View {
                 #else
                   Label(
                     "Photos",
-                    systemImage: SystemImageMapping.getIconName(from: "photo.on.rectangle")
+                    systemImage: SystemImageMapping.getIconName(
+                      from: "photo.on.rectangle"
+                    )
                   )
                   .font(.headline)
                 #endif
@@ -852,7 +915,8 @@ struct ExhibitionDetailView: View {
                     .fullScreenCover(isPresented: $store.isARViewPresented) {
                       NavigationStack {
                         ExhibitionDetailARViewContainer(
-                          photos: store.photos, imageCache: store.imageCache
+                          photos: store.photos,
+                          imageCache: store.imageCache
                         )
                         .ignoresSafeArea()
                         .toolbar {
@@ -879,12 +943,17 @@ struct ExhibitionDetailView: View {
                   Button {
                     store.send(.addPhotoButtonTapped)
                   } label: {
-                    Label("Add", systemImage: SystemImageMapping.getIconName(from: "plus"))
-                      .font(.subheadline)
+                    Label(
+                      "Add",
+                      systemImage: SystemImageMapping.getIconName(from: "plus")
+                    )
+                    .font(.subheadline)
                   }
                   .disabled(
-                    store.photos.count >= maxExhibitionPhotos || store.isUploadingPhoto
-                      || store.isMovingPhotos)
+                    store.photos.count >= maxExhibitionPhotos
+                      || store.isUploadingPhoto
+                      || store.isMovingPhotos
+                  )
                 }
               }
             }
@@ -893,6 +962,26 @@ struct ExhibitionDetailView: View {
       }
       .padding()
     }
+    #if !SKIP
+      .dropDestination(
+        for: Data.self,
+        action: { items, location in
+          guard store.isOrganizer, !items.isEmpty else { return false }
+          var urls: [URL] = []
+          for item in items {
+            do {
+              let url = try store.moveImageToTempURL(item)
+              urls.append(url)
+            } catch {
+              logger.error("error \(String(describing: error))")
+            }
+          }
+          guard !urls.isEmpty else { return false }
+          store.send(.photosSelected(urls))
+          return true
+        }
+      )
+    #endif
     #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)
     #endif
@@ -905,7 +994,8 @@ struct ExhibitionDetailView: View {
             } label: {
               Label(
                 "Edit",
-                systemImage: SystemImageMapping.getIconName(from: "pencil"))
+                systemImage: SystemImageMapping.getIconName(from: "pencil")
+              )
             }
 
             Button(role: .destructive) {
@@ -913,7 +1003,8 @@ struct ExhibitionDetailView: View {
             } label: {
               Label(
                 "Delete",
-                systemImage: SystemImageMapping.getIconName(from: "trash"))
+                systemImage: SystemImageMapping.getIconName(from: "trash")
+              )
             }
           } label: {
             Image(systemName: SystemImageMapping.getIconName(from: "ellipsis"))
@@ -923,15 +1014,20 @@ struct ExhibitionDetailView: View {
           Button {
             store.send(.reportButtonTapped)
           } label: {
-            Image(systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle"))
-              .accessibilityLabel("Report exhibition")
+            Image(
+              systemName: SystemImageMapping.getIconName(
+                from: "exclamationmark.triangle"
+              )
+            )
+            .accessibilityLabel("Report exhibition")
           }
         }
       }
 
       ToolbarItem(placement: .primaryAction) {
         ShareLink(
-          item: "\(store.exhibition.name) \(Constants.hashTag) \(store.shareURL)",
+          item:
+            "\(store.exhibition.name) \(Constants.hashTag) \(store.shareURL)",
           label: {
             Image(systemName: "square.and.arrow.up")
           }
@@ -968,7 +1064,8 @@ struct ExhibitionDetailView: View {
           description: photo.description ?? ""
         ) { title, description in
           store.send(
-            .updateUploadedPhoto(title: title, description: description))
+            .updateUploadedPhoto(title: title, description: description)
+          )
         }
         .onDisappear {
           if store.showPhotoEditSheet {
@@ -1138,7 +1235,9 @@ struct PhotoGridItem: View {
                     .fill(Color.gray.opacity(0.2))
 
                   Image(
-                    systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle")
+                    systemName: SystemImageMapping.getIconName(
+                      from: "exclamationmark.triangle"
+                    )
                   )
                   .foregroundStyle(.secondary)
                 }

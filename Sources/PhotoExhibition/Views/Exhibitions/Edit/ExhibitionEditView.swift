@@ -18,7 +18,9 @@ import SwiftUI
 #endif
 
 private let logger = Logger(
-  subsystem: Bundle.main.bundleIdentifier!, category: "ExhibitionsStore")
+  subsystem: Bundle.main.bundleIdentifier!,
+  category: "ExhibitionsStore"
+)
 
 // 展示会の作成・編集用のStore
 @Observable
@@ -56,6 +58,7 @@ final class ExhibitionEditStore: Store {
   var error: (any Error)? = nil
   var showError: Bool = false
   var shouldDismiss: Bool = false
+  var isDragTarget: Bool = false
 
   var imagePickerPresented: Bool = false
   var pickedImageURL: URL? {
@@ -165,7 +168,9 @@ final class ExhibitionEditStore: Store {
           do {
             // 編集モードの場合のみ写真チェックが可能
             if case .edit(let exhibition) = mode {
-              let photos = try await photoClient.fetchPhotos(exhibitionId: exhibition.id)
+              let photos = try await photoClient.fetchPhotos(
+                exhibitionId: exhibition.id
+              )
               if photos.isEmpty {
                 error = ExhibitionEditError.noPhotosForPublishing
                 showError = true
@@ -198,7 +203,9 @@ final class ExhibitionEditStore: Store {
 
       // 公開しようとしている場合は写真の枚数をチェック
       if status == .published {
-        let photos = try await photoClient.fetchPhotos(exhibitionId: exhibition.id)
+        let photos = try await photoClient.fetchPhotos(
+          exhibitionId: exhibition.id
+        )
         if photos.isEmpty {
           throw ExhibitionEditError.noPhotosForPublishing
         }
@@ -243,7 +250,9 @@ final class ExhibitionEditStore: Store {
     // カバー画像をアップロードする（新しい画像が選択されている場合のみ）
     if let pickedImageURL = pickedImageURL, let exhibitionId = exhibitionId {
       do {
-        let ext = (pickedImageURL.pathExtension.isEmpty ? "jpg" : pickedImageURL.pathExtension)
+        let ext =
+          (pickedImageURL.pathExtension.isEmpty
+            ? "jpg" : pickedImageURL.pathExtension)
         let fileName = "cover.\(ext)"
         let directoryPath = "exhibitions/\(exhibitionId)"
         let storagePath = "\(directoryPath)/\(fileName)"
@@ -268,7 +277,9 @@ final class ExhibitionEditStore: Store {
         ]
         try await imageCache.removeCache(for: paths)
       } catch {
-        logger.error("Failed to upload cover image: \(error.localizedDescription)")
+        logger.error(
+          "Failed to upload cover image: \(error.localizedDescription)"
+        )
         // 画像アップロードに失敗しても、展示会自体は作成/更新されているので、エラーはスローしない
       }
     }
@@ -299,7 +310,9 @@ final class ExhibitionEditStore: Store {
         let localURL = try await imageCache.getImageURL(for: path)
         self.coverImageURL = localURL
       } catch {
-        logger.error("Failed to get download URL: \(error.localizedDescription)")
+        logger.error(
+          "Failed to get download URL: \(error.localizedDescription)"
+        )
       }
       isLoadingCoverImage = false
     }
@@ -321,7 +334,9 @@ enum ExhibitionEditError: Error, LocalizedError, Hashable {
     case .saveFailed(let message):
       return String(localized: "Failed to save: \(message)")
     case .noPhotosForPublishing:
-      return String(localized: "At least one photo is required to publish the exhibition")
+      return String(
+        localized: "At least one photo is required to publish the exhibition"
+      )
     }
   }
 }
@@ -383,7 +398,9 @@ struct ExhibitionEditView: View {
                     if let item = item {
                       Task {
                         do {
-                          if let data = try await item.loadTransferable(type: Data.self) {
+                          if let data = try await item.loadTransferable(
+                            type: Data.self
+                          ) {
                             let ext: String
                             switch data.imageFormat {
                             case .gif:
@@ -400,7 +417,8 @@ struct ExhibitionEditView: View {
                             }
                             let tempURL = FileManager.default.temporaryDirectory
                               .appendingPathComponent(
-                                UUID().uuidString + "." + ext)
+                                UUID().uuidString + "." + ext
+                              )
                             try data.write(to: tempURL)
                             store.pickedImageURL = tempURL
                           }
@@ -415,6 +433,40 @@ struct ExhibitionEditView: View {
                 ),
                 matching: .images
               )
+              .dropDestination(
+                for: Data.self,
+                action: { items, location in
+                  do {
+                    if let data = items.first {
+                      let ext: String
+                      switch data.imageFormat {
+                      case .gif:
+                        ext = "gif"
+                      case .jpeg:
+                        ext = "jpg"
+                      case .png:
+                        ext = "png"
+                      default:
+                        // サポートされていない画像形式のエラーを表示
+                        store.error = ImageFormatError.unknownImageFormat
+                        store.showError = true
+                        return false
+                      }
+                      let tempURL = FileManager.default.temporaryDirectory
+                        .appendingPathComponent(
+                          UUID().uuidString + "." + ext
+                        )
+                      try data.write(to: tempURL)
+                      store.pickedImageURL = tempURL
+                      return true
+                    } else {
+                      return false
+                    }
+                  } catch {
+                    logger.error("error \(String(describing: error))")
+                    return false
+                  }
+                })
             #endif
           }
         }
@@ -468,7 +520,8 @@ struct ExhibitionEditView: View {
 
         Section("Period") {
           DatePicker(
-            "Start Date", selection: $store.from
+            "Start Date",
+            selection: $store.from
           )
           .onChange(of: store.from) { _, newValue in
             store.send(.updateFrom(newValue))
@@ -476,7 +529,8 @@ struct ExhibitionEditView: View {
           .datePickerStyle(.compact)
 
           DatePicker(
-            "End Date", selection: $store.to
+            "End Date",
+            selection: $store.to
           )
           .onChange(of: store.to) { _, newValue in
             store.send(.updateTo(newValue))
@@ -484,7 +538,9 @@ struct ExhibitionEditView: View {
           .datePickerStyle(.compact)
         }
       }
-      .navigationTitle(store.name.isEmpty ? Text("New Exhibition") : Text(store.name))
+      .navigationTitle(
+        store.name.isEmpty ? Text("New Exhibition") : Text(store.name)
+      )
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel") {
