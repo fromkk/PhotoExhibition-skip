@@ -433,40 +433,6 @@ struct ExhibitionEditView: View {
                 ),
                 matching: .images
               )
-              .dropDestination(
-                for: Data.self,
-                action: { items, location in
-                  do {
-                    if let data = items.first {
-                      let ext: String
-                      switch data.imageFormat {
-                      case .gif:
-                        ext = "gif"
-                      case .jpeg:
-                        ext = "jpg"
-                      case .png:
-                        ext = "png"
-                      default:
-                        // サポートされていない画像形式のエラーを表示
-                        store.error = ImageFormatError.unknownImageFormat
-                        store.showError = true
-                        return false
-                      }
-                      let tempURL = FileManager.default.temporaryDirectory
-                        .appendingPathComponent(
-                          UUID().uuidString + "." + ext
-                        )
-                      try data.write(to: tempURL)
-                      store.pickedImageURL = tempURL
-                      return true
-                    } else {
-                      return false
-                    }
-                  } catch {
-                    logger.error("error \(String(describing: error))")
-                    return false
-                  }
-                })
             #endif
           }
         }
