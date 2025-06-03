@@ -15,6 +15,10 @@ struct ExhibitionsView: View {
     self.store = store
   }
 
+  #if !SKIP
+    @Namespace private var namespace
+  #endif
+
   var body: some View {
     ZStack {
       NavigationStack {
@@ -68,6 +72,9 @@ struct ExhibitionsView: View {
         ) {
           if let detailStore = store.exhibitionDetailStore {
             ExhibitionDetailView(store: detailStore)
+              #if !SKIP
+                .zoomTransition(detailStore.exhibition.id, in: namespace)
+              #endif
           }
         }
         .toolbar {
