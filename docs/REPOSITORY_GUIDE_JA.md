@@ -16,7 +16,7 @@
 
 ## ビルド・テスト方法
 1. Homebrew で Skip をインストール: `brew install skiptools/skip/skip`
-2. `skip checkup` で依存ツールを確認
+2. `skip checkup` で依存ツールを確認明
 3. iOS/Android それぞれを実行する場合は Xcode と Android Studio を準備
 
 CI 環境では `ci_scripts/ci_post_clone.sh` が実行され、Skip インストールと Xcode 設定が自動化されます。
