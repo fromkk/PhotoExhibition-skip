@@ -1,42 +1,47 @@
 # PhotoExhibition
 
-This is a [Skip](https://skip.tools) dual-platform app project.
-It builds a native app for both iOS and Android.
+This repository contains a dual-platform application built with [Skip](https://skip.tools). The Swift codebase is transpiled to Kotlin so that the app can run natively on iOS and Android.
+
+## Repository Overview
+Swift sources are converted to Kotlin using Skip. The dependencies, including the Skip plugin and Firebase libraries, are defined in `Package.swift`.
+
+### Key Directories
+- **Sources/**
+  - `PhotoExhibition` – main application module with entry points and views.
+  - `PhotoExhibitionModel` – Firebase clients and entity definitions (`Clients/`, `Entities/`).
+  - `Viewer` – end-user facing models, clients, and views.
+  - `WidgetClients` – clients and entities for widgets.
+  - `IntentHelper` – small utilities such as notification name extensions.
+- **Tests/**
+  - Feature tests under `PhotoExhibitionTests/` and `XCSkipTests.swift` allow Kotlin tests produced by Skip to run.
+- **Android/** and **Darwin/**
+  - Gradle and Xcode projects generated or consumed by Skip for Android and iOS.
+
+## Important Points
+- Conditional compilation (e.g., `#if SKIP`) keeps Swift and Kotlin behavior aligned.
+- Firebase integration is central (Firestore, Storage, Auth, etc.); understanding each client clarifies the app's data flow.
+- The UI layer relies on `@Observable` store classes, and tests follow the same approach.
+
+## Learning Path for New Contributors
+1. **Set up Skip** – Install via Homebrew with `brew install skiptools/skip/skip` and verify prerequisites with `skip checkup`.
+2. **Explore Firebase clients** – Inspect `Sources/PhotoExhibitionModel/Clients/` to learn authentication and storage flows.
+3. **Study views and stores** – Look at `Sources/PhotoExhibition/Views/` and the `Viewer/` module to see how UI connects to business logic.
+4. **Learn the testing style** – Review `Tests/PhotoExhibitionTests/` for mocking and asynchronous test patterns.
 
 ## Building
+This project works both as a Swift Package Manager module and as an Xcode project that transpiles into an Android Gradle project.
 
-This project is both a stand-alone Swift Package Manager module,
-as well as an Xcode project that builds and transpiles the project
-into a Kotlin Gradle project for Android using the Skip plugin.
+Install Skip via Homebrew:
 
-Building the module requires that Skip be installed using
-[Homebrew](https://brew.sh) with `brew install skiptools/skip/skip`.
+```bash
+brew install skiptools/skip/skip
+```
 
-This will also install the necessary transpiler prerequisites:
-Kotlin, Gradle, and the Android build tools.
+This installation also provides Kotlin, Gradle, and Android build tools. Confirm everything is ready with:
 
-Installation prerequisites can be confirmed by running `skip checkup`.
-
-## Testing
-
-The module can be tested using the standard `swift test` command
-or by running the test target for the macOS destination in Xcode,
-which will run the Swift tests as well as the transpiled
-Kotlin JUnit tests in the Robolectric Android simulation environment.
-
-Parity testing can be performed with `skip test`,
-which will output a table of the test results for both platforms.
+```bash
+skip checkup
+```
 
 ## Running
-
-Xcode and Android Studio must be downloaded and installed in order to
-run the app in the iOS simulator / Android emulator.
-An Android emulator must already be running, which can be launched from
-Android Studio's Device Manager.
-
-To run both the Swift and Kotlin apps simultaneously,
-launch the PhotoExhibitionApp target from Xcode.
-A build phases runs the "Launch Android APK" script that
-will deploy the transpiled app a running Android emulator or connected device.
-Logging output for the iOS app can be viewed in the Xcode console, and in
-Android Studio's logcat tab for the transpiled Kotlin app.
+Ensure Xcode and Android Studio are installed. Start an Android emulator from Android Studio's Device Manager. Launch the `PhotoExhibitionApp` target from Xcode to build and deploy the Swift and Kotlin apps. iOS logs appear in the Xcode console and Kotlin logs in Android Studio's logcat.
