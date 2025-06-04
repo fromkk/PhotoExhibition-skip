@@ -1,2 +1,3 @@
-- Supported show spatial photos
-- Bug fixes
+- Added drag and drop support for images in exhibition detail view
+- Introduced smooth zoom transitions between views(iOS18+)
+- Bug fixes and performance improvements
