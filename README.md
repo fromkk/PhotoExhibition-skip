@@ -43,12 +43,5 @@ This installation also provides Kotlin, Gradle, and Android build tools. Confirm
 skip checkup
 ```
 
-## Testing
-Run parity tests across iOS and Android with:
-
-```bash
-skip test
-```
-
 ## Running
 Ensure Xcode and Android Studio are installed. Start an Android emulator from Android Studio's Device Manager. Launch the `PhotoExhibitionApp` target from Xcode to build and deploy the Swift and Kotlin apps. iOS logs appear in the Xcode console and Kotlin logs in Android Studio's logcat.
