@@ -62,7 +62,7 @@ final class RootStore: Store {
   private func uploadIsLoading(_ isLoading: Bool) async {
     if isLoading {
       // isLoadingをtrueにする場合はすぐに更新
-      self.isLoading = true
+      self.isLoading = isLoading
     } else {
       #if !SKIP
         // isLoadingをfalseにする場合は最低表示時間を確保
@@ -77,10 +77,10 @@ final class RootStore: Store {
         }
 
         await MainActor.run {
-          self.isLoading = false
+          self.isLoading = isLoading
         }
       #else
-        self.isLoading = false
+        self.isLoading = isLoading
       #endif
     }
   }
