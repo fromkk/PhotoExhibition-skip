@@ -418,6 +418,66 @@ struct PhotoDetailView: View {
                 .compositingGroup()
               }
               .aspectRatio(1, contentMode: .fit)
+              // 水平方向のスワイプジェスチャー（拡大していない時のみ有効）
+              .simultaneousGesture(
+                DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                  .onChanged { value in
+                    // 拡大していない時のみスワイプを有効にする
+                    if scale <= CGFloat(1.0) {
+                      dragOffset = value.translation.width
+                    }
+                  }
+                  .onEnded { value in
+                    // スワイプの方向と距離に基づいて写真を切り替え
+                    if scale <= CGFloat(1.0) {
+                      let threshold: CGFloat = 50
+                      if dragOffset > threshold {
+                        // 右にスワイプ -> 前の写真
+                        store.send(.showPreviousPhoto)
+                      } else if dragOffset < -threshold {
+                        // 左にスワイプ -> 次の写真
+                        store.send(.showNextPhoto)
+                      }
+                      dragOffset = 0
+                    }
+                  }
+              )
+              // 垂直方向のスワイプジェスチャー（拡大していない時のみ有効）
+              .simultaneousGesture(
+                DragGesture(minimumDistance: 20, coordinateSpace: .global)
+                  .onChanged { value in
+                    // 拡大していない時のみスワイプを有効にする
+                    if scale <= CGFloat(1.0) {
+                      // 下方向のスワイプを検出
+                      if value.translation.height > 0
+                        && abs(value.translation.width)
+                          < abs(value.translation.height)
+                      {
+                        offset = CGSize(
+                          width: 0,
+                          height: value.translation.height
+                        )
+                      }
+                    }
+                  }
+                  .onEnded { value in
+                    // スワイプの方向と距離に基づいて画面を閉じる
+                    if scale <= CGFloat(1.0) {
+                      let threshold: CGFloat = 100
+                      if value.translation.height > threshold
+                        && abs(value.translation.width)
+                          < abs(value.translation.height)
+                      {
+                        dismiss()
+                      } else {
+                        // スワイプが閾値に達していない場合は元の位置に戻す
+                        withAnimation(.spring()) {
+                          offset = .zero
+                        }
+                      }
+                    }
+                  }
+              )
             } else {
               asyncImage
             }
@@ -853,6 +913,42 @@ struct PhotoDetailView: View {
                   }
                 }
             )
+            // 垂直方向のスワイプジェスチャー（拡大していない時のみ有効）
+            .simultaneousGesture(
+              DragGesture(minimumDistance: 20, coordinateSpace: .global)
+                .onChanged { value in
+                  // 拡大していない時のみスワイプを有効にする
+                  if scale <= CGFloat(1.0) {
+                    // 下方向のスワイプを検出
+                    if value.translation.height > 0
+                      && abs(value.translation.width)
+                        < abs(value.translation.height)
+                    {
+                      offset = CGSize(
+                        width: 0,
+                        height: value.translation.height
+                      )
+                    }
+                  }
+                }
+                .onEnded { value in
+                  // スワイプの方向と距離に基づいて画面を閉じる
+                  if scale <= CGFloat(1.0) {
+                    let threshold: CGFloat = 100
+                    if value.translation.height > threshold
+                      && abs(value.translation.width)
+                        < abs(value.translation.height)
+                    {
+                      dismiss()
+                    } else {
+                      // スワイプが閾値に達していない場合は元の位置に戻す
+                      withAnimation(.spring()) {
+                        offset = .zero
+                      }
+                    }
+                  }
+                }
+            )
             // ダブルタップでリセット
             .onTapGesture(count: 2) {
               resetZoom()
@@ -881,42 +977,42 @@ struct PhotoDetailView: View {
                   }
                 }
             )
-          #endif
-          .gesture(
-            DragGesture(minimumDistance: 20, coordinateSpace: .global)
-              .onChanged { value in
-                // 拡大していない時のみスワイプを有効にする
-                if scale <= CGFloat(1.0) {
-                  // 下方向のスワイプを検出
-                  if value.translation.height > 0
-                    && abs(value.translation.width)
-                      < abs(value.translation.height)
-                  {
-                    offset = CGSize(
-                      width: 0,
-                      height: value.translation.height
-                    )
-                  }
-                }
-              }
-              .onEnded { value in
-                // スワイプの方向と距離に基づいて画面を閉じる
-                if scale <= CGFloat(1.0) {
-                  let threshold: CGFloat = 100
-                  if value.translation.height > threshold
-                    && abs(value.translation.width)
-                      < abs(value.translation.height)
-                  {
-                    dismiss()
-                  } else {
-                    // スワイプが閾値に達していない場合は元の位置に戻す
-                    withAnimation(.spring()) {
-                      offset = .zero
+            .gesture(
+              DragGesture(minimumDistance: 20, coordinateSpace: .global)
+                .onChanged { value in
+                  // 拡大していない時のみスワイプを有効にする
+                  if scale <= CGFloat(1.0) {
+                    // 下方向のスワイプを検出
+                    if value.translation.height > 0
+                      && abs(value.translation.width)
+                        < abs(value.translation.height)
+                    {
+                      offset = CGSize(
+                        width: 0,
+                        height: value.translation.height
+                      )
                     }
                   }
                 }
-              }
-          )
+                .onEnded { value in
+                  // スワイプの方向と距離に基づいて画面を閉じる
+                  if scale <= CGFloat(1.0) {
+                    let threshold: CGFloat = 100
+                    if value.translation.height > threshold
+                      && abs(value.translation.width)
+                        < abs(value.translation.height)
+                    {
+                      dismiss()
+                    } else {
+                      // スワイプが閾値に達していない場合は元の位置に戻す
+                      withAnimation(.spring()) {
+                        offset = .zero
+                      }
+                    }
+                  }
+                }
+            )
+          #endif
           .onTapGesture {
             withAnimation {
               store.send(.toggleUIVisible)
