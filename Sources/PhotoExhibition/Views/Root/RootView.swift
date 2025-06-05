@@ -61,10 +61,10 @@ struct RootView: View {
 
         #else
           VStack {
-            ProgressView()
+            Image("logo", bundle: .module)
           }
-          .background(Color("background", bundle: .module))
           .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .background(Color.white)
 
         #endif
       }

@@ -57,13 +57,41 @@ final class RootStore: Store {
   var profileSetupStore: ProfileSetupStore?
   private var pendingUniversalLink: URL?
   private var pendingAddExhibitionRequestReceived: Bool = false
+  private var taskStartTime: Date?
+
+  private func uploadIsLoading(_ isLoading: Bool) async {
+    if isLoading {
+      // isLoadingをtrueにする場合はすぐに更新
+      self.isLoading = true
+    } else {
+      #if !SKIP
+        // isLoadingをfalseにする場合は最低表示時間を確保
+        if let startTime = taskStartTime {
+          let elapsed: TimeInterval = Date().timeIntervalSince(startTime)
+          let minimumDisplayTime: TimeInterval = 1.0
+          let remainingTime: TimeInterval = max(0, minimumDisplayTime - elapsed)
+
+          if remainingTime > 0 {
+            try? await Task.sleep(nanoseconds: UInt64(remainingTime * 1_000_000_000))
+          }
+        }
+
+        await MainActor.run {
+          self.isLoading = false
+        }
+      #else
+        self.isLoading = false
+      #endif
+    }
+  }
 
   func send(_ action: Action) {
     switch action {
     case .task:
+      taskStartTime = Date()
       if let currentUser = currentUserClient.currentUser() {
-        isLoading = true
         Task {
+          await uploadIsLoading(true)
           do {
             let uids = [currentUser.uid]
             let members = try await membersClient.fetch(uids)
@@ -74,16 +102,19 @@ final class RootStore: Store {
             }
           } catch {
             print("Failed to fetch member: \(error.localizedDescription)")
-            isLoading = false
+            await self.uploadIsLoading(false)
             isSignedIn = false
           }
           await analyticsClient.analyticsScreen(name: "RootView")
         }
       } else {
         isSignedIn = false
+        isLoading = false
       }
     case let .signedIn(member):
-      isLoading = false
+      Task {
+        await uploadIsLoading(false)
+      }
       isSignedIn = true
       if member.name == nil {
         showProfileSetup(for: member)
@@ -95,7 +126,9 @@ final class RootStore: Store {
         pendingAddExhibitionRequestReceived = false
       }
     case .signedOut:
-      isLoading = false
+      Task {
+        await uploadIsLoading(false)
+      }
       isSignedIn = false
       pendingUniversalLink = nil
     case .handleUniversalLink(let url):
