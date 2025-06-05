@@ -34,14 +34,15 @@ public struct LaunchingView: View {
         .frame(width: 200, height: 200)
         .offset(x: sqrt(2) * 100, y: 0)  // 半径 = 100√2 ≈ 141.42（右上の角までの距離）
         .rotationEffect(.degrees(rotationAngle))
+        .transaction { transaction in
+          transaction.animation = .linear(duration: 3.0).repeatForever(autoreverses: false)
+        }
     }
     .ignoresSafeArea()
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(backgroundColor)
     .onAppear {
-      withAnimation(.linear(duration: 3.0).repeatForever(autoreverses: false)) {
-        rotationAngle = 360.0
-      }
+      rotationAngle = 360.0
     }
   }
 }
