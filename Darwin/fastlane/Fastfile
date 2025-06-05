@@ -16,7 +16,16 @@ lane :assemble do |options|
     skip_archive: ENV["FASTLANE_SKIP_ARCHIVE"] == "YES",
     skip_codesigning: ENV["FASTLANE_SKIP_CODESIGNING"] == "YES"
   )
+end
 
+lane :release do |options|
+  desc "Build and release app"
+
+  # if you have an apikey.json file (https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api), fastlane can automatically fetch certificates and the ASC authentication information
+  #get_certificates(api_key_path: "fastlane/apikey.json")
+  #get_provisioning_profile(api_key_path: "fastlane/apikey.json")
+
+  assemble
   # Firebase Crashlyticsにdsymをアップロード
   begin
     UI.important "Firebase Crashlyticsにdebug symbolsをアップロード中..."
@@ -28,20 +37,4 @@ lane :assemble do |options|
   rescue => e
     UI.error "Firebase Crashlyticsへのdebug symbolsアップロードに失敗しました: #{e.message}"
   end
-end
-
-lane :release do |options|
-  desc "Build and release app"
-
-  # if you have an apikey.json file (https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api), fastlane can automatically fetch certificates and the ASC authentication information
-  #get_certificates(api_key_path: "fastlane/apikey.json")
-  #get_provisioning_profile(api_key_path: "fastlane/apikey.json")
-
-  assemble
-
-  upload_to_app_store(
-    api_key_path: "fastlane/apikey.json",
-    app_rating_config_path: "fastlane/metadata/rating.json",
-    release_notes: { default: "Fixes and improvements." }
-  )
 end
