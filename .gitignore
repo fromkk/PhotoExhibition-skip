@@ -85,3 +85,4 @@ review_information/
 **/GoogleService-Info.plist
 google-services.json
 .cursorrules
+.cursor/
