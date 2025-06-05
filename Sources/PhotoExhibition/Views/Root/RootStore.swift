@@ -59,7 +59,7 @@ final class RootStore: Store {
   private var pendingAddExhibitionRequestReceived: Bool = false
   private var taskStartTime: Date?
 
-  private func uploadIsLoading(_ isLoading: Bool) async {
+  private func updateIsLoading(_ isLoading: Bool) async {
     if isLoading {
       // isLoadingをtrueにする場合はすぐに更新
       self.isLoading = isLoading
@@ -91,7 +91,7 @@ final class RootStore: Store {
       taskStartTime = Date()
       if let currentUser = currentUserClient.currentUser() {
         Task {
-          await uploadIsLoading(true)
+          await updateIsLoading(true)
           do {
             let uids = [currentUser.uid]
             let members = try await membersClient.fetch(uids)
@@ -102,18 +102,20 @@ final class RootStore: Store {
             }
           } catch {
             print("Failed to fetch member: \(error.localizedDescription)")
-            await self.uploadIsLoading(false)
+            await self.updateIsLoading(false)
             isSignedIn = false
           }
           await analyticsClient.analyticsScreen(name: "RootView")
         }
       } else {
         isSignedIn = false
-        isLoading = false
+        Task {
+          await updateIsLoading(false)
+        }
       }
     case let .signedIn(member):
       Task {
-        await uploadIsLoading(false)
+        await updateIsLoading(false)
       }
       isSignedIn = true
       if member.name == nil {
@@ -127,7 +129,7 @@ final class RootStore: Store {
       }
     case .signedOut:
       Task {
-        await uploadIsLoading(false)
+        await updateIsLoading(false)
       }
       isSignedIn = false
       pendingUniversalLink = nil
