@@ -418,66 +418,15 @@ struct PhotoDetailView: View {
                 .compositingGroup()
               }
               .aspectRatio(1, contentMode: .fit)
-              // 水平方向のスワイプジェスチャー（拡大していない時のみ有効）
-              .simultaneousGesture(
-                DragGesture(minimumDistance: 20, coordinateSpace: .local)
-                  .onChanged { value in
-                    // 拡大していない時のみスワイプを有効にする
-                    if scale <= CGFloat(1.0) {
-                      dragOffset = value.translation.width
-                    }
-                  }
-                  .onEnded { value in
-                    // スワイプの方向と距離に基づいて写真を切り替え
-                    if scale <= CGFloat(1.0) {
-                      let threshold: CGFloat = 50
-                      if dragOffset > threshold {
-                        // 右にスワイプ -> 前の写真
-                        store.send(.showPreviousPhoto)
-                      } else if dragOffset < -threshold {
-                        // 左にスワイプ -> 次の写真
-                        store.send(.showNextPhoto)
-                      }
-                      dragOffset = 0
-                    }
-                  }
-              )
-              // 垂直方向のスワイプジェスチャー（拡大していない時のみ有効）
-              .simultaneousGesture(
-                DragGesture(minimumDistance: 20, coordinateSpace: .global)
-                  .onChanged { value in
-                    // 拡大していない時のみスワイプを有効にする
-                    if scale <= CGFloat(1.0) {
-                      // 下方向のスワイプを検出
-                      if value.translation.height > 0
-                        && abs(value.translation.width)
-                          < abs(value.translation.height)
-                      {
-                        offset = CGSize(
-                          width: 0,
-                          height: value.translation.height
-                        )
-                      }
-                    }
-                  }
-                  .onEnded { value in
-                    // スワイプの方向と距離に基づいて画面を閉じる
-                    if scale <= CGFloat(1.0) {
-                      let threshold: CGFloat = 100
-                      if value.translation.height > threshold
-                        && abs(value.translation.width)
-                          < abs(value.translation.height)
-                      {
-                        dismiss()
-                      } else {
-                        // スワイプが閾値に達していない場合は元の位置に戻す
-                        withAnimation(.spring()) {
-                          offset = .zero
-                        }
-                      }
-                    }
-                  }
-              )
+              .modifier(
+                SpatialPhotoGesturesModifier(
+                  scale: $scale,
+                  offset: $offset,
+                  dragOffset: $dragOffset,
+                  onPreviousPhoto: { store.send(.showPreviousPhoto) },
+                  onNextPhoto: { store.send(.showNextPhoto) },
+                  onDismiss: { dismiss() }
+                ))
             } else {
               asyncImage
             }
@@ -839,180 +788,19 @@ struct PhotoDetailView: View {
           .aspectRatio(contentMode: .fit)
           .scaleEffect(scale)
           .offset(offset)
-          #if !SKIP
-            .gesture(
-              // ピンチジェスチャーで拡大縮小
-              MagnificationGesture()
-                .onChanged { value in
-                  // valueをDoubleに明示的に変換してからCGFloatに変換
-                  let magnitudeDouble = Double(value.magnitude)
-                  let magnitudeValue = CGFloat(magnitudeDouble)
-                  let newScale = lastScale * magnitudeValue
-                  // 1.0〜5.0の範囲に制限
-                  scale = min(max(newScale, CGFloat(1.0)), CGFloat(5.0))
-                }
-                .onEnded { _ in
-                  lastScale = scale
-                  // スケールが1.0未満なら1.0に戻す
-                  if scale < CGFloat(1.0) {
-                    scale = CGFloat(1.0)
-                    lastScale = CGFloat(1.0)
-                  }
-                  // スケールが5.0を超えたら5.0に制限
-                  if scale > CGFloat(5.0) {
-                    scale = CGFloat(5.0)
-                    lastScale = CGFloat(5.0)
-                  }
-                  // スケールが1.0になったら位置もリセット
-                  if scale <= CGFloat(1.0) {
-                    withAnimation(.spring()) {
-                      offset = .zero
-                      lastOffset = .zero
-                    }
-                  }
-                }
+          .modifier(
+            ImageGesturesModifier(
+              scale: $scale,
+              lastScale: $lastScale,
+              offset: $offset,
+              lastOffset: $lastOffset,
+              dragOffset: $dragOffset,
+              onPreviousPhoto: { store.send(.showPreviousPhoto) },
+              onNextPhoto: { store.send(.showNextPhoto) },
+              onDismiss: { dismiss() },
+              onResetZoom: { resetZoom() }
             )
-            .simultaneousGesture(
-              // ドラッグジェスチャーでスクロール（拡大時のみ有効）
-              DragGesture()
-                .onChanged { value in
-                  // 拡大時のみスクロールを有効にする
-                  if scale > CGFloat(1.0) {
-                    offset = CGSize(
-                      width: lastOffset.width + value.translation.width,
-                      height: lastOffset.height
-                        + value.translation.height
-                    )
-                  }
-                }
-                .onEnded { _ in
-                  lastOffset = offset
-                }
-            )
-            // 水平方向のスワイプジェスチャー（拡大していない時のみ有効）
-            .simultaneousGesture(
-              DragGesture(minimumDistance: 20, coordinateSpace: .local)
-                .onChanged { value in
-                  // 拡大していない時のみスワイプを有効にする
-                  if scale <= CGFloat(1.0) {
-                    dragOffset = value.translation.width
-                  }
-                }
-                .onEnded { value in
-                  // スワイプの方向と距離に基づいて写真を切り替え
-                  if scale <= CGFloat(1.0) {
-                    let threshold: CGFloat = 50
-                    if dragOffset > threshold {
-                      // 右にスワイプ -> 前の写真
-                      store.send(.showPreviousPhoto)
-                    } else if dragOffset < -threshold {
-                      // 左にスワイプ -> 次の写真
-                      store.send(.showNextPhoto)
-                    }
-                    dragOffset = 0
-                  }
-                }
-            )
-            // 垂直方向のスワイプジェスチャー（拡大していない時のみ有効）
-            .simultaneousGesture(
-              DragGesture(minimumDistance: 20, coordinateSpace: .global)
-                .onChanged { value in
-                  // 拡大していない時のみスワイプを有効にする
-                  if scale <= CGFloat(1.0) {
-                    // 下方向のスワイプを検出
-                    if value.translation.height > 0
-                      && abs(value.translation.width)
-                        < abs(value.translation.height)
-                    {
-                      offset = CGSize(
-                        width: 0,
-                        height: value.translation.height
-                      )
-                    }
-                  }
-                }
-                .onEnded { value in
-                  // スワイプの方向と距離に基づいて画面を閉じる
-                  if scale <= CGFloat(1.0) {
-                    let threshold: CGFloat = 100
-                    if value.translation.height > threshold
-                      && abs(value.translation.width)
-                        < abs(value.translation.height)
-                    {
-                      dismiss()
-                    } else {
-                      // スワイプが閾値に達していない場合は元の位置に戻す
-                      withAnimation(.spring()) {
-                        offset = .zero
-                      }
-                    }
-                  }
-                }
-            )
-            // ダブルタップでリセット
-            .onTapGesture(count: 2) {
-              resetZoom()
-            }
-          #else
-            .gesture(
-              DragGesture(minimumDistance: 20, coordinateSpace: .local)
-                .onChanged { value in
-                  // 拡大していない時のみスワイプを有効にする
-                  if scale <= CGFloat(1.0) {
-                    dragOffset = value.translation.width
-                  }
-                }
-                .onEnded { value in
-                  // スワイプの方向と距離に基づいて写真を切り替え
-                  if scale <= CGFloat(1.0) {
-                    let threshold: CGFloat = 50
-                    if dragOffset > threshold {
-                      // 右にスワイプ -> 前の写真
-                      store.send(.showPreviousPhoto)
-                    } else if dragOffset < -threshold {
-                      // 左にスワイプ -> 次の写真
-                      store.send(.showNextPhoto)
-                    }
-                    dragOffset = 0
-                  }
-                }
-            )
-            .gesture(
-              DragGesture(minimumDistance: 20, coordinateSpace: .global)
-                .onChanged { value in
-                  // 拡大していない時のみスワイプを有効にする
-                  if scale <= CGFloat(1.0) {
-                    // 下方向のスワイプを検出
-                    if value.translation.height > 0
-                      && abs(value.translation.width)
-                        < abs(value.translation.height)
-                    {
-                      offset = CGSize(
-                        width: 0,
-                        height: value.translation.height
-                      )
-                    }
-                  }
-                }
-                .onEnded { value in
-                  // スワイプの方向と距離に基づいて画面を閉じる
-                  if scale <= CGFloat(1.0) {
-                    let threshold: CGFloat = 100
-                    if value.translation.height > threshold
-                      && abs(value.translation.width)
-                        < abs(value.translation.height)
-                    {
-                      dismiss()
-                    } else {
-                      // スワイプが閾値に達していない場合は元の位置に戻す
-                      withAnimation(.spring()) {
-                        offset = .zero
-                      }
-                    }
-                  }
-                }
-            )
-          #endif
+          )
           .onTapGesture {
             withAnimation {
               store.send(.toggleUIVisible)
@@ -1095,6 +883,190 @@ struct PhotoEditView: View {
         }
       }
     }
+  }
+}
+
+// MARK: - Gesture Modifiers
+
+struct ImageGesturesModifier: ViewModifier {
+  @Binding var scale: CGFloat
+  @Binding var lastScale: CGFloat
+  @Binding var offset: CGSize
+  @Binding var lastOffset: CGSize
+  @Binding var dragOffset: CGFloat
+
+  let onPreviousPhoto: () -> Void
+  let onNextPhoto: () -> Void
+  let onDismiss: () -> Void
+  let onResetZoom: () -> Void
+
+  func body(content: Content) -> some View {
+    content
+      #if !SKIP
+        .gesture(
+          MagnificationGesture()
+            .onChanged { value in
+              let magnitudeDouble = Double(value.magnitude)
+              let magnitudeValue = CGFloat(magnitudeDouble)
+              let newScale = lastScale * magnitudeValue
+              scale = min(max(newScale, CGFloat(1.0)), CGFloat(5.0))
+            }
+            .onEnded { _ in
+              lastScale = scale
+              if scale < CGFloat(1.0) {
+                scale = CGFloat(1.0)
+                lastScale = CGFloat(1.0)
+              }
+              if scale > CGFloat(5.0) {
+                scale = CGFloat(5.0)
+                lastScale = CGFloat(5.0)
+              }
+              if scale <= CGFloat(1.0) {
+                withAnimation(.spring()) {
+                  offset = .zero
+                  lastOffset = .zero
+                }
+              }
+            }
+        )
+        .simultaneousGesture(
+          DragGesture()
+            .onChanged { value in
+              if scale > CGFloat(1.0) {
+                offset = CGSize(
+                  width: lastOffset.width + value.translation.width,
+                  height: lastOffset.height + value.translation.height
+                )
+              }
+            }
+            .onEnded { _ in
+              lastOffset = offset
+            }
+        )
+        .simultaneousGesture(horizontalSwipeGesture)
+        .simultaneousGesture(verticalSwipeGesture)
+        .onTapGesture(count: 2) {
+          onResetZoom()
+        }
+      #else
+        .gesture(horizontalSwipeGesture)
+        .gesture(verticalSwipeGesture)
+      #endif
+  }
+
+  private var horizontalSwipeGesture: some Gesture {
+    DragGesture(minimumDistance: 20, coordinateSpace: .local)
+      .onChanged { value in
+        if scale <= CGFloat(1.0) {
+          dragOffset = value.translation.width
+        }
+      }
+      .onEnded { value in
+        if scale <= CGFloat(1.0) {
+          let threshold: CGFloat = 50
+          if dragOffset > threshold {
+            onPreviousPhoto()
+          } else if dragOffset < -threshold {
+            onNextPhoto()
+          }
+          dragOffset = 0
+        }
+      }
+  }
+
+  private var verticalSwipeGesture: some Gesture {
+    DragGesture(minimumDistance: 20, coordinateSpace: .global)
+      .onChanged { value in
+        if scale <= CGFloat(1.0) {
+          if value.translation.height > 0
+            && abs(value.translation.width) < abs(value.translation.height)
+          {
+            offset = CGSize(width: 0, height: value.translation.height)
+          }
+        }
+      }
+      .onEnded { value in
+        if scale <= CGFloat(1.0) {
+          let threshold: CGFloat = 100
+          if value.translation.height > threshold
+            && abs(value.translation.width) < abs(value.translation.height)
+          {
+            onDismiss()
+          } else {
+            withAnimation(.spring()) {
+              offset = .zero
+            }
+          }
+        }
+      }
+  }
+}
+
+struct SpatialPhotoGesturesModifier: ViewModifier {
+  @Binding var scale: CGFloat
+  @Binding var offset: CGSize
+  @Binding var dragOffset: CGFloat
+
+  let onPreviousPhoto: () -> Void
+  let onNextPhoto: () -> Void
+  let onDismiss: () -> Void
+
+  func body(content: Content) -> some View {
+    content
+      #if !SKIP
+        .simultaneousGesture(horizontalSwipeGesture)
+        .simultaneousGesture(verticalSwipeGesture)
+      #else
+        .gesture(horizontalSwipeGesture)
+        .gesture(verticalSwipeGesture)
+      #endif
+  }
+
+  private var horizontalSwipeGesture: some Gesture {
+    DragGesture(minimumDistance: 20, coordinateSpace: .local)
+      .onChanged { value in
+        if scale <= CGFloat(1.0) {
+          dragOffset = value.translation.width
+        }
+      }
+      .onEnded { value in
+        if scale <= CGFloat(1.0) {
+          let threshold: CGFloat = 50
+          if dragOffset > threshold {
+            onPreviousPhoto()
+          } else if dragOffset < -threshold {
+            onNextPhoto()
+          }
+          dragOffset = 0
+        }
+      }
+  }
+
+  private var verticalSwipeGesture: some Gesture {
+    DragGesture(minimumDistance: 20, coordinateSpace: .global)
+      .onChanged { value in
+        if scale <= CGFloat(1.0) {
+          if value.translation.height > 0
+            && abs(value.translation.width) < abs(value.translation.height)
+          {
+            offset = CGSize(width: 0, height: value.translation.height)
+          }
+        }
+      }
+      .onEnded { value in
+        if scale <= CGFloat(1.0) {
+          let threshold: CGFloat = 100
+          if value.translation.height > threshold
+            && abs(value.translation.width) < abs(value.translation.height)
+          {
+            onDismiss()
+          } else {
+            withAnimation(.spring()) {
+              offset = .zero
+            }
+          }
+        }
+      }
   }
 }
 
