@@ -1,13 +1,14 @@
 import SwiftUI
 
 #if !SKIP
+  import Launching
   import IntentHelper
 #endif
 
 struct RootView: View {
   @Bindable var store = RootStore()
   var body: some View {
-    Group {
+    ZStack {
       if store.isSignedIn {
         if let profileSetupStore = store.profileSetupStore {
           // Display profile setup screen
@@ -39,7 +40,10 @@ struct RootView: View {
                 SettingsView(store: settingsStore)
               }
               .tabItem {
-                Label("Settings", systemImage: SystemImageMapping.getIconName(from: "gear"))
+                Label(
+                  "Settings",
+                  systemImage: SystemImageMapping.getIconName(from: "gear")
+                )
               }
               .tag(Tab.settings)
             }
@@ -48,7 +52,24 @@ struct RootView: View {
       } else {
         AuthRootView(delegate: store)
       }
+
+      if store.isLoading {
+        #if !SKIP
+          LaunchingView()
+            .id("loading")
+            .transition(.opacity.combined(with: .scale))
+
+        #else
+          VStack {
+            ProgressView()
+          }
+          .background(Color("background", bundle: .module))
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        #endif
+      }
     }
+    .animation(.default, value: store.isLoading)
     .background(Color("background", bundle: .module))
     .task {
       store.send(.task)

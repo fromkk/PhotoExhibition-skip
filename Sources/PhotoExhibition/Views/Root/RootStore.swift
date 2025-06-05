@@ -29,6 +29,7 @@ final class RootStore: Store {
     case addExhibitionRequestReceived
   }
 
+  var isLoading: Bool = true
   var isSignedIn: Bool = false {
     didSet {
       if isSignedIn {
@@ -61,6 +62,7 @@ final class RootStore: Store {
     switch action {
     case .task:
       if let currentUser = currentUserClient.currentUser() {
+        isLoading = true
         Task {
           do {
             let uids = [currentUser.uid]
@@ -72,6 +74,7 @@ final class RootStore: Store {
             }
           } catch {
             print("Failed to fetch member: \(error.localizedDescription)")
+            isLoading = false
             isSignedIn = false
           }
           await analyticsClient.analyticsScreen(name: "RootView")
@@ -80,6 +83,7 @@ final class RootStore: Store {
         isSignedIn = false
       }
     case let .signedIn(member):
+      isLoading = false
       isSignedIn = true
       if member.name == nil {
         showProfileSetup(for: member)
@@ -91,6 +95,7 @@ final class RootStore: Store {
         pendingAddExhibitionRequestReceived = false
       }
     case .signedOut:
+      isLoading = false
       isSignedIn = false
       pendingUniversalLink = nil
     case .handleUniversalLink(let url):

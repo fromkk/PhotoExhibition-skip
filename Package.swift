@@ -20,6 +20,10 @@ let package = Package(
       targets: ["IntentHelper"]
     ),
     .library(
+      name: "Launching",
+      targets: ["Launching"]
+    ),
+    .library(
       name: "PhotoExhibitionApp",
       type: .dynamic,
       targets: ["PhotoExhibition"]
@@ -64,9 +68,13 @@ let package = Package(
       name: "IntentHelper"
     ),
     .target(
+      name: "Launching"
+    ),
+    .target(
       name: "PhotoExhibition",
       dependencies: [
         "IntentHelper",
+        "Launching",
         "PhotoExhibitionModel",
         .product(name: "SkipUI", package: "skip-ui"),
         .product(name: "SkipKit", package: "skip-kit"),
