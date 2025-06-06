@@ -127,6 +127,7 @@ final class PhotoDetailStore: Store {
   var photos: [Photo] = []
   var currentPhotoIndex: Int = 0
   var isLoadingPhotos: Bool = false
+  var isForwarding: Bool?
 
   private let imageCache: any StorageImageCacheProtocol
   private let photoClient: any PhotoClient
@@ -206,10 +207,12 @@ final class PhotoDetailStore: Store {
         shouldResetZoom = false
       }
     case .showNextPhoto:
+      isForwarding = true
       Task {
         await showNextPhoto()
       }
     case .showPreviousPhoto:
+      isForwarding = false
       Task {
         await showPreviousPhoto()
       }
@@ -780,7 +783,9 @@ struct PhotoDetailView: View {
   }
 
   var asyncImage: some View {
-    AsyncImage(url: store.imageURL) { phase in
+    CrossPlatformAsyncImage(
+      url: store.imageURL, animation: store.isForwarding != nil ? .default : nil
+    ) { phase in
       switch phase {
       case .success(let image):
         image
@@ -807,6 +812,8 @@ struct PhotoDetailView: View {
             }
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .transition(.push(from: (store.isForwarding ?? true) ? .trailing : .leading))
+          .id(store.currentPhotoIndex)
       case .failure:
         Image(
           systemName: SystemImageMapping.getIconName(
