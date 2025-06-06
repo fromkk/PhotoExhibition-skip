@@ -653,6 +653,7 @@ struct ExhibitionDetailView: View {
               if let path = photo.imagePath {
                 if store.isOrganizer {
                   makeGridItem(photo, path: path)
+                    .modifier(DelayAppearModifier(offset: 40))
                     #if !SKIP
                       .draggable(photo) {
                         /// custom preview
@@ -702,6 +703,7 @@ struct ExhibitionDetailView: View {
                     #endif
                 } else {
                   makeGridItem(photo, path: path)
+                    .modifier(DelayAppearModifier(offset: 40))
                 }
               }
             }

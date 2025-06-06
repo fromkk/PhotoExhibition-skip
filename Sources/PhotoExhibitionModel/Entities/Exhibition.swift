@@ -93,6 +93,6 @@ public struct Exhibition: Hashable, Sendable, Identifiable, Codable {
   }
 
   public var coverPath: String? {
-    return cover_1024x1024 ?? cover_512x512 ?? cover_256x256 ?? coverImagePath
+    return cover_512x512 ?? cover_256x256 ?? cover_1024x1024 ?? coverImagePath
   }
 }
