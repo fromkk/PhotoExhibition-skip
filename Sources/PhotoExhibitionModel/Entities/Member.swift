@@ -54,6 +54,6 @@ public struct Member: Hashable, Sendable, Identifiable, Codable {
   }
 
   public var iconPath: String? {
-    return icon_1024x1024 ?? icon_512x512 ?? icon_256x256 ?? icon
+    return icon_512x512 ?? icon_256x256 ?? icon_1024x1024 ?? icon
   }
 }
