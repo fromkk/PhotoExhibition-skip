@@ -1252,7 +1252,18 @@ struct PhotoGridItem: View {
       }
       .buttonStyle(.plain)
 
-      // タイトルがある場合は小さなインジケータを表示
+      // 主催者向け: タイトル・説明が無い場合はアイコンを表示
+      if isOrganizer && photo.title == nil && photo.description == nil {
+        Image(
+          systemName: SystemImageMapping.getIconName(from: "exclamationmark.triangle")
+        )
+        .font(.caption)
+        .padding(4)
+        .foregroundStyle(.white)
+        .background(Circle().fill(Color.black.opacity(0.5)))
+        .padding(4)
+      }
+      // タイトルか説明がある場合はインジケータを表示
       if photo.title != nil || photo.description != nil {
         #if SKIP
           Image("text.document", bundle: .module)
