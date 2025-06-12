@@ -738,6 +738,16 @@
         }
       }
     },
+    "No title" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトルがありません"
+          }
+        }
+      }
+    },
     "No title and description" : {
       "localizations" : {
         "ja" : {

@@ -1252,6 +1252,11 @@ struct PhotoGridItem: View {
           .clipShape(RoundedRectangle(cornerRadius: 8))
       }
       .buttonStyle(.plain)
+      .accessibilityLabel(Text(
+        photo.title ??
+        photo.description ??
+        String(localized: "No title", bundle: .module)
+      ))
 
       // 主催者向け: タイトル・説明が無い場合はアイコンを表示
       if isOrganizer && photo.title == nil && photo.description == nil {
