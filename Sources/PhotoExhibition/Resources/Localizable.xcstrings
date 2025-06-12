@@ -587,6 +587,16 @@
         }
       }
     },
+    "Has title and description" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "説明文があります"
+          }
+        }
+      }
+    },
     "I will not upload images that may offend others." : {
       "localizations" : {
         "ja" : {
@@ -724,6 +734,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "写真がまだありません"
+          }
+        }
+      }
+    },
+    "No title" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトルがありません"
+          }
+        }
+      }
+    },
+    "No title and description" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトル・説明文がありません"
           }
         }
       }
@@ -1082,10 +1112,24 @@
       }
     },
     "Switch to default photo mode" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通常写真を表示"
+          }
+        }
+      }
     },
     "Switch to spatial photo mode" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空間写真を表示"
+          }
+        }
+      }
     },
     "Terms of Service" : {
       "localizations" : {

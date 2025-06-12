@@ -421,7 +421,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   }
 
   // PhotoDetailStoreDelegateの実装
-  func photoDetailStore(_ store: PhotoDetailStore, didUpdatePhoto photo: Photo) {
+  func photoDetailStore(_ store: PhotoDetailStore, didUpdatePhoto photo: Photo)
+  {
     // 写真リストを更新
     if let index = photos.firstIndex(where: { $0.id == photo.id }) {
       photos[index] = photo
@@ -1251,33 +1252,55 @@ struct PhotoGridItem: View {
           .clipShape(RoundedRectangle(cornerRadius: 8))
       }
       .buttonStyle(.plain)
+      .accessibilityLabel(Text(
+        photo.title ??
+        photo.description ??
+        String(localized: "No title", bundle: .module)
+      ))
 
-      // タイトルがある場合は小さなインジケータを表示
-      if photo.title != nil || photo.description != nil {
-        #if SKIP
-          Image("text.document", bundle: .module)
-            .font(.caption)
-            .padding(4)
-            .foregroundStyle(.white)
-            .background(Circle().fill(Color.black.opacity(0.5)))
-            .padding(4)
-        #else
-          if #available(iOS 18.0, *) {
-            Image(systemName: "text.document")
+      // 主催者向け: タイトル・説明が無い場合はアイコンを表示
+      if isOrganizer && photo.title == nil && photo.description == nil {
+        Image(
+          systemName: SystemImageMapping.getIconName(
+            from: "exclamationmark.triangle"
+          )
+        )
+        .font(.caption)
+        .padding(4)
+        .foregroundStyle(.white)
+        .background(Circle().fill(Color.black.opacity(0.5)))
+        .padding(4)
+        .accessibilityLabel(Text("No title and description", bundle: .module))
+      }
+      // タイトルか説明がある場合はインジケータを表示
+      else if photo.title != nil || photo.description != nil {
+        Group {
+          #if SKIP
+            Image("text.document", bundle: .module)
               .font(.caption)
               .padding(4)
               .foregroundStyle(.white)
               .background(Circle().fill(Color.black.opacity(0.5)))
               .padding(4)
-          } else {
-            Image(systemName: "doc.text")
-              .font(.caption)
-              .padding(4)
-              .foregroundStyle(.white)
-              .background(Circle().fill(Color.black.opacity(0.5)))
-              .padding(4)
-          }
-        #endif
+          #else
+            if #available(iOS 18.0, *) {
+              Image(systemName: "text.document")
+                .font(.caption)
+                .padding(4)
+                .foregroundStyle(.white)
+                .background(Circle().fill(Color.black.opacity(0.5)))
+                .padding(4)
+            } else {
+              Image(systemName: "doc.text")
+                .font(.caption)
+                .padding(4)
+                .foregroundStyle(.white)
+                .background(Circle().fill(Color.black.opacity(0.5)))
+                .padding(4)
+            }
+          #endif
+        }
+        .accessibilityLabel(Text("Has title and description", bundle: .module))
       }
     }
     .task {
