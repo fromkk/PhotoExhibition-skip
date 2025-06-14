@@ -30,15 +30,9 @@ public final actor StorageImageCache: StorageImageCacheProtocol {
   /// 画像URLを取得する（キャッシュがあればキャッシュから、なければStorageClientから）
   public func getImageURL(for path: String) async throws -> URL {
     // キャッシュにあればそれを返す
-    if let cachedURL = cache[path] {
-      // ファイルが存在するか確認
-      if fileManager.fileExists(atPath: cachedURL.path) {
-        return cachedURL
-      }
+    if let cachedURL = cache[path], fileManager.fileExists(atPath: cachedURL.path) {
+      return cachedURL
     }
-
-    // キャッシュになければStorageClientからダウンロードしてローカルに保存
-    let storageURL = try await storageClient.url(path)
 
     // ローカルにファイルが保存済みか確認
     let cacheDirectory = try getCacheDirectory()
@@ -51,7 +45,8 @@ public final actor StorageImageCache: StorageImageCacheProtocol {
       return fileURL
     }
 
-    // ダウンロードして保存
+    // ローカルになければStorageClientからダウンロードしてローカルに保存
+    let storageURL = try await storageClient.url(path)
     let localURL = try await downloadAndSaveImage(from: storageURL, for: path)
 
     // キャッシュに保存
