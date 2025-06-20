@@ -73,12 +73,16 @@ final class AuthRootStore: Store {
   }
 
   #if !SKIP
-    private func randomNonceString(length: Int = 32) -> String {
+    private func randomNonceString(length: Int = 32) throws -> String {
       precondition(length > 0)
       var randomBytes = [UInt8](repeating: 0, count: length)
       let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
       if errorCode != errSecSuccess {
-        fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+        throw NSError(
+          domain: "AuthRootStore", 
+          code: Int(errorCode),
+          userInfo: [NSLocalizedDescriptionKey: "Unable to generate secure nonce for authentication"]
+        )
       }
 
       let charset: [Character] =
@@ -156,10 +160,15 @@ extension AuthRootStore: AuthStoreDelegate {
 
 #if !SKIP
   extension AuthRootStore {
-    func prepareSignInWithApple() -> String {
-      let nonce = randomNonceString()
-      currentNonce = nonce
-      return sha256(nonce)
+    func prepareSignInWithApple() -> String? {
+      do {
+        let nonce = try randomNonceString()
+        currentNonce = nonce
+        return sha256(nonce)
+      } catch {
+        self.error = error
+        return nil
+      }
     }
   }
 #endif

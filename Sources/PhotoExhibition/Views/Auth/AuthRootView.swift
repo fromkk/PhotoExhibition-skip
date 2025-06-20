@@ -26,7 +26,9 @@ struct AuthRootView: View {
           #if !SKIP
             SignInWithAppleButton(.signIn) { request in
               request.requestedScopes = [.fullName]
-              request.nonce = store.prepareSignInWithApple()
+              if let nonce = store.prepareSignInWithApple() {
+                request.nonce = nonce
+              }
             } onCompletion: { result in
               store.send(.signInWithAppleCompleted(result))
             }
