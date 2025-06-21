@@ -736,7 +736,7 @@ struct ExhibitionDetailView: View {
                 .fontWeight(.bold)
 
               if let description = store.exhibition.description {
-                Text(description)
+                Text(description.linkified)
                   .font(.body)
                   .padding(.top, 4)
               }

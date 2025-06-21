@@ -65,7 +65,7 @@ struct ExhibitionRow: View {
         }
 
         if let description = exhibition.description {
-          Text(description)
+          Text(description.linkified)
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .lineLimit(2)

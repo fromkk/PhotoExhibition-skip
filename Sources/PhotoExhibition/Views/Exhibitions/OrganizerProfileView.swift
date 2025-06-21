@@ -237,7 +237,7 @@ struct OrganizerExhibitionRow: View {
           .frame(maxWidth: .infinity, alignment: .leading)
 
         if let description = exhibition.description {
-          Text(description)
+          Text(description.linkified)
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
