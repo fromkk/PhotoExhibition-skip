@@ -736,9 +736,10 @@ struct ExhibitionDetailView: View {
                 .fontWeight(.bold)
 
               if let description = store.exhibition.description {
-                Text(description)
+                Text(.init(description))
                   .font(.body)
                   .padding(.top, 4)
+                  .tint(.accentColor)
               }
             }
 
