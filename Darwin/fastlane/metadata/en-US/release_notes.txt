@@ -1,3 +1,1 @@
-- Optimized image cache management for better performance
-- Improved accessibility labels and experience
-- Show missing text icon for organizers
+- Bug fix
