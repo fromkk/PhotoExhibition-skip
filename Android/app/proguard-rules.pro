@@ -4,3 +4,7 @@
 -keep class com.sun.jna.** { *; }
 -keep class * implements com.sun.jna.** { *; }
 -keep class photo.exhibition.** { *; }
+-keep class tools.skip.** { *; }
+-dontwarn java.awt.**
+-keep class * implements skip.bridge.** { *; }
+-keep class **._ModuleBundleAccessor_* { *; }

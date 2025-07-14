@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.1.2
 // This is a Skip (https://skip.tools) package,
 // containing a Swift Package Manager project
 // that will use the Skip build plugin to transpile the
