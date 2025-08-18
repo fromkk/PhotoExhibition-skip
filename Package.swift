@@ -51,7 +51,7 @@ let package = Package(
     .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.7.3"),
     .package(
       url: "https://github.com/firebase/firebase-ios-sdk.git",
-      from: "11.10.0"
+      from: "12.1.0"
     ),
     .package(
       url:
