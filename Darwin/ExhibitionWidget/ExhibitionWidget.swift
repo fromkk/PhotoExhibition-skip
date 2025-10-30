@@ -100,6 +100,7 @@ struct ExhibitionWidgetEntryView: View {
           if let coverImage = entry.coverImage {
             Image(uiImage: coverImage)
               .resizable()
+              .iOS18_widgetAccentedRenderingMode(.accentedDesaturated)
               .aspectRatio(contentMode: .fill)
               .frame(width: geometry.size.width, height: geometry.size.height)
               .clipped()
