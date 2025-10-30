@@ -24,6 +24,9 @@
 		ADA8856B2D97BECF00230226 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
 		ADA8856C2D97BECF00230226 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
 		ADC1F27F2DB22BB3003A8288 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
+		ADE056812EB431520050A5FF /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = ADE056802EB431520050A5FF /* AppIcon.icon */; };
+		ADE056822EB431520050A5FF /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = ADE056802EB431520050A5FF /* AppIcon.icon */; };
+		ADE056832EB431520050A5FF /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = ADE056802EB431520050A5FF /* AppIcon.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +101,7 @@
 		ADA885532D97B92C00230226 /* ExhibitionWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ExhibitionWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADA885552D97B92C00230226 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		ADA885572D97B92C00230226 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		ADE056802EB431520050A5FF /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		ADE2196E2DB1C36200744774 /* PhotoExhibitionViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoExhibitionViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADE2197F2DB1C36300744774 /* PhotoExhibitionViewerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhotoExhibitionViewerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADE219AA2DB1C67900744774 /* PhotoExhibitionViewer.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = PhotoExhibitionViewer.xcconfig; sourceTree = "<group>"; };
@@ -212,6 +216,7 @@
 				49F90C2B2A52156200F06D93 /* Main.swift */,
 				49F90C2F2A52156300F06D93 /* Assets.xcassets */,
 				49F90C312A52156300F06D93 /* Entitlements.plist */,
+				ADE056802EB431520050A5FF /* AppIcon.icon */,
 				4900101C2BACEA710000DE33 /* Info.plist */,
 				AD5536DD2D86CBCA001D3896 /* InfoPlist.xcstrings */,
 			);
@@ -403,6 +408,7 @@
 				AD5536DE2D86CBCA001D3896 /* InfoPlist.xcstrings in Resources */,
 				ADA8856B2D97BECF00230226 /* GoogleService-Info.plist in Resources */,
 				496BDBEE2B8A7E9C00C09264 /* Localizable.xcstrings in Resources */,
+				ADE056832EB431520050A5FF /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -410,6 +416,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ADE056822EB431520050A5FF /* AppIcon.icon in Resources */,
 				ADA8856C2D97BECF00230226 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -418,6 +425,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ADE056812EB431520050A5FF /* AppIcon.icon in Resources */,
 				ADC1F27F2DB22BB3003A8288 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
