@@ -11,6 +11,12 @@ plugins {
 skip {
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(libs.versions.jvm.get().toString())
+    }
+}
+
 android {
     namespace = group as String
     compileSdk = libs.versions.android.sdk.compile.get().toInt()
@@ -18,13 +24,12 @@ android {
         sourceCompatibility = JavaVersion.toVersion(libs.versions.jvm.get())
         targetCompatibility = JavaVersion.toVersion(libs.versions.jvm.get())
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.jvm.get().toString()
-    }
     packaging {
         jniLibs {
             keepDebugSymbols.add("**/*.so")
             pickFirsts.add("**/*.so")
+            // this option will compress JNI .so files
+            useLegacyPackaging = true
         }
     }
 
@@ -41,21 +46,28 @@ android {
         buildConfig = true
     }
 
-    lintOptions {
+    lint {
         disable.add("Instantiatable")
     }
 
     // default signing configuration tries to load from keystore.properties
+    // see: https://skip.tools/docs/deployment/#export-signing
     signingConfigs {
         val keystorePropertiesFile = file("keystore.properties")
-        if (keystorePropertiesFile.isFile) {
-            create("release") {
+        create("release") {
+            if (keystorePropertiesFile.isFile) {
                 val keystoreProperties = Properties()
                 keystoreProperties.load(keystorePropertiesFile.inputStream())
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
                 storeFile = file(keystoreProperties.getProperty("storeFile"))
                 storePassword = keystoreProperties.getProperty("storePassword")
+            } else {
+                // when there is no keystore.properties file, fall back to signing with debug config
+                keyAlias = signingConfigs.getByName("debug").keyAlias
+                keyPassword = signingConfigs.getByName("debug").keyPassword
+                storeFile = signingConfigs.getByName("debug").storeFile
+                storePassword = signingConfigs.getByName("debug").storePassword
             }
         }
     }
@@ -72,5 +84,5 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-ads:22.6.0")
+    implementation("com.google.android.gms:play-services-ads:24.7.0")
 }
