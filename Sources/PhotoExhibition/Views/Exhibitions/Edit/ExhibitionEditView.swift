@@ -457,7 +457,7 @@ struct ExhibitionEditView: View {
                 .fontWeight(.semibold)
               TextEditor(text: $store.description)
                 .padding(8)
-                .lineLimit(5)
+                .frame(height: 200)
                 .multilineTextAlignment(.leading)
                 .overlay {
                   RoundedRectangle(cornerRadius: 8)
