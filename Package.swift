@@ -43,12 +43,12 @@ let package = Package(
     ),
   ],
   dependencies: [
-    .package(url: "https://source.skip.tools/skip.git", from: "1.3.4"),
-    .package(url: "https://source.skip.tools/skip-ui.git", from: "1.26.7"),
-    .package(url: "https://source.skip.tools/skip-kit.git", from: "0.3.1"),
-    .package(url: "https://source.skip.tools/skip-fuse.git", from: "1.0.0"),
-    .package(url: "https://source.skip.tools/skip-model.git", from: "1.0.0"),
-    .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.7.3"),
+    .package(url: "https://source.skip.tools/skip.git", from: "1.6.29"),
+    .package(url: "https://source.skip.tools/skip-ui.git", from: "1.43.1"),
+    .package(url: "https://source.skip.tools/skip-kit.git", from: "0.6.0"),
+    .package(url: "https://source.skip.tools/skip-fuse.git", from: "1.0.2"),
+    .package(url: "https://source.skip.tools/skip-model.git", from: "1.6.3"),
+    .package(url: "https://source.skip.tools/skip-firebase.git", from: "0.12.2"),
     .package(
       url: "https://github.com/firebase/firebase-ios-sdk.git",
       from: "12.4.0"
@@ -108,6 +108,7 @@ let package = Package(
         .product(name: "SkipFirebaseFirestore", package: "skip-firebase"),
         .product(name: "SkipFirebaseFunctions", package: "skip-firebase"),
         .product(name: "SkipFirebaseStorage", package: "skip-firebase"),
+        .product(name: "SkipFirebaseRemoteConfig", package: "skip-firebase"),
       ],
       plugins: [.plugin(name: "skipstone", package: "skip")]
     ),

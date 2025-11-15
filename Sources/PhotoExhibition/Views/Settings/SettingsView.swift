@@ -29,6 +29,7 @@ protocol SettingsStoreDelegate: AnyObject {
   var contactStore: ContactStore?
   // ブロックユーザー一覧画面用のストア
   var blockedUsersStore: BlockedUsersStore?
+  var aboutDeveloperStore: AboutDeveloperStore?
   #if !SKIP
     // ライセンス画面のストア
     var licenseStore: LicenseListStore?
@@ -57,6 +58,7 @@ protocol SettingsStoreDelegate: AnyObject {
     case presentDeleteAccountConfirmation
     case contactButtonTapped
     case blockedUsersButtonTapped
+    case aboutDeveloperButtonTapped
     #if !SKIP
       case licenseButtonTapped
     #endif
@@ -112,6 +114,8 @@ protocol SettingsStoreDelegate: AnyObject {
       contactStore = ContactStore()
     case .blockedUsersButtonTapped:
       blockedUsersStore = BlockedUsersStore()
+    case .aboutDeveloperButtonTapped:
+      aboutDeveloperStore = AboutDeveloperStore()
     #if !SKIP
       case .licenseButtonTapped:
         licenseStore = LicenseListStore()
@@ -234,6 +238,20 @@ struct SettingsView: View {
         .buttonStyle(.plain)
 
         Button {
+          store.send(.aboutDeveloperButtonTapped)
+        } label: {
+          HStack {
+            Text("About Developer")
+              .padding(.leading, 8)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          #if !SKIP
+            .contentShape(Rectangle())
+          #endif
+        }
+        .buttonStyle(.plain)
+
+        Button {
           openURL(Constants.termsOfServiceURL)
         } label: {
           HStack {
@@ -342,6 +360,17 @@ struct SettingsView: View {
       if let blockedUsersStore = store.blockedUsersStore {
         BlockedUsersView(store: blockedUsersStore)
           .navigationTitle(Text("Blocked Users"))
+      }
+    }
+    .navigationDestination(
+      isPresented: Binding(
+        get: { store.aboutDeveloperStore != nil },
+        set: { if !$0 { store.aboutDeveloperStore = nil } }
+      )
+    ) {
+      if let aboutDeveloperStore = store.aboutDeveloperStore {
+        AboutDeveloperView(store: aboutDeveloperStore)
+          .navigationTitle(Text("About Developer"))
       }
     }
     #if !SKIP

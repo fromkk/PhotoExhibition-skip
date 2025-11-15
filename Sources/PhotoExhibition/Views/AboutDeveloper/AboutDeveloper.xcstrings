@@ -1,0 +1,146 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "About developer" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開発者について"
+          }
+        }
+      }
+    },
+    "About Developer Description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi, I’m Kakkun. exhivision is an independently developed app.\nI created it to make photo exhibitions easy and accessible, and I continue improving it whenever I can.\nI hope it helps your photography feel a little more free and enjoyable."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "かっくんと申します。exhivision は個人開発のアプリです。\n写真を気軽に展示できる場所を作りたいと思い、少しずつ改良を続けています。\nあなたの写真体験が、もっと自由で楽しいものになりますように。"
+          }
+        }
+      }
+    },
+    "About Developer Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About Developer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "開発者について"
+          }
+        }
+      }
+    },
+    "Error" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エラー"
+          }
+        }
+      }
+    },
+    "Other apps" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その他のアプリ"
+          }
+        }
+      }
+    },
+    "Privacy policy" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プライバシーポリシー"
+          }
+        }
+      }
+    },
+    "Quiz Match Description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A quiz app you can enjoy together with people around you"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "その場にいる人と一緒に楽しめるクイズアプリ"
+          }
+        }
+      }
+    },
+    "Support description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi, I'm Kakkun. # Type is an independently developed app.\\nI’m building it as a simple Markdown editor that I myself want to use every day, taking the time to make improvements whenever I can.\\nI hope to keep evolving it slowly over time."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "かっくんと申します。# Type は個人開発のアプリです。\\n自分が毎日使いたいと思えるシンプルな Markdown エディターを目指して、時間を見つけては改善を続けています。\\nこれからもゆっくりと進化させていきます。"
+          }
+        }
+      }
+    },
+    "Terms of rules" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用規約"
+          }
+        }
+      }
+    },
+    "Type Description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simple Markdown editor"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "シンプルなMarkdownエディタアプリ"
+          }
+        }
+      }
+    },
+    "Website" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウェブサイト"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}
