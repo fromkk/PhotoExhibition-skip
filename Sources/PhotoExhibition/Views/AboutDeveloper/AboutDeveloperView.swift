@@ -81,7 +81,7 @@ struct AboutDeveloperView: View {
 
         #if !SKIP
           if let productId = store.developerInfo?.supportProductId {
-            ProductView(id: productId)
+            ProductView(id: productId, prefersPromotionalIcon: true)
               .padding(8)
               .clipShape(RoundedRectangle(cornerRadius: 8))
           }
