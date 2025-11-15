@@ -11,6 +11,9 @@
         }
       }
     },
+    "%@" : {
+
+    },
     "%@ (%lld)" : {
       "localizations" : {
         "en" : {
@@ -49,6 +52,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld 人の訪問者"
+          }
+        }
+      }
+    },
+    "About Developer" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開発者について"
           }
         }
       }
@@ -98,6 +111,9 @@
           }
         }
       }
+    },
+    "App Store" : {
+
     },
     "AR" : {
       "localizations" : {
@@ -1240,6 +1256,9 @@
           }
         }
       }
+    },
+    "𝕏" : {
+
     },
     "Yes" : {
       "localizations" : {
