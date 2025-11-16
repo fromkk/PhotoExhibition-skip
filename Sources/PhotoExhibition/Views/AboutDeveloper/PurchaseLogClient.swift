@@ -19,9 +19,9 @@ extension PurchaseLogClient {
                     return
                 }
                 let now = Date()
-                Firestore.firestore().collection("users")
+                Firestore.firestore().collection("members")
                     .document(uid)
-                    .collection("Purchase")
+                    .collection("purchase")
                     .addDocument(data: [
                       "result": true,
                       "userIdentity": uid,
