@@ -80,6 +80,7 @@ final class PhotoDetailStore: Store {
             self.leftImage = nil
             self.rightImage = nil
           }
+          spatialPhotoMotionManager.resume()
         } else {
           self.leftImage = nil
           self.rightImage = nil
@@ -106,6 +107,7 @@ final class PhotoDetailStore: Store {
           case .none:
             .up
           }
+
       #endif
     }
   }
@@ -115,10 +117,10 @@ final class PhotoDetailStore: Store {
     var isSpatialPhoto: Bool = false
     var leftImage: CGImage?
     var rightImage: CGImage?
-    var motionManager: MotionManager = .init()
+    var spatialPhotoMotionManager: SpatialPhotoMotionManager = .init()
     var adjustedValue: CGFloat {
       // value = -0.3 ~ 0.3 の範囲で、初期値を0にマッピング
-      let normalizedValue = min(max(motionManager.deviceTilt / (.pi / 6), -1), 1)
+      let normalizedValue = min(max(spatialPhotoMotionManager.deviceTilt / (.pi / 6), -1), 1)
       return normalizedValue * 0.05
     }
   #endif
