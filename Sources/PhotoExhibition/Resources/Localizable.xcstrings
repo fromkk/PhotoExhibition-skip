@@ -57,7 +57,14 @@
       }
     },
     "360 Degrees Photo" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "360度写真"
+          }
+        }
+      }
     },
     "About Developer" : {
       "localizations" : {
