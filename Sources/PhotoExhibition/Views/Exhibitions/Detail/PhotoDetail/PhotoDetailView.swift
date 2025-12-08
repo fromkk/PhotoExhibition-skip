@@ -129,7 +129,7 @@ final class PhotoDetailStore: Store {
   var isLoadingPhotos: Bool = false
   var isForwarding: Bool?
 
-  private let imageCache: any StorageImageCacheProtocol
+  let imageCache: any StorageImageCacheProtocol
   private let photoClient: any PhotoClient
   private let analyticsClient: any AnalyticsClient
 
@@ -393,8 +393,23 @@ struct PhotoDetailView: View {
         Color.black.ignoresSafeArea()
 
         // 写真表示
-        if store.imageURL != nil {
-          #if !SKIP
+        #if !SKIP
+          let currentPhoto = store.photos.isEmpty ? store.photo : store.photos[store.currentPhotoIndex]
+          if currentPhoto.isThreeDimensional {
+            if #available(iOS 18.0, *) {
+              PanoramaPhotoView(
+                photo: currentPhoto,
+                imageCache: store.imageCache,
+                onClose: {
+                  dismiss()
+                }
+              )
+            } else if store.imageURL != nil {
+              asyncImage
+            } else {
+              Color.clear
+            }
+          } else if store.imageURL != nil {
             if store.isSpatialPhoto, store.spatialPhotoMode == .overlay,
               let leftImage = store.leftImage, let rightImage = store.rightImage
             {
@@ -435,24 +450,27 @@ struct PhotoDetailView: View {
             } else {
               asyncImage
             }
-          #else
-            asyncImage
-          #endif
-        } else if store.isLoading {
-          ProgressView()
-        } else {
-          // 画像がない場合のプレースホルダー
-          #if SKIP
-            Image("photo", bundle: .module)
-              .foregroundStyle(.white.opacity(0.5))
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-          #else
+          } else if store.isLoading {
+            ProgressView()
+          } else {
+            // 画像がない場合のプレースホルダー
             Image(systemName: "photo")
               .font(.system(size: 50))
               .foregroundStyle(.white.opacity(0.5))
               .frame(maxWidth: .infinity, maxHeight: .infinity)
-          #endif
-        }
+          }
+        #else
+          if store.imageURL != nil {
+            asyncImage
+          } else if store.isLoading {
+            ProgressView()
+          } else {
+            // 画像がない場合のプレースホルダー
+            Image("photo", bundle: .module)
+              .foregroundStyle(.white.opacity(0.5))
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+          }
+        #endif
 
         // オーバーレイコントロール
         if store.isUIVisible {

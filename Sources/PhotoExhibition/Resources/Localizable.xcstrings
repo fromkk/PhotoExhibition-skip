@@ -577,6 +577,9 @@
         }
       }
     },
+    "Failed to load image" : {
+
+    },
     "Failed to save: %@" : {
       "localizations" : {
         "ja" : {

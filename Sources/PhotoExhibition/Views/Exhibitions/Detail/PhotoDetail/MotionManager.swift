@@ -30,7 +30,6 @@
 
     init() {
       motionManager.deviceMotionUpdateInterval = updateInterval
-      resume()
     }
 
     func resume() {
