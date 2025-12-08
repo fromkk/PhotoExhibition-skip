@@ -29,6 +29,7 @@ final class MockPhotoClient: PhotoClient {
   var updatePhotoId: String? = nil
   var updatePhotoTitle: String? = nil
   var updatePhotoDescription: String? = nil
+  var updatePhotoIsThreeDimensional: Bool? = nil
 
   // deletePhoto()の呼び出し追跡
   var deletePhotoWasCalled: Bool = false
@@ -100,7 +101,7 @@ final class MockPhotoClient: PhotoClient {
     )
   }
 
-  func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?)
+  func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?, isThreeDimensional: Bool?)
     async throws
   {
     updatePhotoWasCalled = true
@@ -108,6 +109,7 @@ final class MockPhotoClient: PhotoClient {
     updatePhotoId = photoId
     updatePhotoTitle = title
     updatePhotoDescription = description
+    updatePhotoIsThreeDimensional = isThreeDimensional
 
     // 非同期処理をシミュレート
     await Task.yield()
@@ -165,6 +167,7 @@ final class MockPhotoClient: PhotoClient {
     updatePhotoId = nil
     updatePhotoTitle = nil
     updatePhotoDescription = nil
+    updatePhotoIsThreeDimensional = nil
 
     deletePhotoWasCalled = false
     deletePhotoExhibitionId = nil

@@ -664,6 +664,7 @@ final class ExhibitionEditStoreTests: XCTestCase {
       title: "title",
       description: "description",
       metadata: nil,
+      isThreeDimensional: false,
       sort: 0,
       createdAt: Date(),
       updatedAt: Date()

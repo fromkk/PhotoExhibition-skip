@@ -29,7 +29,7 @@ final class PhotoDetailStore: Store {
     case closeButtonTapped
     case loadImage
     case editButtonTapped
-    case updatePhoto(title: String, description: String)
+    case updatePhoto(title: String, description: String, isThreeDimensional: Bool)
     case deleteButtonTapped
     case confirmDeletePhoto
     case resetZoom
@@ -187,9 +187,9 @@ final class PhotoDetailStore: Store {
       if isOrganizer {
         showEditSheet = true
       }
-    case .updatePhoto(let title, let description):
+    case .updatePhoto(let title, let description, let isThreeDimensional):
       Task {
-        try await updatePhoto(title: title, description: description)
+        try await updatePhoto(title: title, description: description, isThreeDimensional: isThreeDimensional)
       }
     case .deleteButtonTapped:
       if isOrganizer {
@@ -244,14 +244,15 @@ final class PhotoDetailStore: Store {
     }
   }
 
-  private func updatePhoto(title: String, description: String) async throws {
+  private func updatePhoto(title: String, description: String, isThreeDimensional: Bool) async throws {
     Task {
       do {
         try await photoClient.updatePhoto(
           exhibitionId: exhibitionId,
           photoId: photo.id,
           title: title.isEmpty ? nil : title,
-          description: description.isEmpty ? nil : description
+          description: description.isEmpty ? nil : description,
+          isThreeDimensional: isThreeDimensional
         )
 
         // 更新された写真情報を作成
@@ -261,6 +262,7 @@ final class PhotoDetailStore: Store {
           title: title.isEmpty ? nil : title,
           description: description.isEmpty ? nil : description,
           metadata: photo.metadata,
+          isThreeDimensional: isThreeDimensional,
           createdAt: photo.createdAt,
           updatedAt: Date()
         )
@@ -686,9 +688,10 @@ struct PhotoDetailView: View {
         ? store.photo : store.photos[store.currentPhotoIndex]
       PhotoEditView(
         title: currentPhoto.title ?? "",
-        description: currentPhoto.description ?? ""
-      ) { title, description in
-        store.send(.updatePhoto(title: title, description: description))
+        description: currentPhoto.description ?? "",
+        isThreeDimensional: currentPhoto.isThreeDimensional
+      ) { title, description, isThreeDimensional in
+        store.send(.updatePhoto(title: title, description: description, isThreeDimensional: isThreeDimensional))
       }
     }
     #if !SKIP
@@ -846,17 +849,20 @@ struct PhotoDetailView: View {
 struct PhotoEditView: View {
   @State private var title: String
   @State private var description: String
+  @State private var isThreeDimensional: Bool
   @Environment(\.dismiss) private var dismiss
 
-  let onSave: (String, String) -> Void
+  let onSave: (String, String, Bool) -> Void
 
   init(
     title: String,
     description: String,
-    onSave: @escaping (String, String) -> Void
+    isThreeDimensional: Bool,
+    onSave: @escaping (String, String, Bool) -> Void
   ) {
     self._title = State(initialValue: title)
     self._description = State(initialValue: description)
+    self._isThreeDimensional = State(initialValue: isThreeDimensional)
     self.onSave = onSave
   }
 
@@ -870,6 +876,10 @@ struct PhotoEditView: View {
         Section(header: Text("Description")) {
           TextEditor(text: $description)
             .frame(minHeight: 100)
+        }
+
+        Section(header: Text("360 Degrees Photo")) {
+          Toggle("360 Degrees Photo", isOn: $isThreeDimensional)
         }
       }
       .navigationTitle(Text("Edit Photo"))
@@ -885,7 +895,7 @@ struct PhotoEditView: View {
 
         ToolbarItem(placement: .confirmationAction) {
           Button("Save") {
-            onSave(title, description)
+            onSave(title, description, isThreeDimensional)
           }
         }
       }
@@ -1084,10 +1094,15 @@ struct SpatialPhotoGesturesModifier: ViewModifier {
       photo: Photo(
         id: "photo1",
         path: nil,
+        path_256x256: nil,
+        path_512x512: nil,
+        path_1024x1024: nil,
         title: "Sample Photo",
         description:
           "This is a sample photo description that shows how the detail view will look with text overlay.",
         metadata: nil,
+        isThreeDimensional: false,
+        sort: 0,
         createdAt: Date(),
         updatedAt: Date()
       ),
