@@ -578,7 +578,14 @@
       }
     },
     "Failed to load image" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像の読み込みに失敗しました。"
+          }
+        }
+      }
     },
     "Failed to save: %@" : {
       "localizations" : {
