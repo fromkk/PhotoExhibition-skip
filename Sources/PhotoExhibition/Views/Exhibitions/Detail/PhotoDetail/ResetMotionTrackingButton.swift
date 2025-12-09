@@ -12,7 +12,7 @@ struct ResetMotionTrackingButton: View {
         .clipShape(Circle())
         .tint(Color("text", bundle: .module))
     }
-    .accessibilityLabel(Text("Use motion tarcking", bundle: .module))
+    .accessibilityLabel(Text("Use motion tracking", bundle: .module))
     #if !SKIP
     .glassEffectForiOS26()
     #endif
