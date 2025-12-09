@@ -12,7 +12,14 @@
       }
     },
     "%@" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
     },
     "%@ (%lld)" : {
       "localizations" : {
@@ -123,7 +130,14 @@
       }
     },
     "App Store" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store"
+          }
+        }
+      }
     },
     "AR" : {
       "localizations" : {
@@ -1257,6 +1271,16 @@
         }
       }
     },
+    "Use motion tarcking" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "モーショントラッキングを利用する"
+          }
+        }
+      }
+    },
     "Username" : {
       "localizations" : {
         "ja" : {
@@ -1278,7 +1302,14 @@
       }
     },
     "𝕏" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "𝕏"
+          }
+        }
+      }
     },
     "Yes" : {
       "localizations" : {

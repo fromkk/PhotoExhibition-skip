@@ -102,6 +102,19 @@
           Text("Failed to load image")
             .foregroundStyle(.white)
         }
+
+        if !useMotionTracking {
+          VStack(alignment: .trailing) {
+            ResetMotionTrackingButton {
+              useMotionTracking.toggle()
+            }
+
+            Spacer()
+          }
+          .padding()
+          .frame(maxWidth: .infinity, alignment: .trailing)
+          .transition(.opacity)
+        }
       }
       .task {
         await loadImage()
