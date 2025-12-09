@@ -899,8 +899,8 @@ struct PhotoEditView: View {
             .frame(minHeight: 100)
         }
 
-        Section(header: Text("360 Degrees Photo")) {
-          Toggle("360 Degrees Photo", isOn: $isThreeDimensional)
+        Section(header: Text("360-Degree Photo")) {
+          Toggle("360-Degree Photo", isOn: $isThreeDimensional)
         }
       }
       .navigationTitle(Text("Edit Photo"))
