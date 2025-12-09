@@ -265,6 +265,7 @@ final class PhotoDetailStore: Store {
           description: description.isEmpty ? nil : description,
           metadata: photo.metadata,
           isThreeDimensional: isThreeDimensional,
+          sort: photo.sort,
           createdAt: photo.createdAt,
           updatedAt: Date()
         )
