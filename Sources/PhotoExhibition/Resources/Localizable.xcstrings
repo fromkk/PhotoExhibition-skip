@@ -12,7 +12,14 @@
       }
     },
     "%@" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
     },
     "%@ (%lld)" : {
       "localizations" : {
@@ -52,6 +59,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld 人の訪問者"
+          }
+        }
+      }
+    },
+    "360-Degree Photo" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "360度写真"
           }
         }
       }
@@ -113,7 +130,14 @@
       }
     },
     "App Store" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store"
+          }
+        }
+      }
     },
     "AR" : {
       "localizations" : {
@@ -563,6 +587,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "シャッタースピード"
+          }
+        }
+      }
+    },
+    "Failed to load image" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像の読み込みに失敗しました。"
           }
         }
       }
@@ -1237,6 +1271,16 @@
         }
       }
     },
+    "Use motion tracking" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "モーショントラッキングを利用する"
+          }
+        }
+      }
+    },
     "Username" : {
       "localizations" : {
         "ja" : {
@@ -1258,7 +1302,14 @@
       }
     },
     "𝕏" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "𝕏"
+          }
+        }
+      }
     },
     "Yes" : {
       "localizations" : {

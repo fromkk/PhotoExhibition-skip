@@ -29,7 +29,7 @@ final class PhotoDetailStore: Store {
     case closeButtonTapped
     case loadImage
     case editButtonTapped
-    case updatePhoto(title: String, description: String)
+    case updatePhoto(title: String, description: String, isThreeDimensional: Bool)
     case deleteButtonTapped
     case confirmDeletePhoto
     case resetZoom
@@ -80,6 +80,7 @@ final class PhotoDetailStore: Store {
             self.leftImage = nil
             self.rightImage = nil
           }
+          spatialPhotoMotionManager.resume()
         } else {
           self.leftImage = nil
           self.rightImage = nil
@@ -106,6 +107,7 @@ final class PhotoDetailStore: Store {
           case .none:
             .up
           }
+
       #endif
     }
   }
@@ -115,10 +117,10 @@ final class PhotoDetailStore: Store {
     var isSpatialPhoto: Bool = false
     var leftImage: CGImage?
     var rightImage: CGImage?
-    var motionManager: MotionManager = .init()
+    var spatialPhotoMotionManager: SpatialPhotoMotionManager = .init()
     var adjustedValue: CGFloat {
       // value = -0.3 ~ 0.3 の範囲で、初期値を0にマッピング
-      let normalizedValue = min(max(motionManager.deviceTilt / (.pi / 6), -1), 1)
+      let normalizedValue = min(max(spatialPhotoMotionManager.deviceTilt / (.pi / 6), -1), 1)
       return normalizedValue * 0.05
     }
   #endif
@@ -129,7 +131,7 @@ final class PhotoDetailStore: Store {
   var isLoadingPhotos: Bool = false
   var isForwarding: Bool?
 
-  private let imageCache: any StorageImageCacheProtocol
+  let imageCache: any StorageImageCacheProtocol
   private let photoClient: any PhotoClient
   private let analyticsClient: any AnalyticsClient
 
@@ -187,9 +189,9 @@ final class PhotoDetailStore: Store {
       if isOrganizer {
         showEditSheet = true
       }
-    case .updatePhoto(let title, let description):
+    case .updatePhoto(let title, let description, let isThreeDimensional):
       Task {
-        try await updatePhoto(title: title, description: description)
+        try await updatePhoto(title: title, description: description, isThreeDimensional: isThreeDimensional)
       }
     case .deleteButtonTapped:
       if isOrganizer {
@@ -244,14 +246,15 @@ final class PhotoDetailStore: Store {
     }
   }
 
-  private func updatePhoto(title: String, description: String) async throws {
+  private func updatePhoto(title: String, description: String, isThreeDimensional: Bool) async throws {
     Task {
       do {
         try await photoClient.updatePhoto(
           exhibitionId: exhibitionId,
           photoId: photo.id,
           title: title.isEmpty ? nil : title,
-          description: description.isEmpty ? nil : description
+          description: description.isEmpty ? nil : description,
+          isThreeDimensional: isThreeDimensional
         )
 
         // 更新された写真情報を作成
@@ -261,6 +264,8 @@ final class PhotoDetailStore: Store {
           title: title.isEmpty ? nil : title,
           description: description.isEmpty ? nil : description,
           metadata: photo.metadata,
+          isThreeDimensional: isThreeDimensional,
+          sort: photo.sort,
           createdAt: photo.createdAt,
           updatedAt: Date()
         )
@@ -391,8 +396,23 @@ struct PhotoDetailView: View {
         Color.black.ignoresSafeArea()
 
         // 写真表示
-        if store.imageURL != nil {
-          #if !SKIP
+        #if !SKIP
+          let currentPhoto = store.photos.isEmpty ? store.photo : store.photos[store.currentPhotoIndex]
+          if currentPhoto.isThreeDimensional {
+            if #available(iOS 18.0, *) {
+              PanoramaPhotoView(
+                photo: currentPhoto,
+                imageCache: store.imageCache,
+                onClose: {
+                  dismiss()
+                }
+              )
+            } else if store.imageURL != nil {
+              asyncImage
+            } else {
+              Color.clear
+            }
+          } else if store.imageURL != nil {
             if store.isSpatialPhoto, store.spatialPhotoMode == .overlay,
               let leftImage = store.leftImage, let rightImage = store.rightImage
             {
@@ -433,24 +453,27 @@ struct PhotoDetailView: View {
             } else {
               asyncImage
             }
-          #else
-            asyncImage
-          #endif
-        } else if store.isLoading {
-          ProgressView()
-        } else {
-          // 画像がない場合のプレースホルダー
-          #if SKIP
-            Image("photo", bundle: .module)
-              .foregroundStyle(.white.opacity(0.5))
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-          #else
+          } else if store.isLoading {
+            ProgressView()
+          } else {
+            // 画像がない場合のプレースホルダー
             Image(systemName: "photo")
               .font(.system(size: 50))
               .foregroundStyle(.white.opacity(0.5))
               .frame(maxWidth: .infinity, maxHeight: .infinity)
-          #endif
-        }
+          }
+        #else
+          if store.imageURL != nil {
+            asyncImage
+          } else if store.isLoading {
+            ProgressView()
+          } else {
+            // 画像がない場合のプレースホルダー
+            Image("photo", bundle: .module)
+              .foregroundStyle(.white.opacity(0.5))
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+          }
+        #endif
 
         // オーバーレイコントロール
         if store.isUIVisible {
@@ -686,9 +709,10 @@ struct PhotoDetailView: View {
         ? store.photo : store.photos[store.currentPhotoIndex]
       PhotoEditView(
         title: currentPhoto.title ?? "",
-        description: currentPhoto.description ?? ""
-      ) { title, description in
-        store.send(.updatePhoto(title: title, description: description))
+        description: currentPhoto.description ?? "",
+        isThreeDimensional: currentPhoto.isThreeDimensional
+      ) { title, description, isThreeDimensional in
+        store.send(.updatePhoto(title: title, description: description, isThreeDimensional: isThreeDimensional))
       }
     }
     #if !SKIP
@@ -846,17 +870,20 @@ struct PhotoDetailView: View {
 struct PhotoEditView: View {
   @State private var title: String
   @State private var description: String
+  @State private var isThreeDimensional: Bool
   @Environment(\.dismiss) private var dismiss
 
-  let onSave: (String, String) -> Void
+  let onSave: (String, String, Bool) -> Void
 
   init(
     title: String,
     description: String,
-    onSave: @escaping (String, String) -> Void
+    isThreeDimensional: Bool,
+    onSave: @escaping (String, String, Bool) -> Void
   ) {
     self._title = State(initialValue: title)
     self._description = State(initialValue: description)
+    self._isThreeDimensional = State(initialValue: isThreeDimensional)
     self.onSave = onSave
   }
 
@@ -870,6 +897,10 @@ struct PhotoEditView: View {
         Section(header: Text("Description")) {
           TextEditor(text: $description)
             .frame(minHeight: 100)
+        }
+
+        Section(header: Text("360-Degree Photo")) {
+          Toggle("360-Degree Photo", isOn: $isThreeDimensional)
         }
       }
       .navigationTitle(Text("Edit Photo"))
@@ -885,7 +916,7 @@ struct PhotoEditView: View {
 
         ToolbarItem(placement: .confirmationAction) {
           Button("Save") {
-            onSave(title, description)
+            onSave(title, description, isThreeDimensional)
           }
         }
       }
@@ -1084,10 +1115,15 @@ struct SpatialPhotoGesturesModifier: ViewModifier {
       photo: Photo(
         id: "photo1",
         path: nil,
+        path_256x256: nil,
+        path_512x512: nil,
+        path_1024x1024: nil,
         title: "Sample Photo",
         description:
           "This is a sample photo description that shows how the detail view will look with text overlay.",
         metadata: nil,
+        isThreeDimensional: false,
+        sort: 0,
         createdAt: Date(),
         updatedAt: Date()
       ),

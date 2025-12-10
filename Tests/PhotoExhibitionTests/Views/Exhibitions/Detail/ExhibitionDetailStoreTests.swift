@@ -326,6 +326,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
         title: "Test Photo",
         description: "Test Description",
         metadata: nil,
+        isThreeDimensional: false,
+        sort: 0,
         createdAt: Date(),
         updatedAt: Date()
       )
@@ -550,6 +552,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       id: "test-photo-id",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id",
       metadata: nil,
+      isThreeDimensional: false,
+      sort: 0,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -644,6 +648,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       id: "test-photo-id",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id",
       metadata: nil,
+      isThreeDimensional: false,
+      sort: 0,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -702,6 +708,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       id: "mock-photo-id",
       path: "exhibitions/test-exhibition-id/photos/922EB6A2-40FF-4B76-8205-E99764F17B87",
       metadata: nil,
+      isThreeDimensional: false,
+      sort: 0,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -804,6 +812,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       id: "test-photo-id",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id",
       metadata: nil,
+      isThreeDimensional: false,
+      sort: 0,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -813,6 +823,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       title: "Updated Title",
       description: "Updated Description",
       metadata: nil,
+      isThreeDimensional: false,
+      sort: 0,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -865,6 +877,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       id: "test-photo-id-1",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id-1",
       metadata: nil,
+      isThreeDimensional: false,
+      sort: 0,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -872,6 +886,8 @@ final class ExhibitionDetailStoreTests: XCTestCase {
       id: "test-photo-id-2",
       path: "exhibitions/test-exhibition-id/photos/test-photo-id-2",
       metadata: nil,
+      isThreeDimensional: false,
+      sort: 1,
       createdAt: Date(),
       updatedAt: Date()
     )

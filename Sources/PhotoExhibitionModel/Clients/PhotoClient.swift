@@ -14,7 +14,7 @@ public protocol PhotoClient: Sendable {
   func fetchPhotos(exhibitionId: String) async throws -> [Photo]
   func addPhoto(exhibitionId: String, photoId: String, path: String, sort: Int) async throws
     -> Photo
-  func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?)
+  func updatePhoto(exhibitionId: String, photoId: String, title: String?, description: String?, isThreeDimensional: Bool?)
     async throws
   func deletePhoto(exhibitionId: String, photoId: String) async throws
   func updatePhotoSort(exhibitionId: String, photoId: String, sort: Int) async throws
@@ -95,7 +95,7 @@ public actor DefaultPhotoClient: PhotoClient {
   }
 
   public func updatePhoto(
-    exhibitionId: String, photoId: String, title: String?, description: String?
+    exhibitionId: String, photoId: String, title: String?, description: String?, isThreeDimensional: Bool?
   )
     async throws
   {
@@ -112,6 +112,10 @@ public actor DefaultPhotoClient: PhotoClient {
 
     if let description = description {
       updateData["description"] = description
+    }
+
+    if let isThreeDimensional = isThreeDimensional {
+      updateData["isThreeDimensional"] = isThreeDimensional
     }
 
     try await firestore.collection("exhibitions")

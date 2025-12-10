@@ -4,7 +4,7 @@
   import UIKit
 
   @Observable @MainActor
-  final class MotionManager {
+  final class SpatialPhotoMotionManager {
     private let motionManager = CMMotionManager()
     private let updateInterval = 1.0 / 60.0
 
@@ -30,7 +30,6 @@
 
     init() {
       motionManager.deviceMotionUpdateInterval = updateInterval
-      resume()
     }
 
     func resume() {

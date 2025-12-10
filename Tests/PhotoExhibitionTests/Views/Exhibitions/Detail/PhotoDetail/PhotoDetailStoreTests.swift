@@ -43,6 +43,8 @@ final class PhotoDetailStoreTests: XCTestCase {
     title: "Test Photo",
     description: "Test Description",
     metadata: nil,
+    isThreeDimensional: false,
+    sort: 0,
     createdAt: Date(),
     updatedAt: Date()
   )
@@ -56,6 +58,8 @@ final class PhotoDetailStoreTests: XCTestCase {
       title: "Test Photo",
       description: "Test Description",
       metadata: nil,
+      isThreeDimensional: false,
+      sort: 0,
       createdAt: Date(),
       updatedAt: Date()
     )
@@ -102,7 +106,7 @@ final class PhotoDetailStoreTests: XCTestCase {
     let description = "Updated Description"
 
     // 実行
-    store.send(PhotoDetailStore.Action.updatePhoto(title: title, description: description))
+    store.send(PhotoDetailStore.Action.updatePhoto(title: title, description: description, isThreeDimensional: false))
 
     // 非同期処理の完了を待つ
     try await Task.sleep(nanoseconds: 100_000_000)
@@ -165,7 +169,7 @@ final class PhotoDetailStoreTests: XCTestCase {
     // 実行
     store.send(
       PhotoDetailStore.Action.updatePhoto(
-        title: "Updated Title", description: "Updated Description"))
+        title: "Updated Title", description: "Updated Description", isThreeDimensional: true))
 
     // 非同期処理の完了を待つ
     try await Task.sleep(nanoseconds: 100_000_000)

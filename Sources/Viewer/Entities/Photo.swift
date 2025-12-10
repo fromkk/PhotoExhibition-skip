@@ -12,6 +12,7 @@ public struct Photo: Hashable, Sendable, Identifiable, Codable {
     title: String? = nil,
     description: String? = nil,
     metadata: String? = nil,
+    isThreeDimensional: Bool = false,
     sort: Int,
     createdAt: Date,
     updatedAt: Date
@@ -24,6 +25,7 @@ public struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.title = title
     self.description = description
     self.metadata = metadata
+    self.isThreeDimensional = isThreeDimensional
     self.sort = sort
     self.createdAt = createdAt
     self.updatedAt = updatedAt
@@ -37,6 +39,7 @@ public struct Photo: Hashable, Sendable, Identifiable, Codable {
   public let title: String?
   public let description: String?
   public let metadata: String?
+  public let isThreeDimensional: Bool
   public let sort: Int
   public let createdAt: Date
   public let updatedAt: Date
@@ -56,6 +59,7 @@ extension Photo {
     title: "title",
     description: "description",
     metadata: nil,
+    isThreeDimensional: false,
     sort: 1,
     createdAt: Date(),
     updatedAt: Date()

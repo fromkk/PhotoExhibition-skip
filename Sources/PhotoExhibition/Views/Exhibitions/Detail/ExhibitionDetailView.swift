@@ -43,7 +43,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case photosSelected([URL])
     case loadPhotos
     case photoTapped(Photo)
-    case updateUploadedPhoto(title: String, description: String)
+    case updateUploadedPhoto(title: String, description: String, isThreeDimensional: Bool)
     case cancelPhotoEdit
     case reloadExhibition
     case reportButtonTapped
@@ -232,8 +232,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
         imageCache: imageCache,
         photoClient: photoClient
       )
-    case .updateUploadedPhoto(let title, let description):
-      updateUploadedPhoto(title: title, description: description)
+    case .updateUploadedPhoto(let title, let description, let isThreeDimensional):
+      updateUploadedPhoto(title: title, description: description, isThreeDimensional: isThreeDimensional)
     case .cancelPhotoEdit:
       uploadedPhoto = nil
       showPhotoEditSheet = false
@@ -366,7 +366,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     }
   }
 
-  private func updateUploadedPhoto(title: String, description: String) {
+  private func updateUploadedPhoto(title: String, description: String, isThreeDimensional: Bool) {
     guard let photo = uploadedPhoto else { return }
 
     Task {
@@ -375,7 +375,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
           exhibitionId: exhibition.id,
           photoId: photo.id,
           title: title.isEmpty ? nil : title,
-          description: description.isEmpty ? nil : description
+          description: description.isEmpty ? nil : description,
+          isThreeDimensional: isThreeDimensional
         )
 
         // 写真リストを更新
@@ -387,6 +388,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
             title: title.isEmpty ? nil : title,
             description: description.isEmpty ? nil : description,
             metadata: photo.metadata,
+            isThreeDimensional: isThreeDimensional,
+            sort: photo.sort,
             createdAt: photo.createdAt,
             updatedAt: Date()
           )
@@ -1064,10 +1067,11 @@ struct ExhibitionDetailView: View {
       if let photo = store.uploadedPhoto {
         PhotoEditView(
           title: photo.title ?? "",
-          description: photo.description ?? ""
-        ) { title, description in
+          description: photo.description ?? "",
+          isThreeDimensional: photo.isThreeDimensional
+        ) { title, description, isThreeDimensional in
           store.send(
-            .updateUploadedPhoto(title: title, description: description)
+            .updateUploadedPhoto(title: title, description: description, isThreeDimensional: isThreeDimensional)
           )
         }
         .onDisappear {

@@ -16,6 +16,7 @@ public struct Photo: Hashable, Sendable, Identifiable, Codable {
   public let title: String?
   public let description: String?
   public let metadata: String?
+  public let isThreeDimensional: Bool
   public let sort: Int
   public let createdAt: Date
   public let updatedAt: Date
@@ -29,6 +30,7 @@ public struct Photo: Hashable, Sendable, Identifiable, Codable {
     title: String? = nil,
     description: String? = nil,
     metadata: String?,
+    isThreeDimensional: Bool = false,
     sort: Int = 0,
     createdAt: Date,
     updatedAt: Date
@@ -41,6 +43,7 @@ public struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.title = title
     self.description = description
     self.metadata = metadata
+    self.isThreeDimensional = isThreeDimensional
     self.sort = sort
     self.createdAt = createdAt
     self.updatedAt = updatedAt
@@ -61,6 +64,7 @@ public struct Photo: Hashable, Sendable, Identifiable, Codable {
     self.title = data["title"] as? String
     self.description = data["description"] as? String
     self.metadata = data["metadata"] as? String
+    self.isThreeDimensional = data["isThreeDimensional"] as? Bool ?? false
     self.sort = data["sort"] as? Int ?? 0
     self.createdAt = createdAtTimestamp.dateValue()
     self.updatedAt = updatedAtTimestamp.dateValue()
