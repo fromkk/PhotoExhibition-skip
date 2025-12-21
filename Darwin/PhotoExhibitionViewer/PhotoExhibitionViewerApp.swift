@@ -5,6 +5,7 @@ import Viewer
 @main
 struct PhotoExhibitionViewerApp: App {
   @State var contentStore: ContentStore = .init()
+  @State var immersiveStyle: ImmersionStyle = .mixed
 
   init() {
     FirebaseApp.configure()
@@ -29,5 +30,14 @@ struct PhotoExhibitionViewerApp: App {
       }
     }
     .windowStyle(.volumetric)
+
+    ImmersiveSpace(id: "ThreeDimensionalPhotoDetail", for: String.self) { $imagePath in
+      if let imagePath {
+        ThreeDimensionalPhotoDetailView(imagePath: imagePath)
+      } else {
+        EmptyView()
+      }
+    }
+    .immersionStyle(selection: $immersiveStyle, in: .mixed)
   }
 }

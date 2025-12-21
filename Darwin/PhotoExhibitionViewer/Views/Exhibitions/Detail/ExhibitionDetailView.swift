@@ -68,6 +68,7 @@ struct ExhibitionDetailView: View {
   @Bindable var store: ExhibitionDetailStore
 
   @Environment(\.openWindow) var openWindow
+  @Environment(\.openImmersiveSpace) var openImmersiveSpace
 
   var body: some View {
     ScrollView {
@@ -98,15 +99,22 @@ struct ExhibitionDetailView: View {
               guard let imagePath = itemStore.photo.imagePath else {
                 return
               }
-              openWindow(
-                id: "PhotoDetail",
-                value: ImagePaths(
-                  imagePath: imagePath,
-                  imagePaths: store.photos.compactMap {
-                    $0.photo.imagePath
-                  }
+
+              if itemStore.photo.isThreeDimensional ?? false, let imagePath = itemStore.photo.path {
+                Task {
+                  await openImmersiveSpace(id: "ThreeDimensionalPhotoDetail", value: imagePath)
+                }
+              } else {
+                openWindow(
+                  id: "PhotoDetail",
+                  value: ImagePaths(
+                    imagePath: imagePath,
+                    imagePaths: store.photos.compactMap {
+                      $0.photo.imagePath
+                    }
+                  )
                 )
-              )
+              }
             }
             .frame(maxHeight: .infinity)
             .aspectRatio(1, contentMode: .fill)

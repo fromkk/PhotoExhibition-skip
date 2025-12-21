@@ -39,7 +39,7 @@ public struct Photo: Hashable, Sendable, Identifiable, Codable {
   public let title: String?
   public let description: String?
   public let metadata: String?
-  public let isThreeDimensional: Bool
+  public let isThreeDimensional: Bool?
   public let sort: Int
   public let createdAt: Date
   public let updatedAt: Date
