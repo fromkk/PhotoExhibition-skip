@@ -24,7 +24,6 @@
 		ADA8856B2D97BECF00230226 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
 		ADA8856C2D97BECF00230226 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
 		ADC1F27F2DB22BB3003A8288 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD7E0FD42D7D901A00095FA8 /* GoogleService-Info.plist */; };
-		ADE056812EB431520050A5FF /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = ADE056802EB431520050A5FF /* AppIcon.icon */; };
 		ADE056822EB431520050A5FF /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = ADE056802EB431520050A5FF /* AppIcon.icon */; };
 		ADE056832EB431520050A5FF /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = ADE056802EB431520050A5FF /* AppIcon.icon */; };
 /* End PBXBuildFile section */
@@ -425,7 +424,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ADE056812EB431520050A5FF /* AppIcon.icon in Resources */,
 				ADC1F27F2DB22BB3003A8288 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
