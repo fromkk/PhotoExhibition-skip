@@ -116,7 +116,8 @@
           .transition(.opacity)
         }
       }
-      .task {
+      .task(id: photo.id) {
+        resetViewState()
         await loadImage()
       }
     }
@@ -137,6 +138,13 @@
       } catch {
         print("Failed to load panorama image: \(error)")
       }
+    }
+
+    private func resetViewState() {
+      useMotionTracking = true
+      rotation = simd_quatf(angle: 0, axis: [0, 1, 0])
+      lastRotation = simd_quatf(angle: 0, axis: [0, 1, 0])
+      uiImage = nil
     }
 
     private func createPanoramaSphere() -> ModelEntity? {
