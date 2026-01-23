@@ -30,7 +30,7 @@ import Viewer
           send(.failed(error))
         }
       }
-    case let .failed(error):
+    case .failed(let error):
       self.error = error
     }
   }
@@ -62,7 +62,7 @@ struct PhotoItemView: View {
           .overlay {
             AsyncImage(url: store.imageURL) { phase in
               switch phase {
-              case let .success(image):
+              case .success(let image):
                 image
                   .resizable()
                   .scaledToFill()
@@ -71,8 +71,16 @@ struct PhotoItemView: View {
               }
             }
           }
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-          ], startPoint: .top, endPoint: .bottom)
+          .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+        LinearGradient(
+          stops: [
+            .init(color: .black.opacity(0), location: 0.7),
+            .init(color: .black.opacity(0.5), location: 1),
+          ],
+          startPoint: .top,
+          endPoint: .bottom
+        )
 
         VStack(spacing: 8) {
           if let title = store.photo.title {
