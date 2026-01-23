@@ -228,7 +228,7 @@ struct OrganizerExhibitionRow: View {
       }
       .frame(width: 60, height: 60)
       .background(Color.gray.opacity(0.1))
-      .clipShape(RoundedRectangle(cornerRadius: 8))
+      .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
       // Exhibition details
       VStack(alignment: .leading, spacing: 8) {

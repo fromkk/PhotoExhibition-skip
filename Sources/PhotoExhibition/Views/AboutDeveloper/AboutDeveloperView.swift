@@ -83,7 +83,7 @@ struct AboutDeveloperView: View {
           if let productId = store.developerInfo?.supportProductId {
             ProductView(id: productId, prefersPromotionalIcon: true)
               .padding(8)
-              .clipShape(RoundedRectangle(cornerRadius: 8))
+              .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
           }
         #endif
 
@@ -206,7 +206,7 @@ struct AppItemView: View {
           image
             .resizable()
             .frame(width: 80, height: 80)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         default:
           ProgressView()
         }
