@@ -43,7 +43,11 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case photosSelected([URL])
     case loadPhotos
     case photoTapped(Photo)
-    case updateUploadedPhoto(title: String, description: String, isThreeDimensional: Bool)
+    case updateUploadedPhoto(
+      title: String,
+      description: String,
+      isThreeDimensional: Bool
+    )
     case cancelPhotoEdit
     case reloadExhibition
     case reportButtonTapped
@@ -202,7 +206,7 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
           isUploadingPhoto = false
         }
       }
-    case let .photosSelected(urls):
+    case .photosSelected(let urls):
       guard !urls.isEmpty else { return }
       isUploadingPhoto = true
       Task {
@@ -221,6 +225,9 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     case .loadPhotos:
       loadPhotos()
     case .photoTapped(let photo):
+      logger.info(
+        "photoTapped \(String(describing: photo)) index \(self.photos.firstIndex(of: photo) ?? 0)"
+      )
       selectedPhoto = photo
       // PhotoDetailStoreを生成
       photoDetailStore = PhotoDetailStore(
@@ -232,8 +239,16 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
         imageCache: imageCache,
         photoClient: photoClient
       )
-    case .updateUploadedPhoto(let title, let description, let isThreeDimensional):
-      updateUploadedPhoto(title: title, description: description, isThreeDimensional: isThreeDimensional)
+    case .updateUploadedPhoto(
+      let title,
+      let description,
+      let isThreeDimensional
+    ):
+      updateUploadedPhoto(
+        title: title,
+        description: description,
+        isThreeDimensional: isThreeDimensional
+      )
     case .cancelPhotoEdit:
       uploadedPhoto = nil
       showPhotoEditSheet = false
@@ -366,7 +381,11 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
     }
   }
 
-  private func updateUploadedPhoto(title: String, description: String, isThreeDimensional: Bool) {
+  private func updateUploadedPhoto(
+    title: String,
+    description: String,
+    isThreeDimensional: Bool
+  ) {
     guard let photo = uploadedPhoto else { return }
 
     Task {
@@ -424,7 +443,8 @@ final class ExhibitionDetailStore: Store, PhotoDetailStoreDelegate,
   }
 
   // PhotoDetailStoreDelegateの実装
-  func photoDetailStore(_ store: PhotoDetailStore, didUpdatePhoto photo: Photo) {
+  func photoDetailStore(_ store: PhotoDetailStore, didUpdatePhoto photo: Photo)
+  {
     // 写真リストを更新
     if let index = photos.firstIndex(where: { $0.id == photo.id }) {
       photos[index] = photo
@@ -660,12 +680,7 @@ struct ExhibitionDetailView: View {
                     #if !SKIP
                       .draggable(photo) {
                         /// custom preview
-                        PhotoGridItem(
-                          photo: photo,
-                          path: path,
-                          isOrganizer: store.isOrganizer,
-                          onTap: {}
-                        )
+                        makeGridItem(photo, path: path)
                         .frame(width: 100, height: 100)
                         .onAppear {
                           draggingItem = photo
@@ -862,9 +877,9 @@ struct ExhibitionDetailView: View {
                       .foregroundStyle(
                         store.hasAddedFootprint ? Color.gray : Color.accentColor
                       )
-                      .clipShape(RoundedRectangle(cornerRadius: 8))
+                      .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                       .overlay {
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
                           .stroke(
                             store.hasAddedFootprint
                               ? Color.gray : Color.accentColor,
@@ -1071,7 +1086,11 @@ struct ExhibitionDetailView: View {
           isThreeDimensional: photo.isThreeDimensional
         ) { title, description, isThreeDimensional in
           store.send(
-            .updateUploadedPhoto(title: title, description: description, isThreeDimensional: isThreeDimensional)
+            .updateUploadedPhoto(
+              title: title,
+              description: description,
+              isThreeDimensional: isThreeDimensional
+            )
           )
         }
         .onDisappear {
@@ -1253,13 +1272,18 @@ struct PhotoGridItem: View {
               }
             }
           }
-          .clipShape(RoundedRectangle(cornerRadius: 8))
+          .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        #if !SKIP
+          .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        #endif
       }
       .buttonStyle(.plain)
       .accessibilityLabel(
         Text(
-          photo.title ?? photo.description ?? String(localized: "No title", bundle: .module)
-        ))
+          photo.title ?? photo.description
+            ?? String(localized: "No title", bundle: .module)
+        )
+      )
 
       // 主催者向け: タイトル・説明が無い場合はアイコンを表示
       if isOrganizer && photo.title == nil && photo.description == nil {

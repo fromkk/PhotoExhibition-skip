@@ -71,12 +71,7 @@ struct PhotoItemView: View {
               }
             }
           }
-          .clipShape(RoundedRectangle(cornerRadius: 8))
-
-        LinearGradient(
-          stops: [
-            .init(color: .black.opacity(0), location: 0.7),
-            .init(color: .black.opacity(0.5), location: 1),
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
           ], startPoint: .top, endPoint: .bottom)
 
         VStack(spacing: 8) {

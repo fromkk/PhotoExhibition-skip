@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import PhotoExhibitionModel
 import SwiftUI
 
@@ -29,7 +30,11 @@ final class PhotoDetailStore: Store {
     case closeButtonTapped
     case loadImage
     case editButtonTapped
-    case updatePhoto(title: String, description: String, isThreeDimensional: Bool)
+    case updatePhoto(
+      title: String,
+      description: String,
+      isThreeDimensional: Bool
+    )
     case deleteButtonTapped
     case confirmDeletePhoto
     case resetZoom
@@ -120,7 +125,10 @@ final class PhotoDetailStore: Store {
     var spatialPhotoMotionManager: SpatialPhotoMotionManager = .init()
     var adjustedValue: CGFloat {
       // value = -0.3 ~ 0.3 の範囲で、初期値を0にマッピング
-      let normalizedValue = min(max(spatialPhotoMotionManager.deviceTilt / (.pi / 6), -1), 1)
+      let normalizedValue = min(
+        max(spatialPhotoMotionManager.deviceTilt / (.pi / 6), -1),
+        1
+      )
       return normalizedValue * 0.05
     }
   #endif
@@ -141,6 +149,11 @@ final class PhotoDetailStore: Store {
     var exifStore: ExifStore?
   #endif
 
+  private let logger = Logger(
+    subsystem: Bundle.main.bundleIdentifier!,
+    category: "PhotoDetailStore"
+  )
+
   init(
     exhibitionId: String,
     photo: Photo,
@@ -160,7 +173,10 @@ final class PhotoDetailStore: Store {
     self.analyticsClient = analyticsClient
     self.photos = photos
     self.currentPhotoIndex =
-      photos.firstIndex(where: { $0.id == photo.id }) ?? 0
+      photos.firstIndex(of: photo) ?? 0
+    logger.info(
+      "photo \(String(describing: photo)) currentPhotoIndex \(self.currentPhotoIndex)"
+    )
   }
 
   func send(_ action: Action) {
@@ -191,7 +207,11 @@ final class PhotoDetailStore: Store {
       }
     case .updatePhoto(let title, let description, let isThreeDimensional):
       Task {
-        try await updatePhoto(title: title, description: description, isThreeDimensional: isThreeDimensional)
+        try await updatePhoto(
+          title: title,
+          description: description,
+          isThreeDimensional: isThreeDimensional
+        )
       }
     case .deleteButtonTapped:
       if isOrganizer {
@@ -246,7 +266,11 @@ final class PhotoDetailStore: Store {
     }
   }
 
-  private func updatePhoto(title: String, description: String, isThreeDimensional: Bool) async throws {
+  private func updatePhoto(
+    title: String,
+    description: String,
+    isThreeDimensional: Bool
+  ) async throws {
     Task {
       do {
         try await photoClient.updatePhoto(
@@ -397,11 +421,10 @@ struct PhotoDetailView: View {
 
         // 写真表示
         #if !SKIP
-          let currentPhoto = store.photos.isEmpty ? store.photo : store.photos[store.currentPhotoIndex]
-          if currentPhoto.isThreeDimensional {
+          if store.photo.isThreeDimensional {
             if #available(iOS 18.0, *) {
               PanoramaPhotoView(
-                photo: currentPhoto,
+                photo: store.photo,
                 imageCache: store.imageCache,
                 onClose: {
                   dismiss()
@@ -449,7 +472,8 @@ struct PhotoDetailView: View {
                   onPreviousPhoto: { store.send(.showPreviousPhoto) },
                   onNextPhoto: { store.send(.showNextPhoto) },
                   onDismiss: { dismiss() }
-                ))
+                )
+              )
             } else {
               asyncImage
             }
@@ -704,15 +728,18 @@ struct PhotoDetailView: View {
       .statusBar(hidden: true)
     #endif
     .sheet(isPresented: $store.showEditSheet) {
-      let currentPhoto =
-        store.photos.isEmpty
-        ? store.photo : store.photos[store.currentPhotoIndex]
       PhotoEditView(
-        title: currentPhoto.title ?? "",
-        description: currentPhoto.description ?? "",
-        isThreeDimensional: currentPhoto.isThreeDimensional
+        title: store.photo.title ?? "",
+        description: store.photo.description ?? "",
+        isThreeDimensional: store.photo.isThreeDimensional
       ) { title, description, isThreeDimensional in
-        store.send(.updatePhoto(title: title, description: description, isThreeDimensional: isThreeDimensional))
+        store.send(
+          .updatePhoto(
+            title: title,
+            description: description,
+            isThreeDimensional: isThreeDimensional
+          )
+        )
       }
     }
     #if !SKIP
@@ -808,7 +835,8 @@ struct PhotoDetailView: View {
 
   var asyncImage: some View {
     CrossPlatformAsyncImage(
-      url: store.imageURL, animation: store.isForwarding != nil ? .default : nil
+      url: store.imageURL,
+      animation: store.isForwarding != nil ? .default : nil
     ) { phase in
       switch phase {
       case .success(let image):
@@ -836,7 +864,9 @@ struct PhotoDetailView: View {
             }
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .transition(.push(from: (store.isForwarding ?? true) ? .trailing : .leading))
+          .transition(
+            .push(from: (store.isForwarding ?? true) ? .trailing : .leading)
+          )
           .id(store.currentPhotoIndex)
       case .failure:
         Image(

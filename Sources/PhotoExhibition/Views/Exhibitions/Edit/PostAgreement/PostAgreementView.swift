@@ -150,7 +150,7 @@ struct PostAgreementView: View {
       .background {
         Color.white
       }
-      .clipShape(RoundedRectangle(cornerRadius: 16))
+      .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
       .padding(.horizontal, 24)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)

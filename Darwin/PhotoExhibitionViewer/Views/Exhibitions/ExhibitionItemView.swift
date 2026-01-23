@@ -95,7 +95,7 @@ struct ExhibitionItemView: View {
         }
         .padding()
       }
-      .clipShape(RoundedRectangle(cornerRadius: 16))
+      .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
     .buttonStyle(.plain)
     .task {

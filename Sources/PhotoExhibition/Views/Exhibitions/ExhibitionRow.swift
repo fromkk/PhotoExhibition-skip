@@ -41,7 +41,7 @@ struct ExhibitionRow: View {
       }
       .frame(width: 80, height: 80)
       .background(Color.gray.opacity(0.1))
-      .clipShape(RoundedRectangle(cornerRadius: 16))
+      .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
       // Exhibition details
       VStack(alignment: .leading, spacing: 8) {

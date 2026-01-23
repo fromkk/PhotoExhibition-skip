@@ -88,7 +88,6 @@ struct ExhibitionDetailView: View {
         LazyVGrid(columns: Array(repeating: GridItem(), count: 3)) {
           ForEach(store.photos, id: \.self) { itemStore in
             PhotoItemView(store: itemStore) {
-
               if let imageURL = itemStore.imageURL, imageURL.isSpatialPhoto {
                 let previewItem = PreviewItem(
                   url: imageURL, displayName: itemStore.photo.title, editingMode: .disabled)

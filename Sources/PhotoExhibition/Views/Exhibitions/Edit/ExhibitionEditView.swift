@@ -446,7 +446,7 @@ struct ExhibitionEditView: View {
                 #if !SKIP
                   .padding(8)
                   .overlay {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .stroke(Color.gray, style: StrokeStyle(lineWidth: 1))
                   }
                 #endif
@@ -460,7 +460,7 @@ struct ExhibitionEditView: View {
                 .frame(height: 200)
                 .multilineTextAlignment(.leading)
                 .overlay {
-                  RoundedRectangle(cornerRadius: 8)
+                  RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .stroke(Color.gray, style: StrokeStyle(lineWidth: 1))
                 }
             }
