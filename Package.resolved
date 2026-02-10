@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/firebase-ios-sdk.git",
       "state" : {
-        "revision" : "674d9a7ee9858207181a3dd0b42c77298c6fb71b",
-        "version" : "12.8.0"
+        "revision" : "9b3aed4fa6226125305b82d4d86c715bef250785",
+        "version" : "12.9.0"
       }
     },
     {
@@ -116,6 +116,15 @@
       "state" : {
         "revision" : "b7e1104502eca3a213b46303391ca4d3bc8ddec1",
         "version" : "2.30910.0"
+      }
+    },
+    {
+      "identity" : "opencombine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenCombine.git",
+      "state" : {
+        "revision" : "63aef318cb3a853bcb8d774cce15f4dcb1ccdfe4",
+        "version" : "0.15.1"
       }
     },
     {
