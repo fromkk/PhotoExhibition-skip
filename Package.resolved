@@ -119,6 +119,15 @@
       }
     },
     {
+      "identity" : "opencombine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenCombine.git",
+      "state" : {
+        "revision" : "63aef318cb3a853bcb8d774cce15f4dcb1ccdfe4",
+        "version" : "0.15.1"
+      }
+    },
+    {
       "identity" : "promises",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/promises.git",
@@ -213,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://source.skip.tools/skip-ui.git",
       "state" : {
-        "revision" : "23672af457d76cfaaa35d6ba44b7031ee59f312d",
-        "version" : "1.46.2"
+        "revision" : "f5571c9148fc0813b29bbf8c2e68967f6e849a90",
+        "version" : "1.49.0"
       }
     },
     {
